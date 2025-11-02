@@ -1,0 +1,88 @@
+{
+  "empresa": {
+    "nome": "Linea Brasil",
+    "logo_path": "",
+    "endereco": ""
+  },
+  "campos_padrao": {
+    "borda": "COR   PARDO",
+    "responsavel": "GUSTAVO OLIVEIRA"
+  },
+  "visual": {
+    "cor_tabela": "#0066CC",
+    "fonte_tabela": "Helvetica",
+    "logo": "logo.jpg"
+  },
+  "campos_tabela": [
+    {
+      "label": "PLANO DE FURAÇÃO",
+      "source": "auto",
+      "campo": "Nome_Produto"
+    },
+    {
+      "label": "Dimensão(mm)",
+      "source": "auto", 
+      "campo": "Dimensões (mm)"
+    },
+    {
+      "label": "Deslocamento",
+      "source": "auto", 
+      "campo": "Deslocamento"
+    },
+    {
+      "label": "Batente",
+      "source": "auto", 
+      "campo": "Batente"
+    },
+    {
+      "label": "Data",
+      "source": "auto",
+      "campo": "Data"
+    },
+    {
+      "label": "Revisão",
+      "source": "manual",
+      "campo": "revisao"
+    },
+    {
+      "label": "Página",
+      "source": "auto",
+      "campo": "Página"
+    },       
+    {
+      "label": "Código/Descrição Peça",
+      "source": "auto",
+      "campo": "Código"
+    },
+    {
+      "label": "Material(mm)",
+      "source": "auto",
+      "campo": "Material (mm)"
+    },
+    {
+      "label": "Borda",
+      "source": "config",
+      "campo": "borda"
+    },
+    {
+      "label": "Responsável",
+      "source": "config",
+      "campo": "responsavel"
+    },
+    {
+      "label": "Conferente",
+      "source": "auto",
+      "campo": "Conferente"
+    },
+    {
+      "label": "Status",
+      "source": "auto",
+      "campo": "Status"
+    }
+  ],
+  "comentarios": {
+    "manual": "Preenchido manualmente ou via parâmetro",
+    "auto": "Gerado automaticamente do arquivo ou sistema",
+    "config": "Vem deste arquivo de configuração"
+  }
+}
