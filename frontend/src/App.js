@@ -3,7 +3,6 @@ import FileUpload from './components/FileUpload';
 import ConfigForm from './components/ConfigForm';
 import PecaPreview from './components/PecaPreview';
 import { generatePDF, parseMPR } from './services/api';
-import { generatePDF } from './services/api';
 import { validateMPRFile, validateConfig, formatErrors, formatWarnings } from './utils/validation';
 import './App.css';
 
