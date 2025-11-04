@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import FileUpload from './components/FileUpload';
 import ConfigForm from './components/ConfigForm';
 import { generatePDF } from './services/api';
+import { validateMPRFile, validateConfig, formatErrors, formatWarnings } from './utils/validation';
 import './App.css';
 
 function App() {
@@ -16,36 +17,95 @@ function App() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [warning, setWarning] = useState(null);
   const [success, setSuccess] = useState(false);
 
+  // Validar arquivo quando selecionar
+  const handleFileSelect = (selectedFile) => {
+    setFile(selectedFile);
+    setError(null);
+    setWarning(null);
+    
+    if (selectedFile) {
+      const validation = validateMPRFile(selectedFile);
+      
+      if (!validation.valid) {
+        setError(`Erro no arquivo:\n• ${formatErrors(validation.errors)}`);
+        setFile(null); // Remove arquivo inválido
+      } else if (validation.warnings.length > 0) {
+        setWarning(`Atenção:\n• ${formatWarnings(validation.warnings)}`);
+      }
+    }
+  };
+
   const handleGeneratePDF = async () => {
+    // Limpar mensagens anteriores
+    setError(null);
+    setWarning(null);
+    setSuccess(false);
+
+    // Validar arquivo
     if (!file) {
       setError('Selecione um arquivo MPR primeiro!');
       return;
     }
 
+    const fileValidation = validateMPRFile(file);
+    if (!fileValidation.valid) {
+      setError(`Erro no arquivo:\n• ${formatErrors(fileValidation.errors)}`);
+      return;
+    }
+
+    // Validar configurações
+    const configValidation = validateConfig(config);
+    if (!configValidation.valid) {
+      setError(`Erro nas configurações:\n• ${formatErrors(configValidation.errors)}`);
+      return;
+    }
+
+    // Mostrar warnings (mas permite continuar)
+    if (configValidation.warnings.length > 0) {
+      setWarning(`Atenção:\n• ${formatWarnings(configValidation.warnings)}`);
+    }
+
+    // Gerar PDF
     setLoading(true);
-    setError(null);
-    setSuccess(false);
 
     try {
       const pdfBlob = await generatePDF(file, config);
       
-      // Criar URL para download
+      // Download
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${file.name.replace('.mpr', '')}_furacao.pdf`;
+      link.download = `${file.name.replace('.mpr', '').replace('.MPR', '')}_furacao.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
       setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      setTimeout(() => setSuccess(false), 5000);
     } catch (err) {
       console.error('Erro ao gerar PDF:', err);
-      setError('Erro ao gerar PDF. Tente novamente.');
+      
+      // Mensagem de erro mais detalhada
+      let errorMsg = 'Erro ao gerar PDF. ';
+      
+      if (err.response) {
+        // Erro da API
+        errorMsg += `Código: ${err.response.status}. `;
+        if (err.response.data?.detail) {
+          errorMsg += err.response.data.detail;
+        }
+      } else if (err.request) {
+        // Sem resposta da API
+        errorMsg += 'Não foi possível conectar à API. Verifique sua conexão.';
+      } else {
+        errorMsg += err.message;
+      }
+      
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -68,14 +128,22 @@ function App() {
             {/* Coluna Esquerda - Upload */}
             <div className="left-column">
               <FileUpload 
-                onFileSelect={setFile} 
+                onFileSelect={handleFileSelect} 
                 selectedFile={file}
               />
               
               {/* Mensagens */}
               {error && (
                 <div className="message error">
-                  ⚠️ {error}
+                  <strong>⚠️ Erro</strong>
+                  <pre>{error}</pre>
+                </div>
+              )}
+              
+              {warning && !error && (
+                <div className="message warning">
+                  <strong>⚡ Aviso</strong>
+                  <pre>{warning}</pre>
                 </div>
               )}
               
@@ -104,12 +172,12 @@ function App() {
               </button>
 
               {/* Info */}
-              {file && (
+              {file && !error && (
                 <div className="info-box">
                   <h4>ℹ️ Informações</h4>
                   <p>• Arquivo: <strong>{file.name}</strong></p>
                   <p>• Tamanho: <strong>{(file.size / 1024).toFixed(2)} KB</strong></p>
-                  <p>• Configurações prontas para gerar!</p>
+                  <p>• Status: <strong className="status-ok">✓ Válido</strong></p>
                 </div>
               )}
             </div>
