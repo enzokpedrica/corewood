@@ -192,3 +192,21 @@ body {
     font-size: 2rem;
   }
 }
+
+/* Mensagem de warning */
+.message.warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 2px solid #ffc107;
+}
+
+.message pre {
+  margin: 0.5rem 0 0 0;
+  font-family: inherit;
+  white-space: pre-wrap;
+  font-size: 0.95rem;
+}
+
+.status-ok {
+  color: #28a745;
+}
