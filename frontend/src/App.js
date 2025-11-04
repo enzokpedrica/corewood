@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import FileUpload from './components/FileUpload';
 import ConfigForm from './components/ConfigForm';
-import PecaPreview from './components/PecaPreview';
-import { generatePDF, parseMPR } from './services/api';
+import { generatePDF } from './services/api';
 import { validateMPRFile, validateConfig, formatErrors, formatWarnings } from './utils/validation';
 import './App.css';
 
 function App() {
   const [file, setFile] = useState(null);
-  const [pecaData, setPecaData] = useState(null);
-  const [loadingPreview, setLoadingPreview] = useState(false);
   const [config, setConfig] = useState({
     angulo_rotacao: 0,
     espelhar_peca: false,
@@ -24,37 +21,22 @@ function App() {
   const [success, setSuccess] = useState(false);
 
   // Validar arquivo quando selecionar
-const handleFileSelect = async (selectedFile) => {
-  setFile(selectedFile);
-  setError(null);
-  setWarning(null);
-  setPecaData(null);
-
-  if (selectedFile) {
-    const validation = validateMPRFile(selectedFile);
-
-    if (!validation.valid) {
-      setError(`Erro no arquivo:\n• ${formatErrors(validation.errors)}`);
-      setFile(null);
-    } else {
-      setLoadingPreview(true);
-      try {
-        const parseResult = await parseMPR(selectedFile); // ← aqui o await funciona
-        setPecaData(parseResult.data);
-
-        if (validation.warnings.length > 0) {
-          setWarning(`Atenção:\n• ${formatWarnings(validation.warnings)}`);
-        }
-      } catch (err) {
-        console.error('Erro ao fazer preview:', err);
-        setWarning('Não foi possível carregar preview do arquivo');
-      } finally {
-        setLoadingPreview(false);
+  const handleFileSelect = (selectedFile) => {
+    setFile(selectedFile);
+    setError(null);
+    setWarning(null);
+    
+    if (selectedFile) {
+      const validation = validateMPRFile(selectedFile);
+      
+      if (!validation.valid) {
+        setError(`Erro no arquivo:\n• ${formatErrors(validation.errors)}`);
+        setFile(null); // Remove arquivo inválido
+      } else if (validation.warnings.length > 0) {
+        setWarning(`Atenção:\n• ${formatWarnings(validation.warnings)}`);
       }
     }
-  }
-};
-
+  };
 
   const handleGeneratePDF = async () => {
     // Limpar mensagens anteriores
@@ -148,11 +130,6 @@ const handleFileSelect = async (selectedFile) => {
               <FileUpload 
                 onFileSelect={handleFileSelect} 
                 selectedFile={file}
-              />
-
-              <PecaPreview 
-                pecaData={pecaData}
-                loading={loadingPreview}
               />
               
               {/* Mensagens */}
