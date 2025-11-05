@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import PrivateRoute from './components/PrivateRoute';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import FileUpload from './components/FileUpload';
 import ConfigForm from './components/ConfigForm';
 import { generatePDF } from './services/api';
 import { validateMPRFile, validateConfig, formatErrors, formatWarnings } from './utils/validation';
 import './App.css';
 
-function App() {
+function MainApp() {
   const [file, setFile] = useState(null);
   const [config, setConfig] = useState({
     angulo_rotacao: 0,
@@ -20,7 +25,8 @@ function App() {
   const [warning, setWarning] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Validar arquivo quando selecionar
+  const { user, logout } = useAuth();
+
   const handleFileSelect = (selectedFile) => {
     setFile(selectedFile);
     setError(null);
@@ -31,7 +37,7 @@ function App() {
       
       if (!validation.valid) {
         setError(`Erro no arquivo:\n• ${formatErrors(validation.errors)}`);
-        setFile(null); // Remove arquivo inválido
+        setFile(null);
       } else if (validation.warnings.length > 0) {
         setWarning(`Atenção:\n• ${formatWarnings(validation.warnings)}`);
       }
@@ -39,12 +45,10 @@ function App() {
   };
 
   const handleGeneratePDF = async () => {
-    // Limpar mensagens anteriores
     setError(null);
     setWarning(null);
     setSuccess(false);
 
-    // Validar arquivo
     if (!file) {
       setError('Selecione um arquivo MPR primeiro!');
       return;
@@ -56,25 +60,21 @@ function App() {
       return;
     }
 
-    // Validar configurações
     const configValidation = validateConfig(config);
     if (!configValidation.valid) {
       setError(`Erro nas configurações:\n• ${formatErrors(configValidation.errors)}`);
       return;
     }
 
-    // Mostrar warnings (mas permite continuar)
     if (configValidation.warnings.length > 0) {
       setWarning(`Atenção:\n• ${formatWarnings(configValidation.warnings)}`);
     }
 
-    // Gerar PDF
     setLoading(true);
 
     try {
       const pdfBlob = await generatePDF(file, config);
       
-      // Download
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
@@ -89,17 +89,14 @@ function App() {
     } catch (err) {
       console.error('Erro ao gerar PDF:', err);
       
-      // Mensagem de erro mais detalhada
       let errorMsg = 'Erro ao gerar PDF. ';
       
       if (err.response) {
-        // Erro da API
         errorMsg += `Código: ${err.response.status}. `;
         if (err.response.data?.detail) {
           errorMsg += err.response.data.detail;
         }
       } else if (err.request) {
-        // Sem resposta da API
         errorMsg += 'Não foi possível conectar à API. Verifique sua conexão.';
       } else {
         errorMsg += err.message;
@@ -113,26 +110,45 @@ function App() {
 
   return (
     <div className="app">
-      {/* Header */}
       <header className="app-header">
         <div className="container">
-          <h1>🪵 CoreWood</h1>
-          <p>Gerador de Documentação Técnica para Indústria Moveleira</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h1>🪵 CoreWood</h1>
+              <p>Gerador de Documentação Técnica para Indústria Moveleira</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ marginBottom: '0.5rem', color: '#666' }}>
+                👤 <strong>{user?.username}</strong>
+              </p>
+              <button 
+                onClick={logout}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: '600'
+                }}
+              >
+                Sair
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="app-main">
         <div className="container">
           <div className="content-grid">
-            {/* Coluna Esquerda - Upload */}
             <div className="left-column">
               <FileUpload 
                 onFileSelect={handleFileSelect} 
                 selectedFile={file}
               />
               
-              {/* Mensagens */}
               {error && (
                 <div className="message error">
                   <strong>⚠️ Erro</strong>
@@ -153,7 +169,6 @@ function App() {
                 </div>
               )}
 
-              {/* Botão de Gerar */}
               <button 
                 className="generate-btn"
                 onClick={handleGeneratePDF}
@@ -171,7 +186,6 @@ function App() {
                 )}
               </button>
 
-              {/* Info */}
               {file && !error && (
                 <div className="info-box">
                   <h4>ℹ️ Informações</h4>
@@ -182,7 +196,6 @@ function App() {
               )}
             </div>
 
-            {/* Coluna Direita - Configurações */}
             <div className="right-column">
               <ConfigForm 
                 config={config}
@@ -193,7 +206,6 @@ function App() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="app-footer">
         <div className="container">
           <p>CoreWood © 2024 - Desenvolvido para Linea Brasil</p>
@@ -203,6 +215,24 @@ function App() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route 
+        path="/" 
+        element={
+          <PrivateRoute>
+            <MainApp />
+          </PrivateRoute>
+        } 
+      />
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
   );
 }
 
