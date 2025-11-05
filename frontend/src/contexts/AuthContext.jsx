@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           // Verificar se token é válido fazendo uma requisição
-          const response = await axios.get(`${process.env.REACT_APP_API_URL || 'https://corewood.onrender.com'}/`);
+          await axios.get(`${process.env.REACT_APP_API_URL || 'https://corewood.onrender.com'}/`);
           setLoading(false);
         } catch (error) {
           console.error('Token inválido:', error);
