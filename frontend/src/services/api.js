@@ -8,6 +8,15 @@ const api = axios.create({
   timeout: 60000, // 60 segundos (PDF pode demorar)
 });
 
+// ✅ Interceptor para adicionar token automaticamente
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Parse arquivo MPR
 export const parseMPR = async (file) => {
   const formData = new FormData();
