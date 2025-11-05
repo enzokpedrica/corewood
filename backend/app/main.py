@@ -2,15 +2,21 @@
 CoreWood API - FastAPI Application
 """
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import tempfile
 import os
 from pathlib import Path
-
 from .parser.mpr_parser import parse_furacao
 from .generators.pdf_generator import GeradorDesenhoTecnico
+from .database import engine, Base
+from .routes import auth
+from .core.auth import get_current_active_user
+from .models.user import User
+
+# Criar tabelas no banco
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="CoreWood API",
@@ -27,6 +33,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Incluir rotas de autenticação
+app.include_router(auth.router)
 
 @app.get("/")
 def root():
@@ -49,7 +57,10 @@ def health():
 
 
 @app.post("/parse-mpr")
-async def parse_mpr(file: UploadFile = File(...)):
+async def parse_mpr(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_active_user)  # ← ADICIONAR
+):
     """
     Parse arquivo MPR e retorna dados estruturados
     
@@ -114,7 +125,8 @@ async def generate_pdf(
     posicao_borda_comprimento: str = None,
     posicao_borda_largura: str = None,
     alerta: str = None,
-    revisao: str = None
+    revisao: str = None,
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Gera PDF técnico a partir de arquivo MPR
