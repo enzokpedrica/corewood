@@ -1,0 +1,85 @@
+O que se pode melhorar?
+
+> Login
+	> Criar login principal
+	> Tirar Registro da tela de login
+
+> Borda precisa selecionar antes
+	> Seleção de borda pode ocorrer em mais de uma
+		> Selecionar na Cor ou Pardo
+
+* Uma vez que temos a peça original, como de fato será, precisa salvar para quando for feita alguma ação de giro ou espelhamento as bordas acompanharem
+
+> Ações da peça
+	> Girar
+	> Verificar Espelhamento
+
+> Evitar sobreposição de cotas
+	> Cota da vista principal que sai pra esquerda e topo
+	> Cota de furos na vista principal
+	> Deixar o texto um pouco afastado da linha da cota
+	> A profundidade do furo esta vindo 11.0
+		> Só deve vir com o decimal quando de fato for >0
+
+> Melhorar o layout das vistas
+	> Redimensionar conforme tamanho
+	> Fontes são sempre mesmo tamanho e tipo
+
+> Layout Folha
+	> Colocar Margem
+	> Centralizar texto do título
+
+> Tabela Horizontal
+	> Puxar descrição automática
+		> Formulário para preenchimento
+			> Código Produto + Nome Produto
+			> Revisão
+			> Código Peça + Nome Peça
+			> Seleção de Status
+		> O Responsável puxa de acordo com o login do usuário
+		> Como vai saber o tanto de páginas?
+		> Nome do conferente
+	> Ponto de Atenção
+	> Revisão precisa ser valor obrigatório
+	> Letra dentro das células precisam redimensionar
+
+> Deixar algo mais interativo?
+	> Ajustar as cotas antes de gerar o pdf?
+	> Ajustar as vistas antes de gerar pdf?
+
+> Processar em lote
+	> Gerar arquivos separados
+	> Salvar arquivos em lugares específicos
+	> Imprimir em lote
+
+
+## -- Essa parte será um pouco complexa, o ideal seria testar peças que furam somente a superfície primeiramente e realizar os ajustes.
+
+> Lógica para Furação
+	> Furação
+		> Múltiplos no mandril
+		> Distância entre furos horizontais
+		> Furação superior
+		> Furação inferior
+	> Mandril
+		> Qual mandril selecionado
+			> Cota do furo precisa ter qual mandril vai ser
+		> Calcular deslocamento
+			> Identificar quais furos precisam de deslocamento
+		> Qual batente a ser utilizado
+			> Texto do batente precisa aparecer na tabela horizontal
+
+-- CoreCraft --
+
+> Criar peça e exportar para .mpr
+> Editar furações já criadas
+> Qual a disposição de ferramentas na máquina?
+> Usinagens
+
+
+> Monetizar
+	> 30 arquivos por mês
+	> Assinatura
+
+> Intranet?
+
