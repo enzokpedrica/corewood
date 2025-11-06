@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import FileUpload from './components/FileUpload';
 import ConfigForm from './components/ConfigForm';
 import { generatePDF } from './services/api';
@@ -221,6 +222,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route 
         path="/" 
         element={
