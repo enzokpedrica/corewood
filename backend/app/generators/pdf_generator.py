@@ -996,15 +996,23 @@ class GeradorDesenhoTecnico:
         # Desenhar peça (vista de topo)
         self.desenhar_retangulo_peca(c, x_origem, y_origem, largura_desenhada, altura_desenhada)
         
-        # Desenhar bordas coloridas se configurado
+       # Desenhar bordas coloridas se configurado
         if dados_adicionais:
-            bordas_config = {
+            # Pegar bordas originais
+            bordas_originais = {
                 'comprimento': dados_adicionais.get('posicao_borda_comprimento'),
                 'largura': dados_adicionais.get('posicao_borda_largura')
             }
             
+            # Transformar bordas baseado em rotação/espelhamento
+            angulo = dados_adicionais.get('angulo_rotacao', 0)
+            espelhado = dados_adicionais.get('espelhar_peca', False)
+            bordas_config = self.transformar_bordas(bordas_originais, angulo, espelhado)
+            
             # Debug
-            print(f"🎨 Config de bordas recebida: {bordas_config}")
+            print(f"🎨 Bordas ORIGINAIS: {bordas_originais}")
+            print(f"🔄 Transformação: ângulo={angulo}°, espelhado={espelhado}")
+            print(f"🎨 Bordas TRANSFORMADAS: {bordas_config}")
             
             # Desenhar se tiver pelo menos uma borda
             if bordas_config['comprimento'] or bordas_config['largura']:
@@ -1118,6 +1126,81 @@ class GeradorDesenhoTecnico:
 
         c.save()
         print(f"PDF gerado: {arquivo_saida}")
+
+    def transformar_bordas(self, bordas: dict, angulo: int, espelhado: bool) -> dict:
+        """
+        Transforma posições das bordas baseado em rotação/espelhamento
+        
+        Args:
+            bordas: {'comprimento': 'top/bottom', 'largura': 'left/right'}
+            angulo: 0, 90, 180, 270
+            espelhado: True/False
+            
+        Returns:
+            Bordas transformadas
+        """
+        comp = bordas.get('comprimento')
+        larg = bordas.get('largura')
+        
+        # Aplicar espelhamento PRIMEIRO (se houver)
+        if espelhado and comp:
+            # Espelhar inverte top <-> bottom
+            comp = 'bottom' if comp == 'top' else 'top' if comp == 'bottom' else comp
+        
+        # Aplicar rotação
+        if angulo == 90:
+            # 90° horário: comprimento vira largura, largura vira comprimento
+            novo_comp = None
+            novo_larg = None
+            
+            if comp == 'bottom':
+                novo_larg = 'left'
+            elif comp == 'top':
+                novo_larg = 'right'
+                
+            if larg == 'left':
+                novo_comp = 'top'
+            elif larg == 'right':
+                novo_comp = 'bottom'
+                
+            return {'comprimento': novo_comp, 'largura': novo_larg}
+            
+        elif angulo == 180:
+            # 180°: inverte tudo
+            novo_comp = None
+            novo_larg = None
+            
+            if comp == 'bottom':
+                novo_comp = 'top'
+            elif comp == 'top':
+                novo_comp = 'bottom'
+                
+            if larg == 'left':
+                novo_larg = 'right'
+            elif larg == 'right':
+                novo_larg = 'left'
+                
+            return {'comprimento': novo_comp, 'largura': novo_larg}
+            
+        elif angulo == 270:
+            # 270° horário
+            novo_comp = None
+            novo_larg = None
+            
+            if comp == 'bottom':
+                novo_larg = 'right'
+            elif comp == 'top':
+                novo_larg = 'left'
+                
+            if larg == 'left':
+                novo_comp = 'bottom'
+            elif larg == 'right':
+                novo_comp = 'top'
+                
+            return {'comprimento': novo_comp, 'largura': novo_larg}
+        
+        # 0° ou sem rotação
+        return {'comprimento': comp, 'largura': larg}
 
 
 if __name__ == "__main__":

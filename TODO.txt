@@ -1,9 +1,3 @@
-O que se pode melhorar?
-
-> Login
-	> Criar login principal
-	> Tirar Registro da tela de login
-
 > Borda precisa selecionar antes
 	> Seleção de borda pode ocorrer em mais de uma
 		> Selecionar na Cor ou Pardo
