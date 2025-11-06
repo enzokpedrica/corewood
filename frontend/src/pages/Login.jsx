@@ -79,7 +79,7 @@ function Login() {
           </button>
         </form>
 
-        <div className="auth-footer">
+        {/*<div className="auth-footer">
           <p>
             Não tem conta?{' '}
             <button 
@@ -89,7 +89,7 @@ function Login() {
               Registre-se
             </button>
           </p>
-        </div>
+        </div>*/}
       </div>
     </div>
   );
