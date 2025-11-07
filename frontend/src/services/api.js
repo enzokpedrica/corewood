@@ -34,12 +34,14 @@ export const generatePDF = async (file, config) => {
   const formData = new FormData();
   formData.append('file', file);
   
+  // Converter bordas para JSON string
+  const bordasJson = config.bordas ? JSON.stringify(config.bordas) : '{}';
+  
   // Adicionar configurações como query params
   const params = new URLSearchParams({
     angulo_rotacao: config.angulo_rotacao || 0,
     espelhar_peca: config.espelhar_peca || false,
-    posicao_borda_comprimento: config.posicao_borda_comprimento || '',
-    posicao_borda_largura: config.posicao_borda_largura || '',
+    bordas: bordasJson,
     revisao: config.revisao || '',
     alerta: config.alerta || ''
   });

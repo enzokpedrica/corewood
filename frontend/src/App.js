@@ -77,13 +77,6 @@ function MainApp() {
     setLoading(true);
 
     try {
-        // Converter bordas para formato do backend
-      const configParaBackend = {
-        ...config,
-        // Backend ainda espera formato antigo temporariamente
-        posicao_borda_comprimento: config.bordas?.bottom ? 'bottom' : config.bordas?.top ? 'top' : null,
-        posicao_borda_largura: config.bordas?.left ? 'left' : config.bordas?.right ? 'right' : null
-      };
 
       const pdfBlob = await generatePDF(file, configParaBackend);
       const url = window.URL.createObjectURL(pdfBlob);

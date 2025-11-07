@@ -14,6 +14,7 @@ from .database import engine, Base
 from .routes import auth
 from .core.auth import get_current_active_user
 from .models.user import User
+import json
 
 # Criar tabelas no banco
 Base.metadata.create_all(bind=engine)
@@ -116,14 +117,12 @@ async def parse_mpr(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erro ao processar arquivo: {str(e)}")
 
-
 @app.post("/generate-pdf")
 async def generate_pdf(
     file: UploadFile = File(...),
     angulo_rotacao: int = 0,
     espelhar_peca: bool = False,
-    posicao_borda_comprimento: str = None,
-    posicao_borda_largura: str = None,
+    bordas: str = "{}",  # JSON string com bordas
     alerta: str = None,
     revisao: str = None,
     current_user: User = Depends(get_current_active_user)
@@ -143,18 +142,23 @@ async def generate_pdf(
         Arquivo PDF para download
     """
     try:
-        # Ler e parsear arquivo
+        # Parse do arquivo
         content = await file.read()
         content_str = content.decode('utf-8', errors='ignore')
         nome_peca = file.filename.replace('.mpr', '').replace('.MPR', '')
         peca = parse_furacao(content_str, nome_peca)
         
+        # Parse das bordas JSON
+        try:
+            bordas_dict = json.loads(bordas) if bordas else {}
+        except:
+            bordas_dict = {}
+        
         # Dados adicionais
         dados_adicionais = {
             'angulo_rotacao': angulo_rotacao,
             'espelhar_peca': espelhar_peca,
-            'posicao_borda_comprimento': posicao_borda_comprimento,
-            'posicao_borda_largura': posicao_borda_largura,
+            'bordas': bordas_dict,  # ← Novo formato!
             'alerta': alerta,
             'revisao': revisao
         }
