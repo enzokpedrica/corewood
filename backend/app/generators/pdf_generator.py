@@ -25,18 +25,19 @@ class GeradorDesenhoTecnico:
             return f"{valor:.1f}"
         
     def calcular_escala(self, largura_peca: float, comprimento_peca: float, 
-                       largura_disponivel: float, altura_disponivel: float) -> float:
+                   largura_disponivel: float, altura_disponivel: float,
+                   margem_seguranca: float = 0.85) -> float:
         """
-        Calcula escala para caber a peça na área disponível
+        Calcula escala inteligente para caber a peça na área disponível
         
         Args:
             largura_peca, comprimento_peca: dimensões em mm
             largura_disponivel, altura_disponivel: espaço disponível em points
+            margem_seguranca: percentual do espaço a usar (0.85 = 85%)
             
         Returns:
-            Fator de escala
+            Fator de escala otimizado
         """
-        # Converter peça para points (1mm = 2.834645669 points)
         largura_peca_pts = largura_peca * mm
         comprimento_peca_pts = comprimento_peca * mm
         
@@ -44,8 +45,16 @@ class GeradorDesenhoTecnico:
         escala_x = largura_disponivel / largura_peca_pts
         escala_y = altura_disponivel / comprimento_peca_pts
         
-        # Usar a menor escala para garantir que caiba
-        escala = min(escala_x, escala_y) * 1  # 100% da escala
+        # Usar a menor escala e aplicar margem de segurança
+        escala = min(escala_x, escala_y) * margem_seguranca
+        
+        # Limitar escala mínima e máxima para evitar extremos
+        escala_minima = 0.1   # Não deixa ficar muito pequeno
+        escala_maxima = 3.0   # Não deixa ficar gigante
+        
+        escala = max(escala_minima, min(escala, escala_maxima))
+        
+        print(f"📐 Escala calculada: {escala:.3f} (peça: {largura_peca}x{comprimento_peca}mm)")
         
         return escala
     
@@ -364,10 +373,20 @@ class GeradorDesenhoTecnico:
         c.setFillColor(colors.black)  # Restaura cor
     
     def desenhar_vista_lateral(self, c: canvas.Canvas, x_origem: float, y_origem: float,
-                            peca: Peca, lado: str, largura_disponivel: float, 
-                            espelhado: bool = False):
-        """Desenha vista lateral da peça mostrando furos horizontais"""
-
+                        peca: Peca, lado: str, largura_disponivel: float, 
+                        altura_disponivel: float, espelhado: bool = False):
+        """
+        Desenha vista lateral da peça mostrando furos horizontais
+        AGORA COM ESCALA DINÂMICA!
+        
+        Args:
+            x_origem, y_origem: posição base da vista
+            peca: dados da peça
+            lado: 'esquerda' ou 'direita'
+            largura_disponivel: espaço horizontal disponível
+            altura_disponivel: espaço vertical disponível
+            espelhado: se a peça foi espelhada
+        """
         print(f"\n🔧 ===== VISTA LATERAL {lado.upper()} =====")
         print(f"🔧 Espelhado: {espelhado}")
         print(f"🔧 Total de furos horizontais na peça: {len(peca.furos_horizontais)}")
@@ -375,24 +394,40 @@ class GeradorDesenhoTecnico:
         espessura_peca = float(peca.dimensoes.espessura)
         altura_peca = float(peca.dimensoes.comprimento)
         
-        # Escala
-        escala = min(
-            largura_disponivel / 100,
-            200 / altura_peca
+        # ===== ESCALA DINÂMICA =====
+        # Calcular escala baseado no espaço disponível
+        escala = self.calcular_escala(
+            largura_peca=espessura_peca,
+            comprimento_peca=altura_peca,
+            largura_disponivel=largura_disponivel,
+            altura_disponivel=altura_disponivel,
+            margem_seguranca=0.8  # 80% do espaço disponível
         )
         
         largura_vista = espessura_peca * mm * escala
         altura_vista = altura_peca * mm * escala
         
-        # Desenhar retângulo
+        # ===== CENTRALIZAR VISTA =====
+        # Centralizar horizontalmente no espaço disponível
+        offset_x = (largura_disponivel - largura_vista) / 2
+        x_origem_centralizado = x_origem + offset_x
+        
+        # Centralizar verticalmente
+        offset_y = (altura_disponivel - altura_vista) / 2
+        y_origem_centralizado = y_origem + offset_y
+        
+        print(f"📐 Vista: {largura_vista:.1f}x{altura_vista:.1f}pts (escala: {escala:.3f})")
+        print(f"📍 Posição centralizada: x={x_origem_centralizado:.1f}, y={y_origem_centralizado:.1f}")
+        
+        # Desenhar retângulo da vista
         c.setStrokeColor(colors.black)
         c.setLineWidth(1)
-        c.rect(x_origem, y_origem, largura_vista, altura_vista, stroke=1, fill=0)
+        c.rect(x_origem_centralizado, y_origem_centralizado, largura_vista, altura_vista, stroke=1, fill=0)
         
-        # Cota da espessura com cotovelo
+        # ===== COTA DA ESPESSURA =====
         if lado == 'esquerda':
-            x_inicio = x_origem + largura_vista
-            y_inicio = y_origem + altura_vista
+            x_inicio = x_origem_centralizado + largura_vista
+            y_inicio = y_origem_centralizado + altura_vista
             x_texto_final = x_inicio + 15
             altura_linha_vertical = 15
             
@@ -412,8 +447,8 @@ class GeradorDesenhoTecnico:
             c.restoreState()
 
         elif lado == 'direita':
-            x_inicio = x_origem
-            y_inicio = y_origem + altura_vista
+            x_inicio = x_origem_centralizado
+            y_inicio = y_origem_centralizado + altura_vista
             x_texto_final = x_inicio - 15
             altura_linha_vertical = 15
             
@@ -432,24 +467,16 @@ class GeradorDesenhoTecnico:
             c.drawCentredString(0, 0, self.formatar_cota(espessura_peca))
             c.restoreState()
         
-        # Filtrar furos do lado correto
+        # ===== FILTRAR E DESENHAR FUROS =====
         furos_lado = [f for f in peca.furos_horizontais 
                     if (lado == 'esquerda' and f.lado in ['XP', 'YP']) or
                         (lado == 'direita' and f.lado in ['XM', 'YM'])]
         
         print(f"🔧 Furos filtrados: {len(furos_lado)}")
-        print("🔧 ANTES de ordenar:")
-        for f in furos_lado:
-            print(f"   Y={f.y}, Z={f.z}, TI={f.profundidade}")
         
-        # SEMPRE ordenar por Y decrescente (maior Y = mais perto do topo)
+        # Ordenar por Y decrescente
         furos_lado = sorted(furos_lado, key=lambda f: float(f.y), reverse=True)
-        print("🔧 Ordenado DECRESCENTE")
         
-        print("🔧 DEPOIS de ordenar:")
-        for f in furos_lado:
-            print(f"   Y={f.y}, Z={f.z}, TI={f.profundidade}")
-
         # Agrupar por Z para cotas
         furos_por_x = {}
         for furo in furos_lado:
@@ -468,10 +495,12 @@ class GeradorDesenhoTecnico:
             y_furo_real = float(furo.y)
             z_furo_real = float(furo.z)
             
-            y_furo_desenho = y_origem + altura_vista - (y_furo_real * mm * escala)
-            x_furo_desenho = x_origem + (z_furo_real * mm * escala)
+            y_furo_desenho = y_origem_centralizado + altura_vista - (y_furo_real * mm * escala)
+            x_furo_desenho = x_origem_centralizado + (z_furo_real * mm * escala)
             
-            raio_furo = 1.3
+            # Raio proporcional à escala (mínimo 1.3, máximo 3)
+            raio_furo = max(1.3, min(3, 1.3 * escala))
+            
             c.setStrokeColor(colors.black)
             c.setFillColor(colors.black)
             c.circle(x_furo_desenho, y_furo_desenho, raio_furo, stroke=1, fill=0)
@@ -481,13 +510,13 @@ class GeradorDesenhoTecnico:
             c.setStrokeColor(colors.HexColor('#A5A6A68A'))
             c.setLineWidth(0.5)
             c.setDash()
-            c.line(x_furo_desenho - raio_furo, y_furo_desenho, x_origem - offset_externo, y_furo_desenho)
+            c.line(x_furo_desenho - raio_furo, y_furo_desenho, x_origem_centralizado - offset_externo, y_furo_desenho)
             c.setDash()
             
             # Texto cota Y
             c.setFont("Helvetica", 14)
             c.setFillColor(colors.HexColor("#000000"))
-            c.drawRightString(x_origem - offset_externo - 8, y_furo_desenho - 2, self.formatar_cota(y_furo_real))
+            c.drawRightString(x_origem_centralizado - offset_externo - 8, y_furo_desenho - 2, self.formatar_cota(y_furo_real))
             
             # Cota Z (só para furo mais próximo do topo)
             if id(furo) in furos_com_cota_z:
@@ -495,13 +524,13 @@ class GeradorDesenhoTecnico:
                 c.setStrokeColor(colors.HexColor('#A5A6A68A'))
                 c.setLineWidth(0.5)
                 c.setDash()
-                c.line(x_furo_desenho, y_furo_desenho + raio_furo, x_furo_desenho, y_origem + altura_vista + offset_topo)
+                c.line(x_furo_desenho, y_furo_desenho + raio_furo, x_furo_desenho, y_origem_centralizado + altura_vista + offset_topo)
                 c.setDash()
                 
                 c.setFont("Helvetica", 14)
                 c.setFillColor(colors.HexColor("#000000"))
                 c.saveState()
-                c.translate(x_furo_desenho, y_origem + altura_vista + offset_topo + 8)
+                c.translate(x_furo_desenho, y_origem_centralizado + altura_vista + offset_topo + 8)
                 c.rotate(90)
                 c.drawCentredString(0, 0, self.formatar_cota(z_furo_real))
                 c.restoreState()
@@ -513,7 +542,7 @@ class GeradorDesenhoTecnico:
                 texto_spec = f"Ø{self.formatar_cota(furo.diametro)}X{self.formatar_cota(furo.profundidade)}"
             
             offset_x = largura_vista + 10
-            x_texto_inicio = x_origem + offset_x
+            x_texto_inicio = x_origem_centralizado + offset_x
             y_texto = y_furo_desenho - 2
             
             # Linha com seta
@@ -1136,10 +1165,12 @@ class GeradorDesenhoTecnico:
         
         # Desenhar vistas laterais (se houver furos horizontais)
         if len(peca.furos_horizontais) > 0:
-            # Calcular posições das 3 vistas
-            y_vistas = self.margem + 50  # Altura das vistas
+            # ===== LAYOUT DAS VISTAS LATERAIS =====
+            y_vistas = self.margem + 50
+            altura_vistas = 200  # Altura disponível para vistas laterais
             
-            largura_vista_lateral = 20  # Largura fixa para cada vista lateral
+            # Largura para cada vista lateral (mais espaço!)
+            largura_vista_lateral = 100  # Aumentado de 20 para 100
             espaco_entre_vistas = 30
             
             # Largura disponível para vista principal (centro)
@@ -1152,17 +1183,28 @@ class GeradorDesenhoTecnico:
             
             # Verificar se foi espelhado
             foi_espelhado = dados_adicionais.get('espelhar_peca', False)
+            
+            print(f"\n📐 LAYOUT VISTAS LATERAIS:")
+            print(f"   Largura disponível por vista: {largura_vista_lateral}pts")
+            print(f"   Altura disponível: {altura_vistas}pts")
 
             # Desenhar vista lateral ESQUERDA
-            self.desenhar_vista_lateral(c, x_vista_esquerda, y_vistas, peca, 'esquerda', 
-                               largura_vista_lateral, foi_espelhado)
+            self.desenhar_vista_lateral(
+                c, x_vista_esquerda, y_vistas, 
+                peca, 'esquerda', 
+                largura_vista_lateral, 
+                altura_vistas,  # ← ADICIONAR altura!
+                foi_espelhado
+            )
             
             # Desenhar vista lateral DIREITA
-            self.desenhar_vista_lateral(c, x_vista_direita, y_vistas, peca, 'direita', 
-                               largura_vista_lateral, foi_espelhado)
-            
-            # A vista principal (topo) já foi desenhada acima, mas pode reposicionar para o centro
-            # TODO: Ajustar posição da vista principal para x_vista_principal
+            self.desenhar_vista_lateral(
+                c, x_vista_direita, y_vistas, 
+                peca, 'direita', 
+                largura_vista_lateral,
+                altura_vistas,  # ← ADICIONAR altura!
+                foi_espelhado
+            )
 
         c.save()
         print(f"PDF gerado: {arquivo_saida}")
