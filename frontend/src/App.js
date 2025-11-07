@@ -15,8 +15,12 @@ function MainApp() {
   const [config, setConfig] = useState({
     angulo_rotacao: 0,
     espelhar_peca: false,
-    posicao_borda_comprimento: null,
-    posicao_borda_largura: null,
+    bordas: {
+      top: null,
+      bottom: null,
+      left: null,
+      right: null
+    },
     revisao: '',
     alerta: ''
   });
@@ -73,8 +77,15 @@ function MainApp() {
     setLoading(true);
 
     try {
-      const pdfBlob = await generatePDF(file, config);
-      
+        // Converter bordas para formato do backend
+      const configParaBackend = {
+        ...config,
+        // Backend ainda espera formato antigo temporariamente
+        posicao_borda_comprimento: config.bordas?.bottom ? 'bottom' : config.bordas?.top ? 'top' : null,
+        posicao_borda_largura: config.bordas?.left ? 'left' : config.bordas?.right ? 'right' : null
+      };
+
+      const pdfBlob = await generatePDF(file, configParaBackend);
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;

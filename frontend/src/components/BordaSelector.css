@@ -1,0 +1,204 @@
+.bordas-selector {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.bordas-selector h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.bordas-hint {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.bordas-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Controles de borda */
+.borda-control {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.borda-label {
+  font-weight: 700;
+  color: #555;
+  min-width: 50px;
+  font-size: 0.85rem;
+}
+
+.borda-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.borda-buttons.vertical {
+  flex-direction: column;
+}
+
+/* Botões de borda */
+.borda-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.borda-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.borda-btn.btn-cor {
+  border-color: #2FFF00;
+  color: #1a8000;
+}
+
+.borda-btn.btn-cor:hover {
+  background: #f0fff0;
+}
+
+.borda-btn.btn-cor.active {
+  background: #2FFF00;
+  color: white;
+  border-color: #2FFF00;
+  box-shadow: 0 0 10px rgba(47, 255, 0, 0.3);
+}
+
+.borda-btn.btn-pardo {
+  border-color: #FF8C00;
+  color: #cc6600;
+}
+
+.borda-btn.btn-pardo:hover {
+  background: #fff5e6;
+}
+
+.borda-btn.btn-pardo.active {
+  background: #FF8C00;
+  color: white;
+  border-color: #FF8C00;
+  box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
+}
+
+/* Posicionamento específico */
+.borda-top,
+.borda-bottom {
+  justify-content: center;
+}
+
+.bordas-middle {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.borda-left,
+.borda-right {
+  flex-direction: column;
+}
+
+/* Peça central */
+.peca-central {
+  width: 200px;
+  height: 150px;
+  background: #f8f9fa;
+  border: 3px solid #ddd;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.peca-info {
+  text-align: center;
+}
+
+.peca-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.peca-info p {
+  margin: 0;
+  font-weight: 700;
+  color: #666;
+  font-size: 1.2rem;
+}
+
+/* Bordas visuais na peça central */
+.peca-central.borda-cor {
+  border-top-color: #2FFF00;
+  border-top-width: 5px;
+}
+
+.peca-central.borda-pardo {
+  border-top-color: #FF8C00;
+  border-top-width: 5px;
+}
+
+/* Resumo */
+.bordas-summary {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #0066CC;
+}
+
+.bordas-summary p {
+  margin: 0;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.bordas-summary strong {
+  color: #0066CC;
+}
+
+.no-bordas {
+  color: #999 !important;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bordas-middle {
+    flex-direction: column;
+  }
+  
+  .peca-central {
+    width: 150px;
+    height: 120px;
+  }
+  
+  .borda-left,
+  .borda-right {
+    flex-direction: row;
+  }
+  
+  .borda-buttons.vertical {
+    flex-direction: row;
+  }
+}

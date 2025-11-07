@@ -1,5 +1,6 @@
 import React from 'react';
 import './ConfigForm.css';
+import BordasSelector from './BordasSelector';
 
 function ConfigForm({ config, onChange }) {
   const handleChange = (field, value) => {
@@ -41,7 +42,7 @@ function ConfigForm({ config, onChange }) {
         </label>
       </div>
 
-      {/* Bordas */}
+      {/* Bordas
       <div className="form-group">
         <label>Borda Comprimento (Horizontal)</label>
         <select 
@@ -64,7 +65,13 @@ function ConfigForm({ config, onChange }) {
           <option value="left">Esquerda</option>
           <option value="right">Direita</option>
         </select>
-      </div>
+      </div>*/}
+
+      {/* Bordas - Novo Seletor Visual */}
+      <BordasSelector 
+        bordas={config.bordas || { top: null, bottom: null, left: null, right: null }}
+        onChange={(novasBordas) => handleChange('bordas', novasBordas)}
+      />
 
       {/* Revisão */}
       <div className="form-group">
