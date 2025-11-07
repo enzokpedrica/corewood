@@ -1017,7 +1017,6 @@ class GeradorDesenhoTecnico:
         
        # Desenhar bordas coloridas se configurado
         if dados_adicionais:
-            # Pegar bordas originais
             # Pegar bordas originais (novo formato)
             bordas_originais = dados_adicionais.get('bordas', {
                 'top': None,
@@ -1040,6 +1039,10 @@ class GeradorDesenhoTecnico:
             print(f"🔄 Transformação: ângulo={angulo}°, espelhado={espelhado}")
             print(f"🎨 Bordas TRANSFORMADAS: {bordas_config}")
             
+            print("DEBUG:: BORDAS RECEBIDAS =>", bordas_originais)
+            print("DEBUG:: BORDAS TRANSFORMADAS =>", bordas_config)
+            print("DEBUG:: CHAVES TRANSFORMADAS =>", list(bordas_config.keys()))
+
             # Desenhar se tiver pelo menos uma borda
             if bordas_config['comprimento'] or bordas_config['largura']:
                 self.desenhar_bordas_batente(c, x_origem, y_origem, 
