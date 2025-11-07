@@ -1018,10 +1018,17 @@ class GeradorDesenhoTecnico:
        # Desenhar bordas coloridas se configurado
         if dados_adicionais:
             # Pegar bordas originais
-            bordas_originais = {
-                'comprimento': dados_adicionais.get('posicao_borda_comprimento'),
-                'largura': dados_adicionais.get('posicao_borda_largura')
-            }
+            # Pegar bordas originais (novo formato)
+            bordas_originais = dados_adicionais.get('bordas', {
+                'top': None,
+                'bottom': None,
+                'left': None,
+                'right': None
+            })
+
+            # Garantir que bordas_originais é um dict válido
+            if not isinstance(bordas_originais, dict):
+                bordas_originais = {'top': None, 'bottom': None, 'left': None, 'right': None}
             
             # Transformar bordas baseado em rotação/espelhamento
             angulo = dados_adicionais.get('angulo_rotacao', 0)
