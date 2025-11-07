@@ -1,13 +1,3 @@
-> Borda precisa selecionar antes
-	> Seleção de borda pode ocorrer em mais de uma
-		> Selecionar na Cor ou Pardo
-
-* Uma vez que temos a peça original, como de fato será, precisa salvar para quando for feita alguma ação de giro ou espelhamento as bordas acompanharem
-
-> Ações da peça
-	> Girar
-	> Verificar Espelhamento
-
 > Evitar sobreposição de cotas
 	> Cota da vista principal que sai pra esquerda e topo
 	> Cota de furos na vista principal
