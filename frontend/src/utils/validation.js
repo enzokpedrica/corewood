@@ -65,17 +65,31 @@ export const validateConfig = (config) => {
     errors.push('Ângulo de rotação inválido');
   }
 
-  // Validar bordas
+  // Validar bordas (novo formato)
+if (config.bordas) {
+  const validBordas = [null, 'cor', 'pardo'];
+  const lados = ['top', 'bottom', 'left', 'right'];
+  
+  for (const lado of lados) {
+    if (config.bordas[lado] && !validBordas.includes(config.bordas[lado])) {
+      errors.push(`Tipo de borda inválido no lado: ${lado}`);
+    }
+  }
+}
+
+// Validar formato antigo (retrocompatibilidade)
+if (config.posicao_borda_comprimento || config.posicao_borda_largura) {
   const validBordaComp = [null, '', 'top', 'bottom'];
   const validBordaLarg = [null, '', 'left', 'right'];
   
-  if (!validBordaComp.includes(config.posicao_borda_comprimento)) {
+  if (config.posicao_borda_comprimento && !validBordaComp.includes(config.posicao_borda_comprimento)) {
     errors.push('Posição de borda comprimento inválida');
   }
   
-  if (!validBordaLarg.includes(config.posicao_borda_largura)) {
+  if (config.posicao_borda_largura && !validBordaLarg.includes(config.posicao_borda_largura)) {
     errors.push('Posição de borda largura inválida');
   }
+}
 
   // Validar revisão
   if (config.revisao && config.revisao.length > 20) {
