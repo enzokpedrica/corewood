@@ -1044,11 +1044,22 @@ class GeradorDesenhoTecnico:
             print("DEBUG:: CHAVES TRANSFORMADAS =>", list(bordas_config.keys()))
 
             # Desenhar se tiver pelo menos uma borda
-            if bordas_config['comprimento'] or bordas_config['largura']:
-                self.desenhar_bordas_batente(c, x_origem, y_origem, 
-                                            largura_desenhada, altura_desenhada, 
-                                            bordas_config)
+            if any([
+                bordas_config.get('top'),
+                bordas_config.get('bottom'),
+                bordas_config.get('left'),
+                bordas_config.get('right')
+            ]):
+                self.desenhar_bordas_batente(
+                    c,
+                    x_origem,
+                    y_origem,
+                    largura_desenhada,
+                    altura_desenhada,
+                    bordas_config
+                )
                 print("✓ Bordas desenhadas no PDF!")
+
     
 
         # Desenhar cotas principais (MESMO ESTILO das cotas dos furos)
