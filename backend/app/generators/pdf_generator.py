@@ -883,38 +883,57 @@ class GeradorDesenhoTecnico:
 
     
     def desenhar_bordas_batente(self, c: canvas.Canvas, x_origem: float, y_origem: float,
-                           largura: float, altura: float, bordas: dict):
+                       largura: float, altura: float, bordas: dict):
         """
-        Desenha bordas com cor destacada para indicar onde encostar no batente
+        Desenha bordas com cor destacada (verde=COR, laranja=PARDO)
+        Suporta múltiplas bordas (1, 2, 3 ou 4 lados)
+        
+        Args:
+            bordas: {'top': 'cor'/'pardo'/None, 'bottom': ..., 'left': ..., 'right': ...}
         """
         print(f"🔧 Desenhando bordas: {bordas}")
         
-        cor_borda = colors.HexColor("#2FFF00")  # Laranja forte
-        espessura = 1.5  # Linha grossa para destacar
+        espessura = 3  # Linha grossa para destacar
         
-        c.setStrokeColor(cor_borda)
-        c.setLineWidth(espessura)
+        # Mapear cores
+        cores = {
+            'cor': colors.HexColor("#2FFF00"),     # Verde
+            'pardo': colors.HexColor("#FF8C00")    # Laranja
+        }
         
-        # Borda COMPRIMENTO (horizontal)
-        if bordas.get('comprimento') == 'bottom':
-            print("   → Borda EMBAIXO")
-            c.line(x_origem, y_origem, x_origem + largura, y_origem)
-
-            
-        elif bordas.get('comprimento') == 'top':
-            print("   → Borda EM CIMA")
+        # Desenhar cada borda se existir
+        
+        # TOPO
+        if bordas.get('top'):
+            cor = cores.get(bordas['top'], colors.HexColor("#2FFF00"))
+            c.setStrokeColor(cor)
+            c.setLineWidth(espessura)
             c.line(x_origem, y_origem + altura, x_origem + largura, y_origem + altura)
-            
+            print(f"   → Borda {bordas['top'].upper()} no TOPO")
         
-        # Borda LARGURA (vertical)
-        if bordas.get('largura') == 'left':
-            print("   → Borda ESQUERDA")
+        # BAIXO
+        if bordas.get('bottom'):
+            cor = cores.get(bordas['bottom'], colors.HexColor("#2FFF00"))
+            c.setStrokeColor(cor)
+            c.setLineWidth(espessura)
+            c.line(x_origem, y_origem, x_origem + largura, y_origem)
+            print(f"   → Borda {bordas['bottom'].upper()} EMBAIXO")
+        
+        # ESQUERDA
+        if bordas.get('left'):
+            cor = cores.get(bordas['left'], cores['cor'])
+            c.setStrokeColor(cor)
+            c.setLineWidth(espessura)
             c.line(x_origem, y_origem, x_origem, y_origem + altura)
-
-            
-        elif bordas.get('largura') == 'right':
-            print("   → Borda DIREITA")
+            print(f"   → Borda {bordas['left'].upper()} na ESQUERDA")
+        
+        # DIREITA
+        if bordas.get('right'):
+            cor = cores.get(bordas['right'], cores['cor'])
+            c.setStrokeColor(cor)
+            c.setLineWidth(espessura)
             c.line(x_origem + largura, y_origem, x_origem + largura, y_origem + altura)
+            print(f"   → Borda {bordas['right'].upper()} na DIREITA")
         
         # Restaurar cores padrão
         c.setStrokeColor(colors.black)
@@ -1130,77 +1149,61 @@ class GeradorDesenhoTecnico:
     def transformar_bordas(self, bordas: dict, angulo: int, espelhado: bool) -> dict:
         """
         Transforma posições das bordas baseado em rotação/espelhamento
+        Agora suporta múltiplas bordas com tipos (cor/pardo)
         
         Args:
-            bordas: {'comprimento': 'top/bottom', 'largura': 'left/right'}
+            bordas: {'top': 'cor'/'pardo'/None, 'bottom': ..., 'left': ..., 'right': ...}
             angulo: 0, 90, 180, 270
             espelhado: True/False
             
         Returns:
-            Bordas transformadas
+            Bordas transformadas com mesma estrutura
         """
-        comp = bordas.get('comprimento')
-        larg = bordas.get('largura')
+        if not bordas or not isinstance(bordas, dict):
+            return {'top': None, 'bottom': None, 'left': None, 'right': None}
         
-        # Aplicar espelhamento PRIMEIRO (se houver)
-        if espelhado and comp:
-            # Espelhar inverte top <-> bottom
-            comp = 'bottom' if comp == 'top' else 'top' if comp == 'bottom' else comp
+        top = bordas.get('top')
+        bottom = bordas.get('bottom')
+        left = bordas.get('left')
+        right = bordas.get('right')
+        
+        # Aplicar espelhamento PRIMEIRO (inverte top <-> bottom)
+        if espelhado:
+            top, bottom = bottom, top
         
         # Aplicar rotação
         if angulo == 90:
-            # 90° horário: comprimento vira largura, largura vira comprimento
-            novo_comp = None
-            novo_larg = None
-            
-            if comp == 'bottom':
-                novo_larg = 'left'
-            elif comp == 'top':
-                novo_larg = 'right'
-                
-            if larg == 'left':
-                novo_comp = 'top'
-            elif larg == 'right':
-                novo_comp = 'bottom'
-                
-            return {'comprimento': novo_comp, 'largura': novo_larg}
-            
+            # 90° horário: top→right, right→bottom, bottom→left, left→top
+            return {
+                'top': left,
+                'right': top,
+                'bottom': right,
+                'left': bottom
+            }
         elif angulo == 180:
-            # 180°: inverte tudo
-            novo_comp = None
-            novo_larg = None
-            
-            if comp == 'bottom':
-                novo_comp = 'top'
-            elif comp == 'top':
-                novo_comp = 'bottom'
-                
-            if larg == 'left':
-                novo_larg = 'right'
-            elif larg == 'right':
-                novo_larg = 'left'
-                
-            return {'comprimento': novo_comp, 'largura': novo_larg}
-            
+            # 180°: inverte opostos
+            return {
+                'top': bottom,
+                'bottom': top,
+                'left': right,
+                'right': left
+            }
         elif angulo == 270:
-            # 270° horário
-            novo_comp = None
-            novo_larg = None
-            
-            if comp == 'bottom':
-                novo_larg = 'right'
-            elif comp == 'top':
-                novo_larg = 'left'
-                
-            if larg == 'left':
-                novo_comp = 'bottom'
-            elif larg == 'right':
-                novo_comp = 'top'
-                
-            return {'comprimento': novo_comp, 'largura': novo_larg}
+            # 270° horário: top→left, left→bottom, bottom→right, right→top
+            return {
+                'top': right,
+                'left': top,
+                'bottom': left,
+                'right': bottom
+            }
         
         # 0° ou sem rotação
-        return {'comprimento': comp, 'largura': larg}
+        return {
+            'top': top,
+            'bottom': bottom,
+            'left': left,
+            'right': right
+        }
 
 
 if __name__ == "__main__":
