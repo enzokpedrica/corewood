@@ -78,7 +78,7 @@ function MainApp() {
 
     try {
 
-      const pdfBlob = await generatePDF(file, configParaBackend);
+      const pdfBlob = await generatePDF(file, config);
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
