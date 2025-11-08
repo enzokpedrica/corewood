@@ -1015,7 +1015,7 @@ class GeradorDesenhoTecnico:
         # Área disponível para desenho (dividida em duas: topo e lateral)
         y_inicio_desenho = y_pos - 30
 
-        # ===== CALCULAR ESPAÇOS =====
+       # ===== CALCULAR ESPAÇOS =====
         altura_pagina_util = altura_pagina - (2 * self.margem)  # ~550pts
 
         # Distribuição:
@@ -1029,14 +1029,14 @@ class GeradorDesenhoTecnico:
         print(f"   Tabela: {altura_tabela}pts")
 
         largura_disponivel = largura_pagina - 2 * self.margem
-        
+
         # Calcular escala DINÂMICA para vista principal
         escala = self.calcular_escala(
             peca.dimensoes.largura,
             peca.dimensoes.comprimento,
             largura_disponivel,
-            altura_disponivel_vista,  # ← Mudou aqui!
-            margem_seguranca=0.7      # ← 70% do espaço (deixa margem para cotas)
+            altura_vista_principal,  # ← CORRIGIR AQUI!
+            margem_seguranca=0.7     # ← 70% do espaço (deixa margem para cotas)
         )
 
         print(f"📐 Escala vista principal: {escala:.3f}")
