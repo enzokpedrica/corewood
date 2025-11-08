@@ -1049,8 +1049,10 @@ class GeradorDesenhoTecnico:
         # Título da vista principal
         c.setFont("Helvetica", 15)
         c.setFillColor(colors.black)
-        titulo_x = (largura_pagina / 2)
-        titulo_y = y_origem + altura_desenhada + 50  # Mais próximo da vista
+        texto_titulo = "PLANO DE FURAÇÃO"
+        largura_texto = c.stringWidth(texto_titulo, "Helvetica-Bold", 16)
+        titulo_x =  (largura_pagina - largura_texto) / 2
+        titulo_y = y_origem + altura_desenhada + 150  # Mais próximo da vista
         c.drawString(titulo_x, titulo_y, "PLANO DE FURAÇÃO")
 
         # Desenhar peça (vista de topo)
