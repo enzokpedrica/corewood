@@ -1015,15 +1015,20 @@ class GeradorDesenhoTecnico:
         # Área disponível para desenho (dividida em duas: topo e lateral)
         y_inicio_desenho = y_pos - 30
 
-        # Calcular espaço disponível dinamicamente
-        # Deixar espaço para: tabela(80) + vistas laterais(200) + margens(50)
-        espaco_reservado_baixo = 80 + 200 + 50  
-        altura_disponivel_vista = y_inicio_desenho - self.margem - espaco_reservado_baixo
-        largura_disponivel = largura_pagina - 2 * self.margem
+        # ===== CALCULAR ESPAÇOS =====
+        altura_pagina_util = altura_pagina - (2 * self.margem)  # ~550pts
 
-        print(f"\n📐 ESPAÇO DISPONÍVEL PARA VISTA PRINCIPAL:")
-        print(f"   Largura: {largura_disponivel:.1f}pts")
-        print(f"   Altura: {altura_disponivel_vista:.1f}pts")
+        # Distribuição:
+        altura_tabela = 80
+        altura_vistas_laterais = 200
+        altura_vista_principal = altura_pagina_util - altura_tabela - altura_vistas_laterais - 50  # ~220pts
+
+        print(f"\n📐 DISTRIBUIÇÃO DE ESPAÇO:")
+        print(f"   Vista principal: {altura_vista_principal:.1f}pts")
+        print(f"   Vistas laterais: {altura_vistas_laterais}pts")
+        print(f"   Tabela: {altura_tabela}pts")
+
+        largura_disponivel = largura_pagina - 2 * self.margem
         
         # Calcular escala DINÂMICA para vista principal
         escala = self.calcular_escala(
