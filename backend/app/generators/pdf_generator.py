@@ -10,7 +10,7 @@ class GeradorDesenhoTecnico:
     """Gera desenhos técnicos 2D em PDF"""
     
     def __init__(self):
-        self.margem = 15 * mm
+        self.margem = 20 * mm
         self.escala = 1.0  # Será calculada dinamicamente
 
     def formatar_cota(self, valor):
@@ -1046,16 +1046,12 @@ class GeradorDesenhoTecnico:
 
         print(f"📍 Vista principal: x={x_origem:.1f}, y={y_origem:.1f}")
 
-        # Título da vista principal - CENTRALIZADO
-        c.setFont("Helvetica-Bold", 16)  # Fonte maior e negrito
+        # Título da vista principal
+        c.setFont("Helvetica", 15)
         c.setFillColor(colors.black)
-
-        texto_titulo = "PLANO DE FURAÇÃO"
-        largura_texto = c.stringWidth(texto_titulo, "Helvetica-Bold", 16)
-        titulo_x = (largura_pagina - largura_texto) / 2  # Centraliza perfeitamente
-        titulo_y = y_origem + altura_desenhada + 25
-
-        c.drawString(titulo_x, titulo_y, texto_titulo)
+        titulo_x = (largura_pagina / 2)
+        titulo_y = y_origem + altura_desenhada + 50  # Mais próximo da vista
+        c.drawString(titulo_x, titulo_y, "PLANO DE FURAÇÃO")
 
         # Desenhar peça (vista de topo)
         self.desenhar_retangulo_peca(c, x_origem, y_origem, largura_desenhada, altura_desenhada)
