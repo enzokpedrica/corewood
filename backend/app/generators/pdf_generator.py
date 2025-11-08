@@ -586,7 +586,7 @@ class GeradorDesenhoTecnico:
         # Desenhar a imagem do triângulo
         if os.path.exists(caminho_triangulo):
             try:
-                tamanho_triangulo = 135  # Ajuste o tamanho aqui
+                tamanho_triangulo = 120  # Ajuste o tamanho aqui
 
                 x_ajustado = x - 15
                 y_ajustado = y - 15 
@@ -1007,21 +1007,13 @@ class GeradorDesenhoTecnico:
         c = canvas.Canvas(arquivo_saida, pagesize=landscape(A4))
         largura_pagina, altura_pagina = landscape(A4)
         
-        # Informações da peça
-        c.setFont("Helvetica", 10)
-        y_pos = altura_pagina - self.margem - 20
-        y_pos -= 15
-        
-        # Área disponível para desenho (dividida em duas: topo e lateral)
-        y_inicio_desenho = y_pos - 30
-
-       # ===== CALCULAR ESPAÇOS =====
+        # ===== CALCULAR ESPAÇOS =====
         altura_pagina_util = altura_pagina - (2 * self.margem)  # ~550pts
 
         # Distribuição:
         altura_tabela = 80
         altura_vistas_laterais = 150
-        altura_vista_principal = altura_pagina_util - altura_tabela - altura_vistas_laterais - 30  # ~220pts
+        altura_vista_principal = altura_pagina_util - altura_tabela - altura_vistas_laterais - 30
 
         print(f"\n📐 DISTRIBUIÇÃO DE ESPAÇO:")
         print(f"   Vista principal: {altura_vista_principal:.1f}pts")
@@ -1035,26 +1027,32 @@ class GeradorDesenhoTecnico:
             peca.dimensoes.largura,
             peca.dimensoes.comprimento,
             largura_disponivel,
-            altura_vista_principal,  # ← CORRIGIR AQUI!
-            margem_seguranca=0.75     # ← 70% do espaço (deixa margem para cotas)
+            altura_vista_principal,
+            margem_seguranca=0.75
         )
 
         print(f"📐 Escala vista principal: {escala:.3f}")
-        
+
         # Dimensões da peça em escala
         largura_desenhada = peca.dimensoes.largura * mm * escala
         altura_desenhada = peca.dimensoes.comprimento * mm * escala
-        
-        # Centralizar desenho principal (vista de topo)
-        y_origem_principal = self.margem + 300
+
+        # Posição Y da vista principal (acima das vistas laterais)
+        y_origem_principal = self.margem + altura_tabela + altura_vistas_laterais + 50
+
+        # Centralizar horizontalmente
         x_origem = self.margem + (largura_disponivel - largura_desenhada) / 2
         y_origem = y_origem_principal
-        
+
+        print(f"📍 Vista principal: x={x_origem:.1f}, y={y_origem:.1f}")
+
         # Título da vista principal
         c.setFont("Helvetica", 15)
         c.setFillColor(colors.black)
-        c.drawString((largura_pagina / 2) - 100, y_origem + altura_desenhada + 100, "PLANO DE FURAÇÃO")
-        
+        titulo_x = (largura_pagina / 2) - 100
+        titulo_y = y_origem + altura_desenhada + 20  # Mais próximo da vista
+        c.drawString(titulo_x, titulo_y, "PLANO DE FURAÇÃO")
+
         # Desenhar peça (vista de topo)
         self.desenhar_retangulo_peca(c, x_origem, y_origem, largura_desenhada, altura_desenhada)
         
