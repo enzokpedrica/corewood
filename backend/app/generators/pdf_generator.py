@@ -1182,8 +1182,8 @@ class GeradorDesenhoTecnico:
             altura_vistas = 200  # Altura disponível para vistas laterais
             
             # Largura para cada vista lateral (mais espaço!)
-            largura_vista_lateral = 100  # Aumentado de 20 para 100
-            espaco_entre_vistas = 30
+            largura_vista_lateral = 80  # Aumentado de 20 para 100
+            espaco_entre_vistas = 20
             
             # Largura disponível para vista principal (centro)
             largura_vista_principal = largura_pagina - (2 * self.margem) - (2 * largura_vista_lateral) - (2 * espaco_entre_vistas)
