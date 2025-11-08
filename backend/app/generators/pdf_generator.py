@@ -1020,8 +1020,8 @@ class GeradorDesenhoTecnico:
 
         # Distribuição:
         altura_tabela = 80
-        altura_vistas_laterais = 200
-        altura_vista_principal = altura_pagina_util - altura_tabela - altura_vistas_laterais - 50  # ~220pts
+        altura_vistas_laterais = 150
+        altura_vista_principal = altura_pagina_util - altura_tabela - altura_vistas_laterais - 30  # ~220pts
 
         print(f"\n📐 DISTRIBUIÇÃO DE ESPAÇO:")
         print(f"   Vista principal: {altura_vista_principal:.1f}pts")
@@ -1036,7 +1036,7 @@ class GeradorDesenhoTecnico:
             peca.dimensoes.comprimento,
             largura_disponivel,
             altura_vista_principal,  # ← CORRIGIR AQUI!
-            margem_seguranca=0.7     # ← 70% do espaço (deixa margem para cotas)
+            margem_seguranca=0.75     # ← 70% do espaço (deixa margem para cotas)
         )
 
         print(f"📐 Escala vista principal: {escala:.3f}")
