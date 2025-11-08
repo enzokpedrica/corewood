@@ -1188,16 +1188,16 @@ class GeradorDesenhoTecnico:
             # Largura disponível para vista principal (centro)
             largura_vista_principal = largura_pagina - (2 * self.margem) - (2 * largura_vista_lateral) - (2 * espaco_entre_vistas)
             
-            # Calcular deslocamento se tiver alerta (para não sobrepor o triângulo)
-            offset_alerta = 0
-            if dados_adicionais and dados_adicionais.get('alerta'):
-                offset_alerta = 120  # Desloca para não sobrepor o triângulo de atenção
-                print(f"⚠️ Alerta detectado: deslocando vistas {offset_alerta}pts para direita")
-
-            # Posições X COM deslocamento
-            x_vista_esquerda = self.margem + 30 + offset_alerta
+            # Posições BASE (sem alerta)
+            x_vista_esquerda = self.margem + 30
             x_vista_principal = x_vista_esquerda + largura_vista_lateral + espaco_entre_vistas
-            x_vista_direita = x_vista_principal + largura_vista_principal + espaco_entre_vistas - 20
+            x_vista_direita = x_vista_principal + largura_vista_principal + espaco_entre_vistas
+
+            # Se tiver alerta, desloca APENAS a vista esquerda
+            if dados_adicionais and dados_adicionais.get('alerta'):
+                offset_alerta = 120
+                print(f"⚠️ Alerta detectado: deslocando APENAS vista esquerda {offset_alerta}pts")
+                x_vista_esquerda += offset_alerta  # Só a esquerda se move!
             
             # Verificar se foi espelhado
             foi_espelhado = dados_adicionais.get('espelhar_peca', False)
