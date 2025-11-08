@@ -297,10 +297,10 @@ class GeradorDesenhoTecnico:
         # Adicionar texto com especificações
         if furo.profundidade == 0:
             c.setFont("Helvetica", 12)
-            texto = f"Ø{int(furo.diametro)}"
+            texto = f"Ø{self.formatar_cota(furo.diametro)}"
         else:
             c.setFont("Helvetica", 12)
-            texto = f"Ø{int(furo.diametro)}X{furo.profundidade:.1f}"
+            texto = f"Ø{self.formatar_cota(furo.diametro)}X{self.formatar_cota(furo.profundidade)}"
         
         # Posicionar texto ao lado do furo
         offset_x = raio * 8.5
@@ -1047,13 +1047,13 @@ class GeradorDesenhoTecnico:
         print(f"📍 Vista principal: x={x_origem:.1f}, y={y_origem:.1f}")
 
         # Título da vista principal - CENTRALIZADO
-        c.setFont("Helvetica-Bold", 16)  # Fonte maior e negrito
+        c.setFont("Helvetica", 16)  # Fonte maior e negrito
         c.setFillColor(colors.black)
 
         texto_titulo = "PLANO DE FURAÇÃO"
         largura_texto = c.stringWidth(texto_titulo, "Helvetica-Bold", 16)
         titulo_x = (largura_pagina - largura_texto) / 2  # Centraliza perfeitamente
-        titulo_y = y_origem + altura_desenhada + 100
+        titulo_y = y_origem + altura_desenhada + 90
 
         c.drawString(titulo_x, titulo_y, texto_titulo)
 
