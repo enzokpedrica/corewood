@@ -1046,14 +1046,16 @@ class GeradorDesenhoTecnico:
 
         print(f"📍 Vista principal: x={x_origem:.1f}, y={y_origem:.1f}")
 
-        # Título da vista principal
-        c.setFont("Helvetica", 15)
+        # Título da vista principal - CENTRALIZADO
+        c.setFont("Helvetica-Bold", 16)  # Fonte maior e negrito
         c.setFillColor(colors.black)
+
         texto_titulo = "PLANO DE FURAÇÃO"
         largura_texto = c.stringWidth(texto_titulo, "Helvetica-Bold", 16)
-        titulo_x =  (largura_pagina - largura_texto) / 2
-        titulo_y = y_origem + altura_desenhada + 150  # Mais próximo da vista
-        c.drawString(titulo_x, titulo_y, "PLANO DE FURAÇÃO")
+        titulo_x = (largura_pagina - largura_texto) / 2  # Centraliza perfeitamente
+        titulo_y = y_origem + altura_desenhada + 25
+
+        c.drawString(titulo_x, titulo_y, texto_titulo)
 
         # Desenhar peça (vista de topo)
         self.desenhar_retangulo_peca(c, x_origem, y_origem, largura_desenhada, altura_desenhada)
