@@ -157,6 +157,9 @@ async def generate_pdf_batch(
                 print(f"\n📄 [{idx}/{len(files)}] Processando: {file.filename}")
                 
                 try:
+                    if config_dict is None or not isinstance(config_dict, dict):
+                        print(f"   ⚠️ Config inválida, usando padrão")
+                        config_dict = {}
                     # Ler arquivo
                     content = await file.read()
                     content_str = content.decode('utf-8', errors='ignore')
@@ -165,8 +168,8 @@ async def generate_pdf_batch(
                     # Parse da peça
                     peca = parse_furacao(content_str, nome_peca)
                     
-                    # Parse das bordas
-                    bordas_dict = config_dict.get('bordas', {})
+                    # Parse das bordas com segurança
+                    bordas_dict = config_dict.get('bordas', {}) if config_dict else {}
                     
                     # Dados adicionais
                     dados_adicionais = {
