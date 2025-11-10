@@ -27,21 +27,7 @@ function MainApp() {
     alerta: ''
   });
   const { user, logout } = useAuth();
-
-  const handleFileSelect = (selectedFile) => {
-    setFile(selectedFile);
-
-    if (selectedFile) {
-      const validation = validateMPRFile(selectedFile);
-      
-      if (!validation.valid) {
-        setError(`Erro no arquivo:\n• ${formatErrors(validation.errors)}`);
-        setFile(null);
-      } else if (validation.warnings.length > 0) {
-        setWarning(`Atenção:\n• ${formatWarnings(validation.warnings)}`);
-      }
-    }
-  };
+  
   return (
     <div className="app">
       <header className="app-header">
