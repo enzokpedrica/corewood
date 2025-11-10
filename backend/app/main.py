@@ -16,6 +16,7 @@ from .routes import auth
 from .core.auth import get_current_active_user
 from .models.user import User
 import json
+import tempfile
 
 # Criar tabelas no banco
 Base.metadata.create_all(bind=engine)
@@ -186,15 +187,30 @@ async def generate_pdf_batch(
 
                     print(f"   🔧 dados_adicionais: {dados_adicionais}")
                     
+
                     # Gerar PDF
                     gerador = GeradorDesenhoTecnico()
                     print(f"   🎨 Gerando PDF...")
-                    pdf_bytes = gerador.gerar_pdf(peca, dados_adicionais)
-                    
+
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_pdf:
+                        pdf_temp_path = tmp_pdf.name
+
+                    # Gerar PDF
+                    gerador.gerar_pdf(peca, pdf_temp_path, dados_adicionais)
+
+                    # Ler conteúdo do PDF
+                    with open(pdf_temp_path, 'rb') as pdf_file:
+                        pdf_content = pdf_file.read()
+
+                    # Limpar arquivo temporário
+                    import os
+                    os.unlink(pdf_temp_path)
+
                     # Adicionar ao ZIP
                     nome_pdf = f"{nome_peca}_furacao.pdf"
-                    zip_file.writestr(nome_pdf, pdf_bytes.getvalue())
-                    
+                    print(f"   📦 PDF gerado: {len(pdf_content)} bytes")
+                    zip_file.writestr(nome_pdf, pdf_content)
+
                     print(f"   ✅ {nome_pdf} adicionado ao ZIP")
                     
                 except Exception as e:
