@@ -4,7 +4,8 @@ CoreWood API - FastAPI Application
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
+from typing import List
 import tempfile
 import os
 from pathlib import Path
@@ -116,6 +117,97 @@ async def parse_mpr(
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erro ao processar arquivo: {str(e)}")
+    
+@app.post("/generate-pdf-batch")
+async def generate_pdf_batch(
+    files: List[UploadFile] = File(...),
+    configs: str = Form(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Gera múltiplos PDFs em lote e retorna um arquivo ZIP
+    """
+    import json
+    import zipfile
+    from io import BytesIO
+    
+    try:
+        # Parse das configurações
+        configs_list = json.loads(configs)
+        
+        if len(files) != len(configs_list):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Número de arquivos ({len(files)}) não corresponde ao número de configurações ({len(configs_list)})"
+            )
+        
+        print(f"\n🔄 ===== PROCESSAMENTO EM LOTE =====")
+        print(f"📦 Total de arquivos: {len(files)}")
+        print(f"👤 Usuário: {current_user.username}")
+        
+        # Criar ZIP em memória
+        zip_buffer = BytesIO()
+        
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            
+            for idx, (file, config_dict) in enumerate(zip(files, configs_list), 1):
+                print(f"\n📄 [{idx}/{len(files)}] Processando: {file.filename}")
+                
+                try:
+                    # Ler arquivo
+                    content = await file.read()
+                    content_str = content.decode('utf-8', errors='ignore')
+                    nome_peca = file.filename.replace('.mpr', '').replace('.MPR', '')
+                    
+                    # Parse da peça
+                    peca = parse_furacao(content_str, nome_peca)
+                    
+                    # Parse das bordas
+                    bordas_dict = config_dict.get('bordas', {})
+                    
+                    # Dados adicionais
+                    dados_adicionais = {
+                        'angulo_rotacao': config_dict.get('angulo_rotacao', 0),
+                        'espelhar_peca': config_dict.get('espelhar_peca', False),
+                        'bordas': bordas_dict,
+                        'alerta': config_dict.get('alerta'),
+                        'revisao': config_dict.get('revisao')
+                    }
+                    
+                    # Gerar PDF
+                    gerador = GeradorDesenhoTecnico()
+                    pdf_bytes = gerador.gerar_pdf(peca, dados_adicionais)
+                    
+                    # Adicionar ao ZIP
+                    nome_pdf = f"{nome_peca}_furacao.pdf"
+                    zip_file.writestr(nome_pdf, pdf_bytes.getvalue())
+                    
+                    print(f"   ✅ {nome_pdf} adicionado ao ZIP")
+                    
+                except Exception as e:
+                    print(f"   ❌ Erro ao processar {file.filename}: {str(e)}")
+                    # Continuar processando os outros arquivos
+                    continue
+        
+        # Preparar resposta
+        zip_buffer.seek(0)
+        
+        print(f"\n✅ ZIP gerado com sucesso!")
+        print(f"📦 Total de PDFs no ZIP: {len(files)}")
+        
+        return StreamingResponse(
+            zip_buffer,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": f"attachment; filename=documentos_tecnicos_{len(files)}_pecas.zip"
+            }
+        )
+        
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Configurações inválidas")
+    except Exception as e:
+        print(f"❌ Erro no processamento em lote: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao processar lote: {str(e)}")    
 
 @app.post("/generate-pdf")
 async def generate_pdf(

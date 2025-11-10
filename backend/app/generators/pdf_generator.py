@@ -922,7 +922,7 @@ class GeradorDesenhoTecnico:
         """
         print(f"🔧 Desenhando bordas: {bordas}")
         
-        espessura = 3  # Linha grossa para destacar
+        espessura = 1  # Linha grossa para destacar
         
         # Mapear cores
         cores = {
