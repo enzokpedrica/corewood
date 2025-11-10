@@ -26,11 +26,6 @@ function MainApp() {
     revisao: '',
     alerta: ''
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [warning, setWarning] = useState(null);
-  const [success, setSuccess] = useState(false);
-
   const { user, logout } = useAuth();
 
   const handleFileSelect = (selectedFile) => {
@@ -49,77 +44,7 @@ function MainApp() {
       }
     }
   };
-
-  const handleGeneratePDF = async () => {
-    setError(null);
-    setWarning(null);
-    setSuccess(false);
-
-    if (!file) {
-      setError('Selecione um arquivo MPR primeiro!');
-      return;
-    }
-
-    const fileValidation = validateMPRFile(file);
-    if (!fileValidation.valid) {
-      setError(`Erro no arquivo:\n• ${formatErrors(fileValidation.errors)}`);
-      return;
-    }
-
-    const configValidation = validateConfig(config);
-    if (!configValidation.valid) {
-      setError(`Erro nas configurações:\n• ${formatErrors(configValidation.errors)}`);
-      return;
-    }
-
-    if (configValidation.warnings.length > 0) {
-      setWarning(`Atenção:\n• ${formatWarnings(configValidation.warnings)}`);
-    }
-
-    // Validar revisão obrigatória
-    if (!config.revisao || config.revisao.trim() === '') {
-      setError('Revisão é obrigatória!');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-
-      const pdfBlob = await generatePDF(file, config);
-      const url = window.URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${file.name.replace('.mpr', '').replace('.MPR', '')}_furacao.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 5000);
-    } catch (err) {
-      console.error('Erro ao gerar PDF:', err);
-      
-      let errorMsg = 'Erro ao gerar PDF. ';
-      
-      if (err.response) {
-        errorMsg += `Código: ${err.response.status}. `;
-        if (err.response.data?.detail) {
-          errorMsg += err.response.data.detail;
-        }
-      } else if (err.request) {
-        errorMsg += 'Não foi possível conectar à API. Verifique sua conexão.';
-      } else {
-        errorMsg += err.message;
-      }
-      
-      setError(errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
-    return (
+  return (
     <div className="app">
       <header className="app-header">
         <div className="container">
@@ -210,7 +135,6 @@ function MainApp() {
   );
 }
 function App() {
-  const [modoLote, setModoLote] = useState(false);
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
