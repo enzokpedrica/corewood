@@ -157,19 +157,23 @@ async def generate_pdf_batch(
                 print(f"\n📄 [{idx}/{len(files)}] Processando: {file.filename}")
                 
                 try:
-                    if config_dict is None or not isinstance(config_dict, dict):
-                        print(f"   ⚠️ Config inválida, usando padrão")
-                        config_dict = {}
+                    # if config_dict is None or not isinstance(config_dict, dict):
+                    #     print(f"   ⚠️ Config inválida, usando padrão")
+                    #     config_dict = {}
                     # Ler arquivo
                     content = await file.read()
                     content_str = content.decode('utf-8', errors='ignore')
                     nome_peca = file.filename.replace('.mpr', '').replace('.MPR', '')
+
+                    print(f"   📝 Nome peça: {nome_peca}")
                     
                     # Parse da peça
                     peca = parse_furacao(content_str, nome_peca)
+                    print(f"   ✅ Peça parseada: {peca is not None}")  # ← ADICIONAR
+                    print(f"   📐 Dimensões: {peca.dimensoes if peca else 'None'}")
                     
-                    # Parse das bordas com segurança
-                    bordas_dict = config_dict.get('bordas', {}) if config_dict else {}
+                    # Parse das bordas
+                    bordas_dict = config_dict.get('bordas', {})
                     
                     # Dados adicionais
                     dados_adicionais = {
@@ -179,9 +183,12 @@ async def generate_pdf_batch(
                         'alerta': config_dict.get('alerta'),
                         'revisao': config_dict.get('revisao')
                     }
+
+                    print(f"   🔧 dados_adicionais: {dados_adicionais}")
                     
                     # Gerar PDF
                     gerador = GeradorDesenhoTecnico()
+                    print(f"   🎨 Gerando PDF...")
                     pdf_bytes = gerador.gerar_pdf(peca, dados_adicionais)
                     
                     # Adicionar ao ZIP
