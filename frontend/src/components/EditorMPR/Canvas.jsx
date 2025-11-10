@@ -4,15 +4,12 @@ import './Canvas.css';
 function Canvas({ peca, onAddFuro, selectedTool }) {
   const canvasRef = useRef(null);
   const [scale, setScale] = useState(1);
-  const [offset, setOffset] = useState({ x: 50, y: 50 });
+  const [offset] = useState({ x: 50, y: 50 });
 
   // Constantes
   const PIXELS_PER_MM = 2; // 2 pixels = 1mm (escala visual)
 
-  useEffect(() => {
-    drawCanvas();
-  }, [peca, scale, offset]);
-
+useEffect(() => {
   const drawCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -39,6 +36,9 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
       ctx.fillText('Defina as dimensões da peça →', canvas.width / 2, canvas.height / 2);
     }
   };
+
+  drawCanvas();
+}, [peca, scale, offset]); // Agora não precisa de drawCanvas nas deps
 
   const drawGrid = (ctx) => {
     const gridSize = 50; // Grid a cada 50px
