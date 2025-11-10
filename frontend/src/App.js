@@ -6,8 +6,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import FileUpload from './components/FileUpload';
 import ConfigForm from './components/ConfigForm';
-import { generatePDF } from './services/api';
-import { validateMPRFile, validateConfig, formatErrors, formatWarnings } from './utils/validation';
 import './App.css';
 import LoteUpload from './components/LoteUpload';
 
@@ -27,7 +25,11 @@ function MainApp() {
     alerta: ''
   });
   const { user, logout } = useAuth();
-  
+
+  const handleFileSelect = (selectedFile) => {
+    setFile(selectedFile);
+  };
+
   return (
     <div className="app">
       <header className="app-header">
