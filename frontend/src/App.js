@@ -74,6 +74,12 @@ function MainApp() {
       setWarning(`Atenção:\n• ${formatWarnings(configValidation.warnings)}`);
     }
 
+    // Validar revisão obrigatória
+    if (!config.revisao || config.revisao.trim() === '') {
+      setError('Revisão é obrigatória!');
+      return;
+    }
+
     setLoading(true);
 
     try {
