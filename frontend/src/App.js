@@ -119,8 +119,7 @@ function MainApp() {
       setLoading(false);
     }
   };
-  
-  return (
+    return (
     <div className="app">
       <header className="app-header">
         <div className="container">
@@ -210,7 +209,6 @@ function MainApp() {
     </div>
   );
 }
-
 function App() {
   const [modoLote, setModoLote] = useState(false);
   return (
