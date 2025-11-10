@@ -78,10 +78,11 @@ function ConfigForm({ config, onChange }) {
         <label>Revisão</label>
         <input
           type="text"
-          placeholder="Ex: 01, A, 1.0"
+          placeholder="Ex: 01"
           value={config.revisao || ''}
           onChange={(e) => handleChange('revisao', e.target.value)}
-          maxLength={10}
+          maxLength={2}
+          required
         />
       </div>
 
