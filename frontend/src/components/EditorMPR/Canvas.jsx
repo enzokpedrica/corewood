@@ -7,116 +7,100 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
   const [offset] = useState({ x: 50, y: 50 });
 
   // Constantes
-  const PIXELS_PER_MM = 2; // 2 pixels = 1mm (escala visual)
+  const PIXELS_PER_MM = 2;
 
-useEffect(() => {
-  const drawCanvas = () => {
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Fundo
+    const drawGrid = (context) => {
+      const gridSize = 50;
+      context.strokeStyle = '#e0e0e0';
+      context.lineWidth = 1;
+
+      for (let x = 0; x < context.canvas.width; x += gridSize) {
+        context.beginPath();
+        context.moveTo(x, 0);
+        context.lineTo(x, context.canvas.height);
+        context.stroke();
+      }
+
+      for (let y = 0; y < context.canvas.height; y += gridSize) {
+        context.beginPath();
+        context.moveTo(0, y);
+        context.lineTo(context.canvas.width, y);
+        context.stroke();
+      }
+    };
+
+    const drawPeca = (context) => {
+      const larguraPx = peca.largura * PIXELS_PER_MM * scale;
+      const comprimentoPx = peca.comprimento * PIXELS_PER_MM * scale;
+
+      context.fillStyle = '#fff';
+      context.strokeStyle = '#333';
+      context.lineWidth = 3;
+      context.fillRect(offset.x, offset.y, larguraPx, comprimentoPx);
+      context.strokeRect(offset.x, offset.y, larguraPx, comprimentoPx);
+
+      context.font = '14px Arial';
+      context.fillStyle = '#0066CC';
+      context.textAlign = 'center';
+
+      context.fillText(
+        `${peca.largura}mm`,
+        offset.x + larguraPx / 2,
+        offset.y + comprimentoPx + 25
+      );
+
+      context.save();
+      context.translate(offset.x - 15, offset.y + comprimentoPx / 2);
+      context.rotate(-Math.PI / 2);
+      context.fillText(`${peca.comprimento}mm`, 0, 0);
+      context.restore();
+    };
+
+    const drawFuros = (context) => {
+      peca.furos.forEach((furo) => {
+        const x = offset.x + (furo.x * PIXELS_PER_MM * scale);
+        const y = offset.y + (furo.y * PIXELS_PER_MM * scale);
+        const raio = 5;
+
+        context.fillStyle = furo.tipo === 'vertical' ? '#FF6B6B' : '#4ECDC4';
+        context.beginPath();
+        context.arc(x, y, raio, 0, Math.PI * 2);
+        context.fill();
+
+        context.strokeStyle = '#333';
+        context.lineWidth = 1;
+        context.stroke();
+
+        context.font = '10px Arial';
+        context.fillStyle = '#333';
+        context.textAlign = 'center';
+        context.fillText(`Ø${furo.diametro}`, x, y - 10);
+      });
+    };
+
+    // Desenhar
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#f8f9fa';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Grid
     drawGrid(ctx);
 
-    // Peça (se definida)
     if (peca.largura && peca.comprimento) {
       drawPeca(ctx);
       drawFuros(ctx);
     } else {
-      // Mensagem inicial
       ctx.font = '20px Arial';
       ctx.fillStyle = '#999';
       ctx.textAlign = 'center';
       ctx.fillText('Defina as dimensões da peça →', canvas.width / 2, canvas.height / 2);
     }
-  };
-
-  drawCanvas();
-}, [peca, scale, offset]); // Agora não precisa de drawCanvas nas deps
-
-  const drawGrid = (ctx) => {
-    const gridSize = 50; // Grid a cada 50px
-    ctx.strokeStyle = '#e0e0e0';
-    ctx.lineWidth = 1;
-
-    // Linhas verticais
-    for (let x = 0; x < ctx.canvas.width; x += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, ctx.canvas.height);
-      ctx.stroke();
-    }
-
-    // Linhas horizontais
-    for (let y = 0; y < ctx.canvas.height; y += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(ctx.canvas.width, y);
-      ctx.stroke();
-    }
-  };
-
-  const drawPeca = (ctx) => {
-    const larguraPx = peca.largura * PIXELS_PER_MM * scale;
-    const comprimentoPx = peca.comprimento * PIXELS_PER_MM * scale;
-
-    // Retângulo da peça
-    ctx.fillStyle = '#fff';
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 3;
-    ctx.fillRect(offset.x, offset.y, larguraPx, comprimentoPx);
-    ctx.strokeRect(offset.x, offset.y, larguraPx, comprimentoPx);
-
-    // Dimensões (labels)
-    ctx.font = '14px Arial';
-    ctx.fillStyle = '#0066CC';
-    ctx.textAlign = 'center';
-
-    // Largura (embaixo)
-    ctx.fillText(
-      `${peca.largura}mm`,
-      offset.x + larguraPx / 2,
-      offset.y + comprimentoPx + 25
-    );
-
-    // Comprimento (lado)
-    ctx.save();
-    ctx.translate(offset.x - 15, offset.y + comprimentoPx / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText(`${peca.comprimento}mm`, 0, 0);
-    ctx.restore();
-  };
-
-  const drawFuros = (ctx) => {
-    peca.furos.forEach((furo, index) => {
-      const x = offset.x + (furo.x * PIXELS_PER_MM * scale);
-      const y = offset.y + (furo.y * PIXELS_PER_MM * scale);
-      const raio = 5;
-
-      // Círculo do furo
-      ctx.fillStyle = furo.tipo === 'vertical' ? '#FF6B6B' : '#4ECDC4';
-      ctx.beginPath();
-      ctx.arc(x, y, raio, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Borda
-      ctx.strokeStyle = '#333';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Label
-      ctx.font = '10px Arial';
-      ctx.fillStyle = '#333';
-      ctx.textAlign = 'center';
-      ctx.fillText(`Ø${furo.diametro}`, x, y - 10);
-    });
-  };
+  }, [peca, scale, offset, PIXELS_PER_MM]);
 
   const handleCanvasClick = (e) => {
     if (!selectedTool || !peca.largura) return;
@@ -126,7 +110,6 @@ useEffect(() => {
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
-    // Verificar se clicou dentro da peça
     const larguraPx = peca.largura * PIXELS_PER_MM * scale;
     const comprimentoPx = peca.comprimento * PIXELS_PER_MM * scale;
 
@@ -136,15 +119,14 @@ useEffect(() => {
       clickY >= offset.y &&
       clickY <= offset.y + comprimentoPx
     ) {
-      // Converter coordenadas de pixel para mm
       const furoX = (clickX - offset.x) / (PIXELS_PER_MM * scale);
       const furoY = (clickY - offset.y) / (PIXELS_PER_MM * scale);
 
       onAddFuro({
-        x: Math.round(furoX * 10) / 10, // Arredondar para 0.1mm
+        x: Math.round(furoX * 10) / 10,
         y: Math.round(furoY * 10) / 10,
         tipo: selectedTool,
-        diametro: 5, // Padrão
+        diametro: 5,
         profundidade: selectedTool === 'vertical' ? 0 : 11.5,
         lado: selectedTool === 'horizontal' ? 'XP' : null
       });
