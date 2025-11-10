@@ -10,9 +10,10 @@ import LoteUpload from './components/LoteUpload';
 import { generatePDF } from './services/api';
 import { validateMPRFile, validateConfig, formatErrors, formatWarnings } from './utils/validation';
 import './App.css';
+import EditorMPR from './components/EditorMPR/EditorMPR';
 
 function MainApp() {
-  const [modoLote, setModoLote] = useState(false);
+  const [modoLote, setModoLote] = useState('individual');
   const [file, setFile] = useState(null);
   const [config, setConfig] = useState({
     angulo_rotacao: 0,
@@ -124,22 +125,56 @@ function MainApp() {
               <p>Gerador de Documentação Técnica para Indústria Moveleira</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              {/* Toggle modo lote */}
-              <button
-                onClick={() => setModoLote(!modoLote)}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  background: modoLote ? '#667eea' : 'white',
-                  color: modoLote ? 'white' : '#667eea',
-                  border: '2px solid #667eea',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: '600',
-                  transition: 'all 0.3s'
-                }}
-              >
-                {modoLote ? '📄 Modo Individual' : '📦 Modo Lote'}
-              </button>
+              {/* Toggle entre 3 modos */}
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  onClick={() => setModoLote('individual')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: modoLote === 'individual' ? '#667eea' : 'white',
+                    color: modoLote === 'individual' ? 'white' : '#667eea',
+                    border: '2px solid #667eea',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  📄 Individual
+                </button>
+
+                <button
+                  onClick={() => setModoLote('lote')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: modoLote === 'lote' ? '#667eea' : 'white',
+                    color: modoLote === 'lote' ? 'white' : '#667eea',
+                    border: '2px solid #667eea',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  📦 Lote
+                </button>
+
+                <button
+                  onClick={() => setModoLote('editor')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: modoLote === 'editor' ? '#667eea' : 'white',
+                    color: modoLote === 'editor' ? 'white' : '#667eea',
+                    border: '2px solid #667eea',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  ✏️ Editor
+                </button>
+              </div>
               
               <div style={{ textAlign: 'right' }}>
                 <p style={{ marginBottom: '0.5rem', color: '#666' }}>
@@ -167,9 +202,12 @@ function MainApp() {
 
       <main className="app-main">
         <div className="container">
-          {modoLote ? (
+          {modoLote === 'lote' ? (
             // MODO LOTE
             <LoteUpload />
+          ) : modoLote === 'editor' ? (
+            // MODO EDITOR
+            <EditorMPR />
           ) : (
             // MODO INDIVIDUAL
             <div className="content-grid">

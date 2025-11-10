@@ -1,0 +1,23 @@
+Fase 1: MVP (2-3 dias) 🚀
+
+Desenhar retângulo (dimensões)
+Adicionar furos verticais (clique)
+Configurar furo (diâmetro, profundidade)
+Preview visual
+Exportar JSON → MPR
+
+Fase 2: Melhorias (1 semana)
+
+Furos horizontais
+Grid/Snap
+Zoom/Pan
+Undo/Redo
+Templates de peças comuns
+
+Fase 3: Avançado (2 semanas)
+
+Importar MPR existente para editar
+Biblioteca de peças
+Copiar/colar furos
+Medidas automáticas
+Validação de interferências
