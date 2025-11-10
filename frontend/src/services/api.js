@@ -54,4 +54,53 @@ export const generatePDF = async (file, config) => {
   return response.data;
 };
 
+/**
+ * Gerar múltiplos PDFs em lote e retornar ZIP
+ */
+export const generatePDFBatch = async (arquivos, onProgress) => {
+  const formData = new FormData();
+  
+  // Adicionar todos os arquivos
+  arquivos.forEach((arq, index) => {
+    formData.append('files', arq.file);
+  });
+  
+  // Adicionar configurações como JSON
+  const configs = arquivos.map(arq => arq.config);
+  formData.append('configs', JSON.stringify(configs));
+  
+  try {
+    const response = await axios.post(
+      `${API_URL}/generate-pdf-batch`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        responseType: 'blob',
+        onUploadProgress: (progressEvent) => {
+          if (onProgress && progressEvent.total) {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            // Estimativa de progresso
+            const current = Math.floor((percentCompleted / 100) * arquivos.length);
+            onProgress(current, arquivos.length);
+          }
+        }
+      }
+    );
+    
+    // Chamar progresso final
+    if (onProgress) {
+      onProgress(arquivos.length, arquivos.length);
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao gerar PDFs em lote:', error);
+    throw error;
+  }
+};
+
 export default api;

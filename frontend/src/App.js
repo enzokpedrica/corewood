@@ -9,8 +9,10 @@ import ConfigForm from './components/ConfigForm';
 import { generatePDF } from './services/api';
 import { validateMPRFile, validateConfig, formatErrors, formatWarnings } from './utils/validation';
 import './App.css';
+import LoteUpload from './components/LoteUpload';
 
 function MainApp() {
+  const [modoLote, setModoLote] = useState(false);
   const [file, setFile] = useState(null);
   const [config, setConfig] = useState({
     angulo_rotacao: 0,
@@ -117,7 +119,7 @@ function MainApp() {
       setLoading(false);
     }
   };
-
+  
   return (
     <div className="app">
       <header className="app-header">
@@ -127,24 +129,43 @@ function MainApp() {
               <h1>🪵 CoreWood</h1>
               <p>Gerador de Documentação Técnica para Indústria Moveleira</p>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ marginBottom: '0.5rem', color: '#666' }}>
-                👤 <strong>{user?.username}</strong>
-              </p>
-              <button 
-                onClick={logout}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              {/* Toggle modo lote */}
+              <button
+                onClick={() => setModoLote(!modoLote)}
                 style={{
-                  padding: '0.5rem 1rem',
-                  background: '#dc3545',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
+                  padding: '0.75rem 1.5rem',
+                  background: modoLote ? '#667eea' : 'white',
+                  color: modoLote ? 'white' : '#667eea',
+                  border: '2px solid #667eea',
+                  borderRadius: '8px',
                   cursor: 'pointer',
-                  fontWeight: '600'
+                  fontWeight: '600',
+                  transition: 'all 0.3s'
                 }}
               >
-                Sair
+                {modoLote ? '📄 Modo Individual' : '📦 Modo Lote'}
               </button>
+              
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ marginBottom: '0.5rem', color: '#666' }}>
+                  👤 <strong>{user?.username}</strong>
+                </p>
+                <button 
+                  onClick={logout}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  Sair
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -152,67 +173,29 @@ function MainApp() {
 
       <main className="app-main">
         <div className="container">
-          <div className="content-grid">
-            <div className="left-column">
-              <FileUpload 
-                onFileSelect={handleFileSelect} 
-                selectedFile={file}
-              />
-              
-              {error && (
-                <div className="message error">
-                  <strong>⚠️ Erro</strong>
-                  <pre>{error}</pre>
-                </div>
-              )}
-              
-              {warning && !error && (
-                <div className="message warning">
-                  <strong>⚡ Aviso</strong>
-                  <pre>{warning}</pre>
-                </div>
-              )}
-              
-              {success && (
-                <div className="message success">
-                  ✅ PDF gerado com sucesso!
-                </div>
-              )}
+          {modoLote ? (
+            // MODO LOTE
+            <LoteUpload />
+          ) : (
+            // MODO INDIVIDUAL (código existente)
+            <div className="content-grid">
+              <div className="left-column">
+                <FileUpload 
+                  onFileSelect={handleFileSelect} 
+                  selectedFile={file}
+                />
+                
+                {/* ... resto do código existente ... */}
+              </div>
 
-              <button 
-                className="generate-btn"
-                onClick={handleGeneratePDF}
-                disabled={!file || loading}
-              >
-                {loading ? (
-                  <>
-                    <span className="spinner"></span>
-                    Gerando PDF...
-                  </>
-                ) : (
-                  <>
-                    📄 Gerar PDF Técnico
-                  </>
-                )}
-              </button>
-
-              {file && !error && (
-                <div className="info-box">
-                  <h4>ℹ️ Informações</h4>
-                  <p>• Arquivo: <strong>{file.name}</strong></p>
-                  <p>• Tamanho: <strong>{(file.size / 1024).toFixed(2)} KB</strong></p>
-                  <p>• Status: <strong className="status-ok">✓ Válido</strong></p>
-                </div>
-              )}
+              <div className="right-column">
+                <ConfigForm 
+                  config={config}
+                  onChange={setConfig}
+                />
+              </div>
             </div>
-
-            <div className="right-column">
-              <ConfigForm 
-                config={config}
-                onChange={setConfig}
-              />
-            </div>
-          </div>
+          )}
         </div>
       </main>
 
@@ -229,6 +212,7 @@ function MainApp() {
 }
 
 function App() {
+  const [modoLote, setModoLote] = useState(false);
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
