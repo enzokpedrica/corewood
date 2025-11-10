@@ -133,7 +133,10 @@ async def generate_pdf_batch(
     
     try:
         # Parse das configurações
+        print(f"🔍 DEBUG - configs recebido (raw): {configs[:200]}...")
         configs_list = json.loads(configs)
+        print(f"🔍 DEBUG - configs parseado: {len(configs_list)} itens")
+        print(f"🔍 DEBUG - primeira config: {configs_list[0] if configs_list else 'vazio'}")
         
         if len(files) != len(configs_list):
             raise HTTPException(
@@ -191,6 +194,11 @@ async def generate_pdf_batch(
         
         # Preparar resposta
         zip_buffer.seek(0)
+        zip_size = len(zip_buffer.getvalue())
+
+        print(f"\n✅ ZIP gerado com sucesso!")
+        print(f"📦 Tamanho do ZIP: {zip_size} bytes")
+        print(f"📦 Total de PDFs no ZIP: {len(files)}")
         
         print(f"\n✅ ZIP gerado com sucesso!")
         print(f"📦 Total de PDFs no ZIP: {len(files)}")
