@@ -30,9 +30,7 @@ function MainApp() {
 
   const handleFileSelect = (selectedFile) => {
     setFile(selectedFile);
-    setError(null);
-    setWarning(null);
-    
+
     if (selectedFile) {
       const validation = validateMPRFile(selectedFile);
       
