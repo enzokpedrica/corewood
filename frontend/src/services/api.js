@@ -65,8 +65,16 @@ export const generatePDFBatch = async (arquivos, onProgress) => {
     formData.append('files', arq.file);
   });
   
-  // Adicionar configurações como JSON
-  const configs = arquivos.map(arq => arq.config);
+  // Adicionar configurações como JSON - CORRIGIDO
+  const configs = arquivos.map(arq => ({
+    angulo_rotacao: arq.config.angulo_rotacao || 0,
+    espelhar_peca: arq.config.espelhar_peca || false,
+    bordas: arq.config.bordas || { top: null, bottom: null, left: null, right: null },
+    revisao: arq.config.revisao || '',
+    alerta: arq.config.alerta || ''
+  }));
+
+  console.log('📤 Enviando configs:', configs);
   formData.append('configs', JSON.stringify(configs));
   
   try {
