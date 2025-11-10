@@ -17,6 +17,7 @@ from .core.auth import get_current_active_user
 from .models.user import User
 import json
 import tempfile
+from app.routes import editor
 
 # Criar tabelas no banco
 Base.metadata.create_all(bind=engine)
@@ -38,6 +39,7 @@ app.add_middleware(
 
 # Incluir rotas de autenticação
 app.include_router(auth.router)
+app.include_router(editor.router)
 
 @app.get("/")
 def root():

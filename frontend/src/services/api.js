@@ -111,4 +111,44 @@ export const generatePDFBatch = async (arquivos, onProgress) => {
   }
 };
 
+/**
+ * Exportar peça do editor como MPR
+ */
+export const exportarMPR = async (pecaData) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/editor/export-mpr`,
+      pecaData,
+      {
+        responseType: 'blob'
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao exportar MPR:', error);
+    throw error;
+  }
+};
+
+/**
+ * Gerar PDF direto do editor
+ */
+export const gerarPDFEditor = async (pecaData) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/editor/generate-pdf`,
+      pecaData,
+      {
+        responseType: 'blob'
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao gerar PDF do editor:', error);
+    throw error;
+  }
+};
+
 export default api;
