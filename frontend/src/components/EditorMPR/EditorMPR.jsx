@@ -143,6 +143,55 @@ const handleExportarMPR = async () => {
     }
   };
 
+  const handleImportarMPR = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      
+      // Parse básico do MPR
+      const lines = text.split('\n');
+      
+      // Extrair dimensões
+      const bsxMatch = text.match(/_BSX=([\d.]+)/);
+      const bsyMatch = text.match(/_BSY=([\d.]+)/);
+      const bszMatch = text.match(/_BSZ=([\d.]+)/);
+      
+      const comprimento = bsxMatch ? parseFloat(bsxMatch[1]) : 0;
+      const largura = bsyMatch ? parseFloat(bsyMatch[1]) : 0;
+      const espessura = bszMatch ? parseFloat(bszMatch[1]) : 15;
+      
+      // Extrair furos verticais (102)
+      const furosImportados = [];
+      const furoMatches = text.matchAll(/<102[^<]*XA="([\d.]+)"[^<]*YA="([\d.]+)"[^<]*DU="([\d.]+)"(?:[^<]*TI="([\d.]+)")?/g);
+      
+      for (const match of furoMatches) {
+        furosImportados.push({
+          id: Date.now() + Math.random(),
+          tipo: 'vertical',
+          x: parseFloat(match[1]),
+          y: parseFloat(match[2]),
+          diametro: parseFloat(match[3]),
+          profundidade: match[4] ? parseFloat(match[4]) : 0
+        });
+      }
+      
+      setPeca({
+        nome: file.name.replace('.mpr', '').replace('.MPR', ''),
+        largura,
+        comprimento,
+        espessura,
+        furos: furosImportados
+      });
+      
+      alert(`✅ MPR importado!\n${furosImportados.length} furos carregados.`);
+      
+    } catch (error) {
+      alert('❌ Erro ao importar MPR: ' + error.message);
+    }
+};
+
   // Limpar tudo
   const handleNovaPeca = () => {
     if (peca.furos.length > 0) {
@@ -377,6 +426,18 @@ const handleExportarMPR = async () => {
 
       {/* FOOTER - Ações */}
       <div className="editor-footer">
+        {/* Botão Importar MPR */}
+        <input
+          type="file"
+          accept=".mpr,.MPR"
+          onChange={handleImportarMPR}
+          style={{ display: 'none' }}
+          id="import-mpr"
+        />
+        <label htmlFor="import-mpr" className="btn-secondary">
+          📂 Importar MPR
+        </label>
+
         <button className="btn-secondary" onClick={handleNovaPeca}>
           🆕 Nova Peça
         </button>
