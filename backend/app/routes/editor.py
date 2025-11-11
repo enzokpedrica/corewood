@@ -2,9 +2,9 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Optional
 from fastapi.responses import Response
-from ..auth.dependencies import get_current_active_user
-from ..models import User
-from ..generators.mpr_generator import GeradorMPR
+from app.auth.dependencies import get_current_active_user
+from app.models import User
+from app.generators.mpr_generator import GeradorMPR
 import tempfile
 
 router = APIRouter(prefix="/editor", tags=["editor"])
@@ -104,8 +104,8 @@ async def generate_pdf_from_editor(
         Arquivo PDF para download
     """
     try:
-        from ..parsers.mpr_parser import Peca, Dimensoes, FuroVertical, FuroHorizontal
-        from ..generators.pdf_generator import GeradorDesenhoTecnico
+        from app.parsers.mpr_parser import Peca, Dimensoes, FuroVertical, FuroHorizontal
+        from app.generators.pdf_generator import GeradorDesenhoTecnico
         from fastapi.responses import FileResponse
         
         print(f"\n📄 ===== GERANDO PDF DO EDITOR =====")
