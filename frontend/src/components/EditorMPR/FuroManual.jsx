@@ -191,13 +191,6 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
           ➕ Adicionar Furo
         </button>
       </form>
-
-      {/* Dica */}
-      <div className="furo-manual-hint">
-        <small>
-          💡 <strong>Dica:</strong> Você também pode clicar na peça para adicionar furos visualmente
-        </small>
-      </div>
     </div>
   );
 }
