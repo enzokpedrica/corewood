@@ -9,38 +9,20 @@ class GeradorMPR:
         self.ww = "6.0.18"
     
     def gerar_mpr(self, peca_data: Dict) -> str:
-        """
-        Gera conteúdo do arquivo MPR
-        
-        Args:
-            peca_data: {
-                'nome': 'LATERAL_01',
-                'largura': 780,
-                'comprimento': 305,
-                'espessura': 15,
-                'furos': [
-                    {
-                        'tipo': 'vertical',
-                        'x': 21,
-                        'y': 41,
-                        'diametro': 5,
-                        'profundidade': 0  # 0 = passante
-                    },
-                    ...
-                ]
-            }
-        
-        Returns:
-            Conteúdo do arquivo MPR como string
-        """
+        """Gera conteúdo do arquivo MPR"""
         
         largura = float(peca_data['largura'])
         comprimento = float(peca_data['comprimento'])
         espessura = float(peca_data['espessura'])
         furos = peca_data.get('furos', [])
         
-        # Apenas furos verticais por enquanto
+        # Separar por tipo
         furos_verticais = [f for f in furos if f['tipo'] == 'vertical']
+        furos_horizontais = [f for f in furos if f['tipo'] == 'horizontal']
+        
+        print(f"📊 Gerando MPR:")
+        print(f"   Furos verticais: {len(furos_verticais)}")
+        print(f"   Furos horizontais: {len(furos_horizontais)}")
         
         mpr = []
         
@@ -78,24 +60,22 @@ class GeradorMPR:
         mpr.append('ANZ="1"')
         mpr.append('BES="0"')
         mpr.append('ENT="0"')
-        
-        # Dimensões da peça
-        mpr.append(f'_BSX={largura:.6f}')
-        mpr.append(f'_BSY={comprimento:.6f}')
+        mpr.append(f'_BSX={comprimento:.6f}')  # X = Comprimento
+        mpr.append(f'_BSY={largura:.6f}')      # Y = Largura
         mpr.append(f'_BSZ={espessura:.6f}')
         mpr.append('_FNX=0.000000')
         mpr.append('_FNY=0.000000')
         mpr.append('_RNX=0.000000')
         mpr.append('_RNY=0.000000')
         mpr.append('_RNZ=0.000000')
-        mpr.append(f'_RX={largura:.6f}')
-        mpr.append(f'_RY={comprimento:.6f}')
+        mpr.append(f'_RX={comprimento:.6f}')
+        mpr.append(f'_RY={largura:.6f}')
         
         # ===== PROGRAMA =====
         mpr.append('[001')
-        mpr.append(f'x="{int(largura)}"')
+        mpr.append(f'x="{int(comprimento)}"')  # X = Comprimento
         mpr.append('KM=""')
-        mpr.append(f'y="{int(comprimento)}"')
+        mpr.append(f'y="{int(largura)}"')      # Y = Largura
         mpr.append('KM=""')
         mpr.append(f'z="{int(espessura)}"')
         mpr.append('KM=""')
@@ -114,7 +94,11 @@ class GeradorMPR:
         for furo in furos_verticais:
             mpr.extend(self._gerar_furo_vertical(furo))
         
-        return '\n'.join(mpr)
+        # ===== FUROS HORIZONTAIS =====
+        for furo in furos_horizontais:
+            mpr.extend(self._gerar_furo_horizontal(furo))
+        
+        return '\n'.join(mpr)  # ← JÁ TEM \n entre linhas!
     
     def _gerar_furo_vertical(self, furo: Dict) -> List[str]:
         """Gera linhas para um furo vertical"""
@@ -178,6 +162,52 @@ class GeradorMPR:
             'SYV="0"',
             'KO="00"',
         ])
+        
+        return linhas_furo
+    
+    def _gerar_furo_horizontal(self, furo: Dict) -> List[str]:
+        """Gera linhas para um furo horizontal"""
+        
+        lado = furo.get('lado', 'XP')
+        y = float(furo['y'])
+        z = float(furo['x'])  # X vira Z em horizontal
+        diametro = float(furo['diametro'])
+        profundidade = float(furo.get('profundidade', 11.5))
+        
+        linhas_furo = [
+            '<103 \\BohrHori\\',  # Código 103 para horizontal
+            f'SD="{lado}"',
+            f'YA="{int(y)}"',
+            f'ZA="{int(z)}"',
+            'BM="LSU"',
+            f'TI="{profundidade}"',
+            f'DU="{diametro}"',
+            'AN="2"',
+            'MI="0"',
+            'S_="1"',
+            'AB="192"',
+            'WI="0"',
+            'ZT="0"',
+            'RM="0"',
+            'VW="0"',
+            'HP="0"',
+            'SP="0"',
+            'YVE="0"',
+            'WW="60,61,62,88,90,91,92,150"',
+            'ASG="2"',
+            'KAT="Bohren horizontal"',
+            'MNM="Furo horizontal"',
+            'ORI=""',
+            'MX="0"',
+            'MY="0"',
+            'MZ="0"',
+            'MXF="1"',
+            'MYF="1"',
+            'MZF="1"',
+            'SYA="0"',
+            'SYV="0"',
+            'KO="00"',
+        ]
         
         return linhas_furo
 
