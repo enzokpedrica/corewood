@@ -4,7 +4,7 @@ import './Canvas.css';
 function Canvas({ peca, onAddFuro, selectedTool }) {
   const canvasRef = useRef(null);
   const [scale, setScale] = useState(1);
-  const [offset] = useState({ x: 50, y: 50 });
+  const [offset] = useState({ x: 100, y: 100 });
 
   // Constantes
   const PIXELS_PER_MM = 2;
@@ -143,8 +143,8 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
 
       <canvas
         ref={canvasRef}
-        width={1000}  /* Aumentou de 800 para 1000 */
-        height={700}  /* Aumentou de 600 para 700 */
+        width={1400}  /* Aumentou de 800 para 1000 */
+        height={900}  /* Aumentou de 600 para 700 */
         onClick={handleCanvasClick}
         style={{ cursor: selectedTool ? 'crosshair' : 'default' }}
       />
