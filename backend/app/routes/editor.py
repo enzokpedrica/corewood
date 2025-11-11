@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from fastapi.responses import Response
 from app.core.auth import get_current_active_user
-from app.models import User
+from app.models.user import User
 from app.generators.mpr_generator import GeradorMPR
 import tempfile
 
