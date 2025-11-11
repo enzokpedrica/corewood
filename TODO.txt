@@ -53,8 +53,8 @@
 		> Qual batente a ser utilizado
 			> Texto do batente precisa aparecer na tabela horizontal
 
+----------------------------------------------------
 -- CoreCraft --
-
 > Criar peça e exportar para .mpr
 > Editar furações já criadas
 > Qual a disposição de ferramentas na máquina?
@@ -66,4 +66,9 @@
 	> Assinatura
 
 > Intranet?
+----------------------------------------------------
+------------------------ IA ------------------------
+
+> Como podemos implementar a IA?
+> Detecção de melhorias? Sistema de ML?
 
