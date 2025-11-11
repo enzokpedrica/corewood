@@ -4,7 +4,7 @@ import './Canvas.css';
 function Canvas({ peca, onAddFuro, selectedTool }) {
   const canvasRef = useRef(null);
   const [scale, setScale] = useState(1);
-  const [offset] = useState({ x: 100, y: 100 });
+  const [offset] = useState({ x: 200, y: 200 });
 
   // Constantes
   const PIXELS_PER_MM = 2;
