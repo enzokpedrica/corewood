@@ -49,7 +49,7 @@ canvas {
   background: white;
   display: block;
   width: 100%;  /* Ocupa toda largura disponível */
-  max-width: 1000px;  /* Limita máximo */
+  max-width: 2000px;  /* Limita máximo */
   height: auto;
 }
 

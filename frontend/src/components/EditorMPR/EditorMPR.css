@@ -29,12 +29,12 @@
 /* Layout principal */
 .editor-layout {
   display: grid;
-  grid-template-columns: 350px 1fr 350px;  /* Aumentou sidebars */
+  grid-template-columns: 550px 1fr 550px;  /* Aumentou sidebars */
   gap: 1.5rem;  /* Mais espaço entre colunas */
   padding: 1.5rem 3rem;  /* Mais padding */
   flex: 1;
   overflow: hidden;
-  max-width: 1800px;  /* Limita largura máxima */
+  max-width: 2500px;  /* Limita largura máxima */
   margin: 0 auto;  /* Centraliza */
 }
 
