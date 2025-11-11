@@ -187,24 +187,24 @@ const handleExportarMPR = async () => {
             </div>
 
             <div className="form-group">
-              <label>Largura (mm):</label>
+              <label>Comprimento X (mm):</label>
               <input
                 type="number"
-                value={peca.largura || ''}
-                onChange={(e) => handleDimensaoChange('largura', e.target.value)}
-                placeholder="Ex: 300"
+                value={peca.comprimento || ''}
+                onChange={(e) => handleDimensaoChange('comprimento', e.target.value)}
+                placeholder="Ex: 800"
                 min="10"
                 max="3000"
               />
             </div>
 
             <div className="form-group">
-              <label>Comprimento (mm):</label>
+              <label>Largura Y (mm):</label>
               <input
                 type="number"
-                value={peca.comprimento || ''}
-                onChange={(e) => handleDimensaoChange('comprimento', e.target.value)}
-                placeholder="Ex: 800"
+                value={peca.largura || ''}
+                onChange={(e) => handleDimensaoChange('largura', e.target.value)}
+                placeholder="Ex: 300"
                 min="10"
                 max="3000"
               />
@@ -250,19 +250,6 @@ const handleExportarMPR = async () => {
             </div>
           </div>
 
-          {/* Adicionar Furo Manual */}
-          {peca.largura && peca.comprimento && (
-            <div className="editor-section">
-              <FuroManual 
-                onAddFuro={handleAddFuro}
-                pecaDimensoes={{
-                  comprimento: peca.comprimento,
-                  largura: peca.largura
-                }}
-              />
-            </div>
-          )}
-
           <div className="editor-section">
             <h3>📊 Resumo</h3>
             <div className="resumo">
@@ -273,7 +260,7 @@ const handleExportarMPR = async () => {
           </div>
         </div>
 
-        {/* CENTRO - Canvas */}
+        {/* CENTRO - Canvas Grande */}
         <div className="editor-center">
           <Canvas
             peca={peca}
@@ -282,127 +269,146 @@ const handleExportarMPR = async () => {
           />
         </div>
 
-        {/* SIDEBAR DIREITA - Config de Furo */}
-        <div className="editor-sidebar right">
-          {showFuroConfig && selectedFuro ? (
-            <div className="editor-section">
-              <div className="section-header">
-                <h3>⚙️ Configurar Furo</h3>
-                <button 
-                  className="btn-close"
-                  onClick={() => {
-                    setShowFuroConfig(false);
-                    setSelectedFuro(null);
-                  }}
-                >
-                  ✕
-                </button>
+        {/* ÁREA INFERIOR - Adicionar Furos + Lista */}
+        <div className="editor-bottom">
+          {/* Adicionar Furo Manual */}
+          <div className="editor-section">
+            {peca.largura && peca.comprimento ? (
+              <FuroManual 
+                onAddFuro={handleAddFuro}
+                pecaDimensoes={{
+                  comprimento: peca.comprimento,
+                  largura: peca.largura
+                }}
+              />
+            ) : (
+              <div className="placeholder">
+                <p>👈 Defina as dimensões da peça primeiro</p>
               </div>
+            )}
+          </div>
 
-              <div className="furo-info">
-                <span className={`furo-badge ${selectedFuro.tipo}`}>
-                  {selectedFuro.tipo === 'vertical' ? '🔴 Vertical' : '🔵 Horizontal'}
-                </span>
-              </div>
-
-              <div className="form-group">
-                <label>Posição X (mm):</label>
-                <input
-                  type="number"
-                  value={selectedFuro.x}
-                  onChange={(e) => handleUpdateFuro('x', e.target.value)}
-                  step="0.1"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Posição Y (mm):</label>
-                <input
-                  type="number"
-                  value={selectedFuro.y}
-                  onChange={(e) => handleUpdateFuro('y', e.target.value)}
-                  step="0.1"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Diâmetro (mm):</label>
-                <input
-                  type="number"
-                  value={selectedFuro.diametro}
-                  onChange={(e) => handleUpdateFuro('diametro', e.target.value)}
-                  step="0.1"
-                  min="1"
-                  max="50"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Profundidade (mm):</label>
-                <input
-                  type="number"
-                  value={selectedFuro.profundidade}
-                  onChange={(e) => handleUpdateFuro('profundidade', e.target.value)}
-                  step="0.1"
-                  min="0"
-                />
-                <small>0 = passante</small>
-              </div>
-
-              {selectedFuro.tipo === 'horizontal' && (
-                <div className="form-group">
-                  <label>Lado:</label>
-                  <select
-                    value={selectedFuro.lado}
-                    onChange={(e) => handleUpdateFuro('lado', e.target.value)}
-                  >
-                    <option value="XP">XP (Frente)</option>
-                    <option value="XM">XM (Trás)</option>
-                    <option value="YP">YP (Direita)</option>
-                    <option value="YM">YM (Esquerda)</option>
-                  </select>
-                </div>
-              )}
-
-              <button
-                className="btn-danger"
-                onClick={() => handleRemoveFuro(selectedFuro.id)}
-              >
-                🗑️ Remover Furo
-              </button>
-            </div>
-          ) : (
-            <div className="editor-section placeholder">
-              <p>👈 Adicione um furo para configurar</p>
-            </div>
-          )}
-
-          {/* Lista de Furos */}
-          {peca.furos.length > 0 && (
-            <div className="editor-section furos-list">
-              <h3>📋 Lista de Furos</h3>
-              <div className="furos-scroll">
-                {peca.furos.map((furo, index) => (
-                  <div
-                    key={furo.id}
-                    className={`furo-item ${selectedFuro?.id === furo.id ? 'selected' : ''}`}
+          {/* Lista de Furos + Config */}
+          <div className="editor-section">
+            {showFuroConfig && selectedFuro ? (
+              <div>
+                <div className="section-header">
+                  <h3>⚙️ Configurar Furo</h3>
+                  <button 
+                    className="btn-close"
                     onClick={() => {
-                      setSelectedFuro(furo);
-                      setShowFuroConfig(true);
+                      setShowFuroConfig(false);
+                      setSelectedFuro(null);
                     }}
                   >
-                    <span className={`furo-icon ${furo.tipo}`}>
-                      {furo.tipo === 'vertical' ? '🔴' : '🔵'}
-                    </span>
-                    <div className="furo-details">
-                      <strong>Furo #{index + 1}</strong>
-                      <small>X:{furo.x} Y:{furo.y} Ø{furo.diametro}</small>
-                    </div>
+                    ✕
+                  </button>
+                </div>
+
+                <div className="furo-info">
+                  <span className={`furo-badge ${selectedFuro.tipo}`}>
+                    {selectedFuro.tipo === 'vertical' ? '🔴 Vertical' : '🔵 Horizontal'}
+                  </span>
+                </div>
+
+                <div className="form-group">
+                  <label>Posição X (mm):</label>
+                  <input
+                    type="number"
+                    value={selectedFuro.x}
+                    onChange={(e) => handleUpdateFuro('x', e.target.value)}
+                    step="0.1"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Posição Y (mm):</label>
+                  <input
+                    type="number"
+                    value={selectedFuro.y}
+                    onChange={(e) => handleUpdateFuro('y', e.target.value)}
+                    step="0.1"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Diâmetro (mm):</label>
+                  <input
+                    type="number"
+                    value={selectedFuro.diametro}
+                    onChange={(e) => handleUpdateFuro('diametro', e.target.value)}
+                    step="0.1"
+                    min="1"
+                    max="50"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Profundidade (mm):</label>
+                  <input
+                    type="number"
+                    value={selectedFuro.profundidade}
+                    onChange={(e) => handleUpdateFuro('profundidade', e.target.value)}
+                    step="0.1"
+                    min="0"
+                  />
+                  <small>0 = passante</small>
+                </div>
+
+                {selectedFuro.tipo === 'horizontal' && (
+                  <div className="form-group">
+                    <label>Lado:</label>
+                    <select
+                      value={selectedFuro.lado}
+                      onChange={(e) => handleUpdateFuro('lado', e.target.value)}
+                    >
+                      <option value="XP">XP (Frente)</option>
+                      <option value="XM">XM (Trás)</option>
+                      <option value="YP">YP (Direita)</option>
+                      <option value="YM">YM (Esquerda)</option>
+                    </select>
                   </div>
-                ))}
+                )}
+
+                <button
+                  className="btn-danger"
+                  onClick={() => handleRemoveFuro(selectedFuro.id)}
+                >
+                  🗑️ Remover Furo
+                </button>
               </div>
-            </div>
-          )}
+            ) : (
+              <div>
+                <h3>📋 Lista de Furos ({peca.furos.length})</h3>
+                {peca.furos.length > 0 ? (
+                  <div className="furos-scroll">
+                    {peca.furos.map((furo, index) => (
+                      <div
+                        key={furo.id}
+                        className={`furo-item ${selectedFuro?.id === furo.id ? 'selected' : ''}`}
+                        onClick={() => {
+                          setSelectedFuro(furo);
+                          setShowFuroConfig(true);
+                        }}
+                      >
+                        <span className={`furo-icon ${furo.tipo}`}>
+                          {furo.tipo === 'vertical' ? '🔴' : '🔵'}
+                        </span>
+                        <div className="furo-details">
+                          <strong>Furo #{index + 1}</strong>
+                          <small>X:{furo.x} Y:{furo.y} Ø{furo.diametro}</small>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="placeholder">
+                    <p>Nenhum furo adicionado ainda</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
