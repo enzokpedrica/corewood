@@ -81,6 +81,7 @@ class GeradorMPR:
         mpr.append('KM=""')
         
         # ===== DEFINIÇÃO DA PEÇA =====
+        mpr.append(' ')
         mpr.append('<100 \\WerkStck\\')
         mpr.append('LA="x"')
         mpr.append('BR="y"')
@@ -113,6 +114,7 @@ class GeradorMPR:
         if profundidade == 0:
             bm = "LSL"  # Passante
             linhas_furo = [
+                ' ',
                 '<102 \\BohrVert\\',
                 f'XA="{int(x)}"',
                 f'YA="{int(y)}"',
