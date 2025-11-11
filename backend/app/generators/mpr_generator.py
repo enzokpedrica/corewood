@@ -89,6 +89,7 @@ class GeradorMPR:
         mpr.append('FNY="0"')
         mpr.append('AX="0"')
         mpr.append('AY="0"')
+        mpr.append(' ')
         
         # ===== FUROS VERTICAIS =====
         for furo in furos_verticais:
@@ -175,6 +176,7 @@ class GeradorMPR:
         profundidade = float(furo.get('profundidade', 11.5))
         
         linhas_furo = [
+            ' ',
             '<103 \\BohrHori\\',  # Código 103 para horizontal
             f'SD="{lado}"',
             f'YA="{int(y)}"',
