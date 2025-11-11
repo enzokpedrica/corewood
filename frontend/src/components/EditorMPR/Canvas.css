@@ -48,6 +48,9 @@ canvas {
   border-radius: 8px;
   background: white;
   display: block;
+  width: 100%;  /* Ocupa toda largura disponível */
+  max-width: 1000px;  /* Limita máximo */
+  height: auto;
 }
 
 canvas:hover {
