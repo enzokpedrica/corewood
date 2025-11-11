@@ -221,43 +221,6 @@ const handleExportarMPR = async () => {
               />
             </div>
           </div>
-
-          <div className="editor-section">
-            <h3>🔧 Ferramentas</h3>
-            
-            <button
-              className={`tool-button ${selectedTool === 'vertical' ? 'active' : ''}`}
-              onClick={() => setSelectedTool(selectedTool === 'vertical' ? null : 'vertical')}
-              disabled={!peca.largura || !peca.comprimento}
-            >
-              🔴 Furo Vertical
-            </button>
-
-            <button
-              className={`tool-button ${selectedTool === 'horizontal' ? 'active' : ''}`}
-              onClick={() => setSelectedTool(selectedTool === 'horizontal' ? null : 'horizontal')}
-              disabled={!peca.largura || !peca.comprimento}
-            >
-              🔵 Furo Horizontal
-            </button>
-
-            <div className="tool-hint">
-              {selectedTool ? (
-                <p>✨ Clique na peça para adicionar furo</p>
-              ) : (
-                <p>💡 Selecione uma ferramenta acima</p>
-              )}
-            </div>
-          </div>
-
-          <div className="editor-section">
-            <h3>📊 Resumo</h3>
-            <div className="resumo">
-              <p><strong>Furos verticais:</strong> {peca.furos.filter(f => f.tipo === 'vertical').length}</p>
-              <p><strong>Furos horizontais:</strong> {peca.furos.filter(f => f.tipo === 'horizontal').length}</p>
-              <p><strong>Total:</strong> {peca.furos.length}</p>
-            </div>
-          </div>
         </div>
 
         {/* CENTRO - Canvas Grande */}
