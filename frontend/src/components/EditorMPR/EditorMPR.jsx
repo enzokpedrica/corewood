@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Canvas from './Canvas';
 import './EditorMPR.css';
 import { exportarMPR, gerarPDFEditor } from '../../services/api';
+import FuroManual from './FuroManual';
 
 function EditorMPR() {
   const [peca, setPeca] = useState({
@@ -248,6 +249,19 @@ const handleExportarMPR = async () => {
               )}
             </div>
           </div>
+
+          {/* Adicionar Furo Manual */}
+          {peca.largura && peca.comprimento && (
+            <div className="editor-section">
+              <FuroManual 
+                onAddFuro={handleAddFuro}
+                pecaDimensoes={{
+                  comprimento: peca.comprimento,
+                  largura: peca.largura
+                }}
+              />
+            </div>
+          )}
 
           <div className="editor-section">
             <h3>📊 Resumo</h3>
