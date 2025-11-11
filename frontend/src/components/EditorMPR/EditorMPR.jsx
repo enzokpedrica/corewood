@@ -150,9 +150,6 @@ const handleExportarMPR = async () => {
     try {
       const text = await file.text();
       
-      // Parse básico do MPR
-      const lines = text.split('\n');
-      
       // Extrair dimensões
       const bsxMatch = text.match(/_BSX=([\d.]+)/);
       const bsyMatch = text.match(/_BSY=([\d.]+)/);
