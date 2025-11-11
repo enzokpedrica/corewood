@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Canvas from './Canvas';
 import './EditorMPR.css';
+import { exportarMPR, gerarPDFEditor } from '../../services/api';
 
 function EditorMPR() {
   const [peca, setPeca] = useState({
@@ -74,16 +75,38 @@ function EditorMPR() {
   };
 
   // Exportar MPR
-  const handleExportarMPR = async () => {
-    if (!peca.nome || !peca.largura || !peca.comprimento) {
-      alert('⚠️ Preencha nome e dimensões da peça!');
-      return;
-    }
+const handleExportarMPR = async () => {
+  if (!peca.nome || !peca.largura || !peca.comprimento) {
+    alert('⚠️ Preencha nome e dimensões da peça!');
+    return;
+  }
 
-    // TODO: Chamar API para gerar MPR
-    console.log('Exportando MPR:', peca);
-    alert('🚧 Funcionalidade em desenvolvimento!\nPor enquanto, veja o console.');
-  };
+  if (peca.furos.length === 0) {
+    alert('⚠️ Adicione pelo menos um furo!');
+    return;
+  }
+
+  try {
+    console.log('📤 Exportando MPR:', peca);
+    
+    const mprBlob = await exportarMPR(peca);
+    
+    // Download automático
+    const url = window.URL.createObjectURL(mprBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${peca.nome}.mpr`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    alert('✅ MPR exportado com sucesso!');
+  } catch (error) {
+    console.error('Erro ao exportar MPR:', error);
+    alert(`❌ Erro ao exportar MPR:\n${error.response?.data?.detail || error.message}`);
+  }
+};
 
   // Gerar PDF direto
   const handleGerarPDF = async () => {
@@ -92,9 +115,31 @@ function EditorMPR() {
       return;
     }
 
-    // TODO: Chamar API para gerar PDF
-    console.log('Gerando PDF:', peca);
-    alert('🚧 Funcionalidade em desenvolvimento!\nPor enquanto, veja o console.');
+    if (peca.furos.length === 0) {
+      alert('⚠️ Adicione pelo menos um furo!');
+      return;
+    }
+
+    try {
+      console.log('📄 Gerando PDF:', peca);
+      
+      const pdfBlob = await gerarPDFEditor(peca);
+      
+      // Download automático
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${peca.nome}_furacao.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      alert('✅ PDF gerado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      alert(`❌ Erro ao gerar PDF:\n${error.response?.data?.detail || error.message}`);
+    }
   };
 
   // Limpar tudo
