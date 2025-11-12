@@ -130,25 +130,26 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
     }
   }, [peca, scale, offset, PIXELS_PER_MM]);
 
-  const handleCanvasClick = (e) => {
-    if (!selectedTool || !peca.largura) return;
+    const handleCanvasClick = (e) => {
+      if (!selectedTool || !peca.largura) return;
 
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
 
-    const larguraPx = peca.largura * PIXELS_PER_MM * scale;
-    const comprimentoPx = peca.comprimento * PIXELS_PER_MM * scale;
+      const larguraPx = peca.comprimento * PIXELS_PER_MM * scale;
+      const comprimentoPx = peca.largura * PIXELS_PER_MM * scale;
 
-    if (
-      clickX >= offset.x &&
-      clickX <= offset.x + larguraPx &&
-      clickY >= offset.y &&
-      clickY <= offset.y + comprimentoPx
-    ) {
-      const furoX = (clickX - offset.x) / (PIXELS_PER_MM * scale);
-      const furoY = (clickY - offset.y) / (PIXELS_PER_MM * scale);
+      if (
+        clickX >= offset.x &&
+        clickX <= offset.x + larguraPx &&
+        clickY >= offset.y &&
+        clickY <= offset.y + comprimentoPx
+      ) {
+    
+    const furoX = (clickX - offset.x) / (PIXELS_PER_MM * scale);
+    const furoY = peca.largura - ((clickY - offset.y) / (PIXELS_PER_MM * scale));  // ← CORRIGIDO!
 
       onAddFuro({
         x: Math.round(furoX * 10) / 10,
