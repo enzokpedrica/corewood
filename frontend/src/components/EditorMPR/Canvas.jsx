@@ -88,8 +88,6 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
     };
 
     const drawFuros = (context) => {
-      // Calcular dimensões para inverter Y
-      const comprimentoPx = peca.comprimento * PIXELS_PER_MM * scale;  // ← ADICIONAR ESTA LINHA
       
       peca.furos.forEach((furo) => {
         const x = offset.x + (furo.x * PIXELS_PER_MM * scale);
