@@ -29,7 +29,7 @@
   grid-template-columns: 350px 1fr;
   grid-template-rows: 1fr auto;
   gap: 1.5rem;
-  padding: 1.5rem 0.5rem;  /* Menos padding lateral */
+  padding: 1.0rem 0.3rem;  /* Menos padding lateral */
   flex: 1;
   overflow: hidden;
   height: calc(100vh - 100px);
