@@ -47,6 +47,70 @@ function EditorMPR() {
     setShowFuroConfig(true);
     setSelectedTool(null); // Desativar ferramenta após adicionar
   };
+  // Aplicar transformação nos furos
+  const aplicarTransformacao = (novaTransformacao) => {
+    const deltaRotacao = novaTransformacao.rotacao - transformacao.rotacao;
+    const mudouEspelhamento = novaTransformacao.espelhado !== transformacao.espelhado;
+    
+    if (deltaRotacao === 0 && !mudouEspelhamento) {
+      setTransformacao(novaTransformacao);
+      return;
+    }
+    
+    const furosTransformados = peca.furos.map(furo => {
+      let novoX = furo.x;
+      let novoY = furo.y;
+      
+      // Aplicar espelhamento (inverte X)
+      if (mudouEspelhamento) {
+        novoX = peca.comprimento - furo.x;
+      }
+      
+      // Aplicar rotação
+      if (deltaRotacao === 90 || deltaRotacao === -270) {
+        // 90° horário
+        const temp = novoX;
+        novoX = novoY;
+        novoY = peca.comprimento - temp;
+        
+        // Trocar dimensões da peça
+        const tempDim = peca.comprimento;
+        peca.comprimento = peca.largura;
+        peca.largura = tempDim;
+        
+      } else if (deltaRotacao === 180 || deltaRotacao === -180) {
+        // 180°
+        novoX = peca.comprimento - novoX;
+        novoY = peca.largura - novoY;
+        
+      } else if (deltaRotacao === 270 || deltaRotacao === -90) {
+        // 270° horário (90° anti-horário)
+        const temp = novoX;
+        novoX = peca.largura - novoY;
+        novoY = temp;
+        
+        // Trocar dimensões da peça
+        const tempDim = peca.comprimento;
+        peca.comprimento = peca.largura;
+        peca.largura = tempDim;
+      }
+      
+      return {
+        ...furo,
+        x: Math.round(novoX * 10) / 10,
+        y: Math.round(novoY * 10) / 10
+      };
+    });
+    
+    setPeca({
+      ...peca,
+      furos: furosTransformados
+    });
+    
+    setTransformacao(novaTransformacao);
+  };
+
+  
 
   // Atualizar configuração de furo
   const handleUpdateFuro = (campo, valor) => {
@@ -274,39 +338,49 @@ const handleExportarMPR = async () => {
             <div className="editor-section">
               <h3>🔄 Transformações</h3>
               
-              <div className="transform-buttons">
-                <button
-                  className="transform-btn"
-                  onClick={() => setTransformacao({ ...transformacao, rotacao: (transformacao.rotacao + 90) % 360 })}
-                  title="Rotacionar 90° horário"
-                >
-                  ↻ 90°
-                </button>
-                
-                <button
-                  className="transform-btn"
-                  onClick={() => setTransformacao({ ...transformacao, rotacao: (transformacao.rotacao + 180) % 360 })}
-                  title="Rotacionar 180°"
-                >
-                  ↕ 180°
-                </button>
-                
-                <button
-                  className="transform-btn"
-                  onClick={() => setTransformacao({ ...transformacao, rotacao: (transformacao.rotacao + 270) % 360 })}
-                  title="Rotacionar 90° anti-horário"
-                >
-                  ↺ 270°
-                </button>
-                
-                <button
-                  className="transform-btn"
-                  onClick={() => setTransformacao({ ...transformacao, espelhado: !transformacao.espelhado })}
-                  title="Espelhar horizontalmente"
-                >
-                  ⇄ Espelhar
-                </button>
-              </div>
+              <button
+              className="transform-btn"
+              onClick={() => aplicarTransformacao({ 
+                ...transformacao, 
+                rotacao: (transformacao.rotacao + 90) % 360 
+              })}
+              title="Rotacionar 90° horário"
+            >
+              ↻ 90°
+            </button>
+
+            <button
+              className="transform-btn"
+              onClick={() => aplicarTransformacao({ 
+                ...transformacao, 
+                rotacao: (transformacao.rotacao + 180) % 360 
+              })}
+              title="Rotacionar 180°"
+            >
+              ↕ 180°
+            </button>
+
+            <button
+              className="transform-btn"
+              onClick={() => aplicarTransformacao({ 
+                ...transformacao, 
+                rotacao: (transformacao.rotacao + 270) % 360 
+              })}
+              title="Rotacionar 90° anti-horário"
+            >
+              ↺ 270°
+            </button>
+
+            <button
+              className="transform-btn"
+              onClick={() => aplicarTransformacao({ 
+                ...transformacao, 
+                espelhado: !transformacao.espelhado 
+              })}
+              title="Espelhar horizontalmente"
+            >
+              ⇄ Espelhar
+            </button>
               
               <div className="transform-info">
                 <small>Rotação: <strong>{transformacao.rotacao}°</strong></small>
