@@ -69,13 +69,14 @@ function EditorMPR() {
     let novoComprimento = pecaOriginal.comprimento;
     let novaLargura = pecaOriginal.largura;
     
-    // Trocar dimensões se rotação for 90° ou 270°
+    // Trocar dimensões se 90° ou 270°
     if (rotacao === 90 || rotacao === 270) {
       novoComprimento = pecaOriginal.largura;
       novaLargura = pecaOriginal.comprimento;
     }
     
     const furosTransformados = pecaOriginal.furos.map(furoOrig => {
+      // Coordenadas originais (origem embaixo)
       let x = furoOrig.x;
       let y = furoOrig.y;
       
@@ -84,18 +85,21 @@ function EditorMPR() {
         x = pecaOriginal.comprimento - x;
       }
       
-      // Aplicar rotação (SEMPRE do original!)
+      // Aplicar rotação
       if (rotacao === 90) {
+        // 90° horário
         const temp = x;
-        x = y;
-        y = pecaOriginal.comprimento - temp;
+        x = pecaOriginal.largura - y;  // ← Ajustado!
+        y = temp;
       } else if (rotacao === 180) {
+        // 180°
         x = pecaOriginal.comprimento - x;
         y = pecaOriginal.largura - y;
       } else if (rotacao === 270) {
+        // 270° horário
         const temp = x;
-        x = pecaOriginal.largura - y;
-        y = temp;
+        x = y;
+        y = pecaOriginal.comprimento - temp;  // ← Ajustado!
       }
       
       return {
@@ -114,10 +118,10 @@ function EditorMPR() {
     
     setTransformacao(novaTransformacao);
     
-    console.log('🔄 Transformado do ORIGINAL:', {
+    console.log('🔄 Transformação (origem embaixo):', {
       rotacao: `${rotacao}°`,
-      dimensoes: `${novoComprimento}x${novaLargura}`,
-      exemplo: furosTransformados[0]
+      dimensoes: `${novoComprimento}x${novaLargura}mm`,
+      furoExemplo: furosTransformados[0] ? `X:${furosTransformados[0].x} Y:${furosTransformados[0].y}` : 'nenhum'
     });
   };
 
