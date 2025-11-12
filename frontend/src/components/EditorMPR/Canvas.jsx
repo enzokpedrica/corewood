@@ -36,8 +36,8 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
     };
 
     const drawPeca = (context) => {
-      const larguraPx = peca.largura * PIXELS_PER_MM * scale;
-      const comprimentoPx = peca.comprimento * PIXELS_PER_MM * scale;
+      const larguraPx = peca.comprimento * PIXELS_PER_MM * scale;
+      const comprimentoPx = peca.largura * PIXELS_PER_MM * scale;
 
       context.fillStyle = '#fff';
       context.strokeStyle = '#333';
@@ -80,11 +80,11 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
         offset.y + comprimentoPx + 25
       );
 
-      context.save();
-      context.translate(offset.x - 15, offset.y + comprimentoPx / 2);
-      context.rotate(-Math.PI / 2);
-      context.fillText(`${peca.comprimento}mm`, 0, 0);
-      context.restore();
+      // context.save();
+      // context.translate(offset.x - 15, offset.y + comprimentoPx / 2);
+      // context.rotate(-Math.PI / 2);
+      // context.fillText(`${peca.comprimento}mm`, 0, 0);
+      // context.restore();
     };
 
     const drawFuros = (context) => {
