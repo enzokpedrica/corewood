@@ -93,7 +93,7 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
       
       peca.furos.forEach((furo) => {
         const x = offset.x + (furo.x * PIXELS_PER_MM * scale);
-        const y = offset.y + comprimentoPx - (furo.y * PIXELS_PER_MM * scale);
+        const y = offset.y + (furo.y * PIXELS_PER_MM * scale);
         const raio = 5;
 
         context.fillStyle = furo.tipo === 'vertical' ? '#FF6B6B' : '#4ECDC4';
