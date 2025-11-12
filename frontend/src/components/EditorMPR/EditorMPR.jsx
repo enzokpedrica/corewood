@@ -296,8 +296,20 @@ const handleExportarMPR = async () => {
   return (
     <div className="editor-mpr">
       <div className="editor-header">
-        <h2>✏️ Editor de Peças MPR</h2>
-        <p>Crie peças visualmente e exporte para MPR ou gere PDF direto</p>
+        <h2>✏️ Editor MPR</h2>
+        
+        {/* Botões de modo */}
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button onClick={() => setModoLote('individual')} style={{ padding: '0.5rem 1rem', background: modoLote === 'individual' ? '#667eea' : 'white', color: modoLote === 'individual' ? 'white' : '#667eea', border: '2px solid #667eea', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem' }}>
+            📄 Individual
+          </button>
+          <button onClick={() => setModoLote('lote')} style={{ padding: '0.5rem 1rem', background: modoLote === 'lote' ? '#667eea' : 'white', color: modoLote === 'lote' ? 'white' : '#667eea', border: '2px solid #667eea', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem' }}>
+            📦 Lote
+          </button>
+          <button onClick={() => setModoLote('editor')} style={{ padding: '0.5rem 1rem', background: modoLote === 'editor' ? '#667eea' : 'white', color: modoLote === 'editor' ? 'white' : '#667eea', border: '2px solid #667eea', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem' }}>
+            ✏️ Editor
+          </button>
+        </div>
       </div>
 
       <div className="editor-layout">
