@@ -17,6 +17,11 @@ function EditorMPR() {
   const [selectedFuro, setSelectedFuro] = useState(null);
   const [showFuroConfig, setShowFuroConfig] = useState(false);
 
+  const [transformacao, setTransformacao] = useState({
+  rotacao: 0,      // 0, 90, 180, 270
+  espelhado: false
+});
+
   // Atualizar dimensões da peça
   const handleDimensaoChange = (campo, valor) => {
     setPeca({
@@ -266,6 +271,49 @@ const handleExportarMPR = async () => {
                 max="50"
               />
             </div>
+            <div className="editor-section">
+              <h3>🔄 Transformações</h3>
+              
+              <div className="transform-buttons">
+                <button
+                  className="transform-btn"
+                  onClick={() => setTransformacao({ ...transformacao, rotacao: (transformacao.rotacao + 90) % 360 })}
+                  title="Rotacionar 90° horário"
+                >
+                  ↻ 90°
+                </button>
+                
+                <button
+                  className="transform-btn"
+                  onClick={() => setTransformacao({ ...transformacao, rotacao: (transformacao.rotacao + 180) % 360 })}
+                  title="Rotacionar 180°"
+                >
+                  ↕ 180°
+                </button>
+                
+                <button
+                  className="transform-btn"
+                  onClick={() => setTransformacao({ ...transformacao, rotacao: (transformacao.rotacao + 270) % 360 })}
+                  title="Rotacionar 90° anti-horário"
+                >
+                  ↺ 270°
+                </button>
+                
+                <button
+                  className="transform-btn"
+                  onClick={() => setTransformacao({ ...transformacao, espelhado: !transformacao.espelhado })}
+                  title="Espelhar horizontalmente"
+                >
+                  ⇄ Espelhar
+                </button>
+              </div>
+              
+              <div className="transform-info">
+                <small>Rotação: <strong>{transformacao.rotacao}°</strong></small>
+                <small>Espelhado: <strong>{transformacao.espelhado ? 'Sim' : 'Não'}</strong></small>
+              </div>
+            </div>
+
           </div>
         </div>
 
