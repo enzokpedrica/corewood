@@ -16,11 +16,8 @@ function EditorMPR() {
   const [selectedTool, setSelectedTool] = useState(null);
   const [selectedFuro, setSelectedFuro] = useState(null);
   const [showFuroConfig, setShowFuroConfig] = useState(false);
-
-  const [transformacao, setTransformacao] = useState({
-  rotacao: 0,      // 0, 90, 180, 270
-  espelhado: false
-});
+  const [transformacao, setTransformacao] = useState({rotacao: 0,espelhado: false});
+  const [pecaOriginal, setPecaOriginal] = useState(null);
 
   // Atualizar dimensões da peça
   const handleDimensaoChange = (campo, valor) => {
@@ -36,88 +33,93 @@ function EditorMPR() {
       ...novoFuro,
       id: Date.now()
     };
+
+    const novosFuros = [...peca.furos, furoComId];
     
     setPeca({
       ...peca,
-      furos: [...peca.furos, furoComId]
+      furos: novosFuros
     });
+
+    // Salvar estado original na primeira vez
+    if (!pecaOriginal && novosFuros.length === 1) {
+      setPecaOriginal({
+        comprimento: peca.comprimento,
+        largura: peca.largura,
+        furos: novosFuros
+      });
+    }
 
     // Abrir painel de configuração
     setSelectedFuro(furoComId);
     setShowFuroConfig(true);
     setSelectedTool(null); // Desativar ferramenta após adicionar
   };
+
   // Aplicar transformação nos furos
   const aplicarTransformacao = (novaTransformacao) => {
-  const deltaRotacao = novaTransformacao.rotacao - transformacao.rotacao;
-  const mudouEspelhamento = novaTransformacao.espelhado !== transformacao.espelhado;
-  
-  if (deltaRotacao === 0 && !mudouEspelhamento) {
+    if (!pecaOriginal) {
+      setTransformacao(novaTransformacao);
+      return;
+    }
+    
+    const rotacao = novaTransformacao.rotacao;
+    const espelhado = novaTransformacao.espelhado;
+    
+    let novoComprimento = pecaOriginal.comprimento;
+    let novaLargura = pecaOriginal.largura;
+    
+    // Trocar dimensões se rotação for 90° ou 270°
+    if (rotacao === 90 || rotacao === 270) {
+      novoComprimento = pecaOriginal.largura;
+      novaLargura = pecaOriginal.comprimento;
+    }
+    
+    const furosTransformados = pecaOriginal.furos.map(furoOrig => {
+      let x = furoOrig.x;
+      let y = furoOrig.y;
+      
+      // Aplicar espelhamento
+      if (espelhado) {
+        x = pecaOriginal.comprimento - x;
+      }
+      
+      // Aplicar rotação (SEMPRE do original!)
+      if (rotacao === 90) {
+        const temp = x;
+        x = y;
+        y = pecaOriginal.comprimento - temp;
+      } else if (rotacao === 180) {
+        x = pecaOriginal.comprimento - x;
+        y = pecaOriginal.largura - y;
+      } else if (rotacao === 270) {
+        const temp = x;
+        x = pecaOriginal.largura - y;
+        y = temp;
+      }
+      
+      return {
+        ...furoOrig,
+        x: Math.round(x * 10) / 10,
+        y: Math.round(y * 10) / 10
+      };
+    });
+    
+    setPeca({
+      ...peca,
+      comprimento: novoComprimento,
+      largura: novaLargura,
+      furos: furosTransformados
+    });
+    
     setTransformacao(novaTransformacao);
-    return;
-  }
-  
-  let novoComprimento = peca.comprimento;
-  let novaLargura = peca.largura;
-  
-  const furosTransformados = peca.furos.map(furo => {
-    let novoX = furo.x;
-    let novoY = furo.y;
     
-    // Aplicar espelhamento primeiro (inverte X)
-    if (mudouEspelhamento) {
-      novoX = peca.comprimento - novoX;
-    }
-    
-    // Aplicar rotação
-    if (deltaRotacao === 90 || deltaRotacao === -270) {
-      // 90° horário: X vira Y, Y vira (comprimento - X)
-      const temp = novoX;
-      novoX = novoY;
-      novoY = peca.comprimento - temp;
-      
-      // Trocar dimensões
-      novoComprimento = peca.largura;
-      novaLargura = peca.comprimento;
-      
-    } else if (Math.abs(deltaRotacao) === 180) {
-      // 180°: inverte ambos
-      novoX = peca.comprimento - novoX;
-      novoY = peca.largura - novoY;
-      
-    } else if (deltaRotacao === 270 || deltaRotacao === -90) {
-      // 270° horário (90° anti-horário)
-      const temp = novoX;
-      novoX = peca.largura - novoY;
-      novoY = temp;
-      
-      // Trocar dimensões
-      novoComprimento = peca.largura;
-      novaLargura = peca.comprimento;
-    }
-    
-    return {
-      ...furo,
-      x: Math.round(novoX * 10) / 10,
-      y: Math.round(novoY * 10) / 10
-    };
-  });
-  
-  setPeca({
-    ...peca,
-    comprimento: novoComprimento,
-    largura: novaLargura,
-    furos: furosTransformados
-  });
-  
-  setTransformacao(novaTransformacao);
-  
-  console.log('🔄 Transformação aplicada:', {
-    rotacao: novaTransformacao.rotacao,
-    dimensoes: `${novoComprimento}x${novaLargura}`,
-    furos: furosTransformados.length
-  });
-};
+    console.log('🔄 Transformado do ORIGINAL:', {
+      rotacao: `${rotacao}°`,
+      dimensoes: `${novoComprimento}x${novaLargura}`,
+      exemplo: furosTransformados[0]
+    });
+  };
 
   
 
