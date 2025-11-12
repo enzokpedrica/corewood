@@ -49,66 +49,75 @@ function EditorMPR() {
   };
   // Aplicar transformação nos furos
   const aplicarTransformacao = (novaTransformacao) => {
-    const deltaRotacao = novaTransformacao.rotacao - transformacao.rotacao;
-    const mudouEspelhamento = novaTransformacao.espelhado !== transformacao.espelhado;
+  const deltaRotacao = novaTransformacao.rotacao - transformacao.rotacao;
+  const mudouEspelhamento = novaTransformacao.espelhado !== transformacao.espelhado;
+  
+  if (deltaRotacao === 0 && !mudouEspelhamento) {
+    setTransformacao(novaTransformacao);
+    return;
+  }
+  
+  let novoComprimento = peca.comprimento;
+  let novaLargura = peca.largura;
+  
+  const furosTransformados = peca.furos.map(furo => {
+    let novoX = furo.x;
+    let novoY = furo.y;
     
-    if (deltaRotacao === 0 && !mudouEspelhamento) {
-      setTransformacao(novaTransformacao);
-      return;
+    // Aplicar espelhamento primeiro (inverte X)
+    if (mudouEspelhamento) {
+      novoX = peca.comprimento - novoX;
     }
     
-    const furosTransformados = peca.furos.map(furo => {
-      let novoX = furo.x;
-      let novoY = furo.y;
+    // Aplicar rotação
+    if (deltaRotacao === 90 || deltaRotacao === -270) {
+      // 90° horário: X vira Y, Y vira (comprimento - X)
+      const temp = novoX;
+      novoX = novoY;
+      novoY = peca.comprimento - temp;
       
-      // Aplicar espelhamento (inverte X)
-      if (mudouEspelhamento) {
-        novoX = peca.comprimento - furo.x;
-      }
+      // Trocar dimensões
+      novoComprimento = peca.largura;
+      novaLargura = peca.comprimento;
       
-      // Aplicar rotação
-      if (deltaRotacao === 90 || deltaRotacao === -270) {
-        // 90° horário
-        const temp = novoX;
-        novoX = novoY;
-        novoY = peca.comprimento - temp;
-        
-        // Trocar dimensões da peça
-        const tempDim = peca.comprimento;
-        peca.comprimento = peca.largura;
-        peca.largura = tempDim;
-        
-      } else if (deltaRotacao === 180 || deltaRotacao === -180) {
-        // 180°
-        novoX = peca.comprimento - novoX;
-        novoY = peca.largura - novoY;
-        
-      } else if (deltaRotacao === 270 || deltaRotacao === -90) {
-        // 270° horário (90° anti-horário)
-        const temp = novoX;
-        novoX = peca.largura - novoY;
-        novoY = temp;
-        
-        // Trocar dimensões da peça
-        const tempDim = peca.comprimento;
-        peca.comprimento = peca.largura;
-        peca.largura = tempDim;
-      }
+    } else if (Math.abs(deltaRotacao) === 180) {
+      // 180°: inverte ambos
+      novoX = peca.comprimento - novoX;
+      novoY = peca.largura - novoY;
       
-      return {
-        ...furo,
-        x: Math.round(novoX * 10) / 10,
-        y: Math.round(novoY * 10) / 10
-      };
-    });
+    } else if (deltaRotacao === 270 || deltaRotacao === -90) {
+      // 270° horário (90° anti-horário)
+      const temp = novoX;
+      novoX = peca.largura - novoY;
+      novoY = temp;
+      
+      // Trocar dimensões
+      novoComprimento = peca.largura;
+      novaLargura = peca.comprimento;
+    }
     
-    setPeca({
-      ...peca,
-      furos: furosTransformados
-    });
-    
-    setTransformacao(novaTransformacao);
-  };
+    return {
+      ...furo,
+      x: Math.round(novoX * 10) / 10,
+      y: Math.round(novoY * 10) / 10
+    };
+  });
+  
+  setPeca({
+    ...peca,
+    comprimento: novoComprimento,
+    largura: novaLargura,
+    furos: furosTransformados
+  });
+  
+  setTransformacao(novaTransformacao);
+  
+  console.log('🔄 Transformação aplicada:', {
+    rotacao: novaTransformacao.rotacao,
+    dimensoes: `${novoComprimento}x${novaLargura}`,
+    furos: furosTransformados.length
+  });
+};
 
   
 
