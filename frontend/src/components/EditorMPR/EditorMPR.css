@@ -29,10 +29,11 @@
   grid-template-columns: 350px 1fr;
   grid-template-rows: 1fr auto;
   gap: 1.5rem;
-  padding: 1.5rem;
+  padding: 1.5rem 0.5rem;  /* Menos padding lateral */
   flex: 1;
   overflow: hidden;
-  height: calc(100vh - 100px) !important;
+  height: calc(100vh - 100px);
+  max-width: 100%;  /* Ocupa tudo */
 }
 
 /* Sidebars */
@@ -207,7 +208,15 @@
   padding: 0.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: auto;
-  min-height: 0;  /* Permite canvas crescer */
+  min-height: 0;
+  width: 100%;  /* ← ADICIONAR */
+  height: 100%; /* ← ADICIONAR */
+}
+
+.editor-center canvas {  /* ← ADICIONAR TUDO ISSO */
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 /* Config de Furo */
