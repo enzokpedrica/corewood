@@ -170,8 +170,8 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
 
       <canvas
         ref={canvasRef}
-        width={2000}  /* Aumentou de 800 para 1000 */
-        height={1200}  /* Aumentou de 600 para 700 */
+        width={1600}  //
+        height={1000}  //
         onClick={handleCanvasClick}
         style={{ cursor: selectedTool ? 'crosshair' : 'default' }}
       />
