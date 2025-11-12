@@ -26,13 +26,13 @@
 /* Layout principal */
 .editor-layout {
   display: grid;
-  grid-template-columns: 350px 1fr;  /* 2 colunas: sidebar + canvas */
-  grid-template-rows: 1fr auto;  /* 2 linhas: topo + bottom */
+  grid-template-columns: 350px 1fr;
+  grid-template-rows: 1fr auto;
   gap: 1.5rem;
   padding: 1.5rem;
   flex: 1;
   overflow: hidden;
-  height: calc(100vh - 140px);  /* Ocupa mais altura */
+  height: calc(100vh - 100px) !important;
 }
 
 /* Sidebars */
