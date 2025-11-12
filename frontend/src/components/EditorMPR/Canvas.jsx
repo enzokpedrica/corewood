@@ -45,6 +45,31 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
       context.fillRect(offset.x, offset.y, larguraPx, comprimentoPx);
       context.strokeRect(offset.x, offset.y, larguraPx, comprimentoPx);
 
+      // Desenhar eixos de referência
+      context.strokeStyle = '#999';
+      context.lineWidth = 1;
+      context.setLineDash([5, 5]);
+
+      // Eixo X (horizontal - embaixo)
+      context.beginPath();
+      context.moveTo(offset.x, offset.y + comprimentoPx);
+      context.lineTo(offset.x + larguraPx, offset.y + comprimentoPx);
+      context.stroke();
+
+      // Eixo Y (vertical - esquerda)
+      context.beginPath();
+      context.moveTo(offset.x, offset.y);
+      context.lineTo(offset.x, offset.y + comprimentoPx);
+      context.stroke();
+      context.setLineDash([]);
+
+      // Labels dos eixos
+      context.font = 'bold 16px Arial';
+      context.fillStyle = '#666';
+      context.fillText('X →', offset.x + larguraPx + 10, offset.y + comprimentoPx);
+      context.fillText('↑', offset.x - 20, offset.y - 10);
+      context.fillText('Y', offset.x - 20, offset.y + 10);
+
       context.font = '14px Arial';
       context.fillStyle = '#0066CC';
       context.textAlign = 'center';
@@ -65,7 +90,7 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
     const drawFuros = (context) => {
       peca.furos.forEach((furo) => {
         const x = offset.x + (furo.x * PIXELS_PER_MM * scale);
-        const y = offset.y + (furo.y * PIXELS_PER_MM * scale);
+        const y = offset.y + comprimentoPx - (furo.y * PIXELS_PER_MM * scale);
         const raio = 5;
 
         context.fillStyle = furo.tipo === 'vertical' ? '#FF6B6B' : '#4ECDC4';
