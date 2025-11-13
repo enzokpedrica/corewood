@@ -22,8 +22,8 @@
 .canvas-controls button {
   padding: 0.5rem 1rem;
   background: white;
-  border: 2px solid #667eea;
-  color: #667eea;
+  border: 2px solid #0e1431;
+  color: #0e1431;
   border-radius: 6px;
   font-size: 1rem;
   font-weight: 600;
@@ -32,7 +32,7 @@
 }
 
 .canvas-controls button:hover {
-  background: #667eea;
+  background: #0e1431;
   color: white;
 }
 
@@ -54,5 +54,5 @@ canvas {
 }
 
 canvas:hover {
-  border-color: #667eea;
+  border-color: #0e1431;
 }

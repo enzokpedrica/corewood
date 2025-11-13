@@ -32,7 +32,7 @@ function Login() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>🪵 CoreWood</h1>
+          <h1>CoreWood</h1>
           <h2>Login</h2>
           <p>Entre com suas credenciais</p>
         </div>
