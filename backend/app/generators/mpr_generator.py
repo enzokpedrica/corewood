@@ -129,6 +129,7 @@ class GeradorMPR:
         else:
             bm = "LSU"  # Sacado
             linhas_furo = [
+                ' ',
                 '<102 \\BohrVert\\',
                 f'XA="{int(x)}"',
                 f'YA="{int(y)}"',
