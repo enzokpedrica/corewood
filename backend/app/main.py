@@ -136,10 +136,7 @@ async def generate_pdf_batch(
     
     try:
         # Parse das configurações
-        print(f"🔍 DEBUG - configs recebido (raw): {configs[:200]}...")
         configs_list = json.loads(configs)
-        print(f"🔍 DEBUG - configs parseado: {len(configs_list)} itens")
-        print(f"🔍 DEBUG - primeira config: {configs_list[0] if configs_list else 'vazio'}")
         
         if len(files) != len(configs_list):
             raise HTTPException(
@@ -147,18 +144,12 @@ async def generate_pdf_batch(
                 detail=f"Número de arquivos ({len(files)}) não corresponde ao número de configurações ({len(configs_list)})"
             )
         
-        print(f"\n🔄 ===== PROCESSAMENTO EM LOTE =====")
-        print(f"📦 Total de arquivos: {len(files)}")
-        print(f"👤 Usuário: {current_user.username}")
-        
         # Criar ZIP em memória
         zip_buffer = BytesIO()
         
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             
-            for idx, (file, config_dict) in enumerate(zip(files, configs_list), 1):
-                print(f"\n📄 [{idx}/{len(files)}] Processando: {file.filename}")
-                
+            for idx, (file, config_dict) in enumerate(zip(files, configs_list), 1):                
                 try:
                     # if config_dict is None or not isinstance(config_dict, dict):
                     #     print(f"   ⚠️ Config inválida, usando padrão")
@@ -167,13 +158,9 @@ async def generate_pdf_batch(
                     content = await file.read()
                     content_str = content.decode('utf-8', errors='ignore')
                     nome_peca = file.filename.replace('.mpr', '').replace('.MPR', '')
-
-                    print(f"   📝 Nome peça: {nome_peca}")
                     
                     # Parse da peça
                     peca = parse_furacao(content_str, nome_peca)
-                    print(f"   ✅ Peça parseada: {peca is not None}")  # ← ADICIONAR
-                    print(f"   📐 Dimensões: {peca.dimensoes if peca else 'None'}")
                     
                     # Parse das bordas
                     bordas_dict = config_dict.get('bordas', {})
@@ -185,14 +172,10 @@ async def generate_pdf_batch(
                         'bordas': bordas_dict,
                         'alerta': config_dict.get('alerta'),
                         'revisao': config_dict.get('revisao')
-                    }
-
-                    print(f"   🔧 dados_adicionais: {dados_adicionais}")
-                    
+                    }                    
 
                     # Gerar PDF
                     gerador = GeradorDesenhoTecnico()
-                    print(f"   🎨 Gerando PDF...")
 
                     with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_pdf:
                         pdf_temp_path = tmp_pdf.name
@@ -210,10 +193,7 @@ async def generate_pdf_batch(
 
                     # Adicionar ao ZIP
                     nome_pdf = f"{nome_peca}_furacao.pdf"
-                    print(f"   📦 PDF gerado: {len(pdf_content)} bytes")
                     zip_file.writestr(nome_pdf, pdf_content)
-
-                    print(f"   ✅ {nome_pdf} adicionado ao ZIP")
                     
                 except Exception as e:
                     print(f"   ❌ Erro ao processar {file.filename}: {str(e)}")
@@ -223,13 +203,6 @@ async def generate_pdf_batch(
         # Preparar resposta
         zip_buffer.seek(0)
         zip_size = len(zip_buffer.getvalue())
-
-        print(f"\n✅ ZIP gerado com sucesso!")
-        print(f"📦 Tamanho do ZIP: {zip_size} bytes")
-        print(f"📦 Total de PDFs no ZIP: {len(files)}")
-        
-        print(f"\n✅ ZIP gerado com sucesso!")
-        print(f"📦 Total de PDFs no ZIP: {len(files)}")
         
         return StreamingResponse(
             zip_buffer,

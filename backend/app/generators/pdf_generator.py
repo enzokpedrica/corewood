@@ -16,8 +16,8 @@ class GeradorDesenhoTecnico:
     def formatar_cota(self, valor):
         """
         Formata valor da cota:
-        - Se inteiro: sem casas decimais (269)
-        - Se decimal: com 1 casa decimal (775.5)
+        - Se inteiro: sem casas decimais
+        - Se decimal: com 1 casa decimal
         """
         if valor == int(valor):
             return f"{int(valor)}"
@@ -54,7 +54,6 @@ class GeradorDesenhoTecnico:
         
         escala = max(escala_minima, min(escala, escala_maxima))
         
-        print(f"📐 Escala calculada: {escala:.3f} (peça: {largura_peca}x{comprimento_peca}mm)")
         
         return escala
     
@@ -199,7 +198,6 @@ class GeradorDesenhoTecnico:
                 except:
                     continue
         
-        print(f"✓ Peça rotacionada {angulo}°")
         return peca_rotacionada
     
     def desenhar_retangulo_peca(self, c: canvas.Canvas, x_origem: float, y_origem: float,
@@ -387,9 +385,6 @@ class GeradorDesenhoTecnico:
             altura_disponivel: espaço vertical disponível
             espelhado: se a peça foi espelhada
         """
-        print(f"\n🔧 ===== VISTA LATERAL {lado.upper()} =====")
-        print(f"🔧 Espelhado: {espelhado}")
-        print(f"🔧 Total de furos horizontais na peça: {len(peca.furos_horizontais)}")
 
         espessura_peca = float(peca.dimensoes.espessura)
         altura_peca = float(peca.dimensoes.comprimento)
@@ -415,10 +410,7 @@ class GeradorDesenhoTecnico:
         # Centralizar verticalmente
         offset_y = (altura_disponivel - altura_vista) / 2
         y_origem_centralizado = y_origem + offset_y
-        
-        print(f"📐 Vista: {largura_vista:.1f}x{altura_vista:.1f}pts (escala: {escala:.3f})")
-        print(f"📍 Posição centralizada: x={x_origem_centralizado:.1f}, y={y_origem_centralizado:.1f}")
-        
+                
         # Desenhar retângulo da vista
         c.setStrokeColor(colors.black)
         c.setLineWidth(1)
@@ -471,9 +463,7 @@ class GeradorDesenhoTecnico:
         furos_lado = [f for f in peca.furos_horizontais 
                     if (lado == 'esquerda' and f.lado in ['XP', 'YP']) or
                         (lado == 'direita' and f.lado in ['XM', 'YM'])]
-        
-        print(f"🔧 Furos filtrados: {len(furos_lado)}")
-        
+                
         # Ordenar por Y decrescente
         furos_lado = sorted(furos_lado, key=lambda f: float(f.y), reverse=True)
         
@@ -920,7 +910,6 @@ class GeradorDesenhoTecnico:
         Args:
             bordas: {'top': 'cor'/'pardo'/None, 'bottom': ..., 'left': ..., 'right': ...}
         """
-        print(f"🔧 Desenhando bordas: {bordas}")
         
         espessura = 1  # Linha grossa para destacar
         
@@ -938,15 +927,13 @@ class GeradorDesenhoTecnico:
             c.setStrokeColor(cor)
             c.setLineWidth(espessura)
             c.line(x_origem, y_origem + altura, x_origem + largura, y_origem + altura)
-            print(f"   → Borda {bordas['top'].upper()} no TOPO")
-        
+
         # BAIXO
         if bordas.get('bottom'):
             cor = cores.get(bordas['bottom'], colors.HexColor("#2FFF00"))
             c.setStrokeColor(cor)
             c.setLineWidth(espessura)
             c.line(x_origem, y_origem, x_origem + largura, y_origem)
-            print(f"   → Borda {bordas['bottom'].upper()} EMBAIXO")
         
         # ESQUERDA
         if bordas.get('left'):
@@ -954,7 +941,6 @@ class GeradorDesenhoTecnico:
             c.setStrokeColor(cor)
             c.setLineWidth(espessura)
             c.line(x_origem, y_origem, x_origem, y_origem + altura)
-            print(f"   → Borda {bordas['left'].upper()} na ESQUERDA")
         
         # DIREITA
         if bordas.get('right'):
@@ -962,7 +948,6 @@ class GeradorDesenhoTecnico:
             c.setStrokeColor(cor)
             c.setLineWidth(espessura)
             c.line(x_origem + largura, y_origem, x_origem + largura, y_origem + altura)
-            print(f"   → Borda {bordas['right'].upper()} na DIREITA")
         
         # Restaurar cores padrão
         c.setStrokeColor(colors.black)
@@ -1002,7 +987,6 @@ class GeradorDesenhoTecnico:
         # Espelhar se necessário (E se não rotacionou, pois rotação já muda tudo)
         if dados_adicionais.get('espelhar_peca', False) and angulo == 0:
             peca = self.espelhar_verticalmente(peca)
-            print("✓ Peça espelhada verticalmente")
 
         c = canvas.Canvas(arquivo_saida, pagesize=landscape(A4))
         largura_pagina, altura_pagina = landscape(A4)
@@ -1015,11 +999,6 @@ class GeradorDesenhoTecnico:
         altura_vistas_laterais = 150
         altura_vista_principal = altura_pagina_util - altura_tabela - altura_vistas_laterais - 30
 
-        print(f"\n📐 DISTRIBUIÇÃO DE ESPAÇO:")
-        print(f"   Vista principal: {altura_vista_principal:.1f}pts")
-        print(f"   Vistas laterais: {altura_vistas_laterais}pts")
-        print(f"   Tabela: {altura_tabela}pts")
-
         largura_disponivel = largura_pagina - 2 * self.margem
 
         # Calcular escala DINÂMICA para vista principal
@@ -1031,8 +1010,6 @@ class GeradorDesenhoTecnico:
             margem_seguranca=0.75
         )
 
-        print(f"📐 Escala vista principal: {escala:.3f}")
-
         # Dimensões da peça em escala
         largura_desenhada = peca.dimensoes.largura * mm * escala
         altura_desenhada = peca.dimensoes.comprimento * mm * escala
@@ -1043,8 +1020,6 @@ class GeradorDesenhoTecnico:
         # Centralizar horizontalmente
         x_origem = self.margem + (largura_disponivel - largura_desenhada) / 2
         y_origem = y_origem_principal
-
-        print(f"📍 Vista principal: x={x_origem:.1f}, y={y_origem:.1f}")
 
         # Título da vista principal - CENTRALIZADO
         c.setFont("Helvetica", 16)  # Fonte maior e negrito
@@ -1078,15 +1053,6 @@ class GeradorDesenhoTecnico:
             angulo = dados_adicionais.get('angulo_rotacao', 0)
             espelhado = dados_adicionais.get('espelhar_peca', False)
             bordas_config = self.transformar_bordas(bordas_originais, angulo, espelhado)
-            
-            # Debug
-            print(f"🎨 Bordas ORIGINAIS: {bordas_originais}")
-            print(f"🔄 Transformação: ângulo={angulo}°, espelhado={espelhado}")
-            print(f"🎨 Bordas TRANSFORMADAS: {bordas_config}")
-            
-            print("DEBUG:: BORDAS RECEBIDAS =>", bordas_originais)
-            print("DEBUG:: BORDAS TRANSFORMADAS =>", bordas_config)
-            print("DEBUG:: CHAVES TRANSFORMADAS =>", list(bordas_config.keys()))
 
             # Desenhar se tiver pelo menos uma borda
             if any([
@@ -1103,9 +1069,6 @@ class GeradorDesenhoTecnico:
                     altura_desenhada,
                     bordas_config
                 )
-                print("✓ Bordas desenhadas no PDF!")
-
-    
 
         # Desenhar cotas principais (MESMO ESTILO das cotas dos furos)
         offset_cota = 40
@@ -1178,7 +1141,6 @@ class GeradorDesenhoTecnico:
             y_alerta = y_tabela + altura_tabela + 10  # 10 pontos acima da tabela
             self.desenhar_alerta_atencao(c, x_alerta, y_alerta, texto_alerta)    
    
-        
         # Desenhar vistas laterais (se houver furos horizontais)
         if len(peca.furos_horizontais) > 0:
             # ===== LAYOUT DAS VISTAS LATERAIS =====
@@ -1200,15 +1162,10 @@ class GeradorDesenhoTecnico:
             # Se tiver alerta, desloca APENAS a vista esquerda
             if dados_adicionais and dados_adicionais.get('alerta'):
                 offset_alerta = 120
-                print(f"⚠️ Alerta detectado: deslocando APENAS vista esquerda {offset_alerta}pts")
                 x_vista_esquerda += offset_alerta  # Só a esquerda se move!
             
             # Verificar se foi espelhado
             foi_espelhado = dados_adicionais.get('espelhar_peca', False)
-            
-            print(f"\n📐 LAYOUT VISTAS LATERAIS:")
-            print(f"   Largura disponível por vista: {largura_vista_lateral}pts")
-            print(f"   Altura disponível: {altura_vistas}pts")
 
             # Desenhar vista lateral ESQUERDA
             self.desenhar_vista_lateral(
@@ -1229,7 +1186,6 @@ class GeradorDesenhoTecnico:
             )
 
         c.save()
-        print(f"PDF gerado: {arquivo_saida}")
 
     def transformar_bordas(self, bordas: dict, angulo: int, espelhado: bool) -> dict:
         """
