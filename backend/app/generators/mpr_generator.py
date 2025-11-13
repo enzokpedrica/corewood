@@ -136,11 +136,11 @@ class GeradorMPR:
                 'BM="LSU"',
                 f'TI="{profundidade}"',
                 f'DU="{diametro}"',
-                'AN="2"',
+                'AN="0"',
                 'MI="0"',
                 'S_="1"',
-                'AB="192"',
-                'WI="90"',
+                'AB="0"',
+                'WI="0"',
             ]
         
         # Parâmetros padrão
