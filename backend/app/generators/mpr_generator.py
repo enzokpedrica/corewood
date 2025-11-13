@@ -136,7 +136,7 @@ class GeradorMPR:
                 'BM="LSU"',
                 f'TI="{profundidade}"',
                 f'DU="{diametro}"',
-                'AN="0"',
+                'AN="1"',
                 'MI="0"',
                 'S_="1"',
                 'AB="0"',
