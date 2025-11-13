@@ -120,11 +120,11 @@ class GeradorMPR:
                 f'YA="{int(y)}"',
                 'BM="LSL"',
                 f'DU="{diametro}"',
-                'AN="2"',
+                'AN="1"',
                 'MI="0"',
                 'S_="1"',
-                'AB="192"',
-                'WI="90"',
+                'AB="0"',
+                'WI="0"',
             ]
         else:
             bm = "LSU"  # Sacado
@@ -186,10 +186,10 @@ class GeradorMPR:
             'BM="LSU"',
             f'TI="{profundidade}"',
             f'DU="{diametro}"',
-            'AN="2"',
+            'AN="1"',
             'MI="0"',
             'S_="1"',
-            'AB="192"',
+            'AB="0"',
             'WI="0"',
             'ZT="0"',
             'RM="0"',
