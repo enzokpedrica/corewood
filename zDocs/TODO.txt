@@ -36,6 +36,15 @@
 	> Salvar arquivos em lugares específicos
 	> Imprimir em lote
 
+> Adicionar algo para juntar PDFS pra Imprimir
+> Tradutor automático
+> Cadastro de peças
+	> Puxa automático a tabela horizontal
+	> Puxa automático no editor mpr		
+		> Salvar arquivos BHX para detectar hora que importa o arquivo
+			> Ou poder navegar pra achar a copia
+	> Onde Salvar?
+
 
 ## -- Essa parte será um pouco complexa, o ideal seria testar peças que furam somente a superfície primeiramente e realizar os ajustes.
 
