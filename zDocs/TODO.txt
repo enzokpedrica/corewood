@@ -76,8 +76,10 @@
 
 > Intranet?
 ----------------------------------------------------
+
 ------------------------ IA ------------------------
 
 > Como podemos implementar a IA?
 > Detecção de melhorias? Sistema de ML?
+> Chat de Ajuda
 
