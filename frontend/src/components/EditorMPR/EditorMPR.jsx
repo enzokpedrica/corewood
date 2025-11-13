@@ -517,6 +517,62 @@ const handleExportarMPR = async () => {
                   </div>
                 )}
 
+                {/* Replicação */}
+                <div className="form-group" style={{ borderTop: '2px solid #eee', paddingTop: '1rem', marginTop: '1rem' }}>
+                  <label>🔁 Replicar Furo:</label>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                    <input
+                      type="number"
+                      placeholder="Qtd"
+                      min="2"
+                      max="20"
+                      id="replicar-qtd"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Dist (mm)"
+                      step="0.1"
+                      id="replicar-dist"
+                    />
+                  </div>
+                  
+                  <select id="replicar-dir" style={{ marginTop: '0.5rem' }}>
+                    <option value="x">Horizontal (X)</option>
+                    <option value="y">Vertical (Y)</option>
+                  </select>
+                  
+                  <button
+                    className="btn-primary"
+                    style={{ marginTop: '0.5rem', width: '100%', padding: '0.5rem' }}
+                    onClick={() => {
+                      const qtd = parseInt(document.getElementById('replicar-qtd').value);
+                      const dist = parseFloat(document.getElementById('replicar-dist').value);
+                      const dir = document.getElementById('replicar-dir').value;
+                      
+                      if (!qtd || !dist) {
+                        alert('⚠️ Preencha quantidade e distância!');
+                        return;
+                      }
+                      
+                      const novosFuros = [];
+                      for (let i = 1; i < qtd; i++) {
+                        novosFuros.push({
+                          ...selectedFuro,
+                          id: Date.now() + i,
+                          x: selectedFuro.x + (dir === 'x' ? dist * i : 0),
+                          y: selectedFuro.y + (dir === 'y' ? dist * i : 0)
+                        });
+                      }
+                      
+                      setPeca({ ...peca, furos: [...peca.furos, ...novosFuros] });
+                      alert(`✅ ${qtd-1} furos replicados!`);
+                    }}
+                  >
+                    🔁 Aplicar Replicação
+                  </button>
+                </div>
+
                 <button
                   className="btn-danger"
                   onClick={() => handleRemoveFuro(selectedFuro.id)}
