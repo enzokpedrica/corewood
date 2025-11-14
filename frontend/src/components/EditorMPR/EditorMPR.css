@@ -2,21 +2,21 @@
   display: flex;
   flex-direction: column;
   height: calc(100vh - 200px);
-  background: #f8f9fa;
+  background: #f5f5f5;
   border-radius: 12px;
   overflow: hidden;
 }
 
 .editor-header {
-  background: white !important;
+  background: #1a1a1a !important;
   padding: 0.5rem 2rem !important;
-  border-bottom: 1px solid #e0e0e0 !important;
+  border-bottom: 2px solid #8b5cf6 !important;
 }
 
 .editor-header h2 {
   font-size: 1.1rem !important;
   margin: 0 !important;
-  color: #666 !important;
+  color: #ffffff !important;
 }
 
 .editor-header p {
@@ -38,8 +38,8 @@
 
 /* Sidebars */
 .editor-sidebar {
-  background: white;
-  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
   padding: 1.5rem;
   overflow-y: auto;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -59,9 +59,8 @@
 
 /* Seções */
 .editor-section {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 1rem;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
 }
 
 .editor-section h3 {
@@ -332,9 +331,9 @@
 
 /* Footer */
 .editor-footer {
-  background: white;
+  background: #1a1a1a;
+  border-top: 2px solid #8b5cf6;
   padding: 1.5rem 2rem;
-  border-top: 2px solid #e0e0e0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -379,7 +378,7 @@
 
 .btn-primary {
   padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #7c3aed;
   color: white;
   border: none;
   border-radius: 8px;
