@@ -214,7 +214,7 @@
   padding: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: auto;
-  min-height: 0;
+  min-height: 600px;
   width: 100%;  /* ← ADICIONAR */
   height: 100%; /* ← ADICIONAR */
 }
