@@ -1,7 +1,7 @@
 .editor-mpr {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 150px);
+  height: calc(100vh - 100px);
   background: #f5f5f5;
   border-radius: 12px;
   overflow: hidden;
