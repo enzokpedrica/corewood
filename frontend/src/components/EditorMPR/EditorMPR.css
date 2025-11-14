@@ -33,7 +33,7 @@
   padding: 0.5rem;  /* Padding menor */
   flex: 1;
   overflow: hidden;
-  height: calc(100vh - 50px);  /* Menos espaço pros headers */
+  height: calc(100vh - 100px);
 }
 
 /* Sidebars */
