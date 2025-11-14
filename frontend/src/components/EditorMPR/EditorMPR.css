@@ -29,11 +29,12 @@
   display: grid;
   grid-template-columns: 240px 1fr;
   grid-template-rows: 1fr auto;
-  gap: 0.5rem;  /* Gap menor */
-  padding: 0.5rem;  /* Padding menor */
+  gap: 0.5rem;
+  padding: 0.5rem;
   flex: 1;
-  overflow: hidden;
-  height: calc(100vh - 100px);
+  overflow-y: auto;  /* Permite scroll vertical */
+  height: auto;  /* Remove altura fixa */
+  min-height: calc(100vh - 100px);  /* Altura mínima */
 }
 
 /* Sidebars */
@@ -209,13 +210,10 @@
   align-items: center;
   justify-content: center;
   background: white;
-  border-radius: 12px;
-  padding: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: auto;
-  min-height: 0;
-  width: 100%;  /* ← ADICIONAR */
-  height: 100%; /* ← ADICIONAR */
+  border-radius: 8px;
+  padding: 1rem;  /* Mais padding */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-height: 600px;  /* Altura mínima do canvas */
 }
 
 .editor-center canvas {  /* ← ADICIONAR TUDO ISSO */
