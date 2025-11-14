@@ -99,48 +99,48 @@ class GeradorMPR:
         return '\n'.join(mpr)  # ← JÁ TEM \n entre linhas!
     
     def _gerar_furo_vertical(self, furo: Dict) -> List[str]:
-        """Gera linhas para um furo vertical"""
-        
         x = float(furo['x'])
         y = float(furo['y'])
         diametro = float(furo['diametro'])
         profundidade = float(furo.get('profundidade', 0))
         
-        # Determinar tipo
+        # Suporte a replicação
+        quantidade = int(furo.get('quantidade', 1))
+        distancia = float(furo.get('distancia', 0))
+        direcao_replicacao = furo.get('direcao_replicacao', 'x')  # 'x' ou 'y'
+        
+        wi = "0" if direcao_replicacao == 'x' else "90"
+        
         if profundidade == 0:
-            bm = "LSL"  # Passante
-            linhas_furo = [
-                ' ',
+            linhas = [
                 '<102 \\BohrVert\\',
                 f'XA="{int(x)}"',
                 f'YA="{int(y)}"',
                 'BM="LSL"',
                 f'DU="{diametro}"',
-                'AN="1"',
+                f'AN="{quantidade}"',
                 'MI="0"',
                 'S_="1"',
-                'AB="0"',
-                'WI="0"',
+                f'AB="{int(distancia)}"',
+                f'WI="{wi}"',
             ]
         else:
-            bm = "LSU"  # Sacado
-            linhas_furo = [
-                ' ',
+            linhas = [
                 '<102 \\BohrVert\\',
                 f'XA="{int(x)}"',
                 f'YA="{int(y)}"',
                 'BM="LSU"',
                 f'TI="{profundidade}"',
                 f'DU="{diametro}"',
-                'AN="1"',
+                f'AN="{quantidade}"',
                 'MI="0"',
                 'S_="1"',
-                'AB="0"',
-                'WI="0"',
+                f'AB="{int(distancia)}"',
+                f'WI="{wi}"',
             ]
         
         # Parâmetros padrão
-        linhas_furo.extend([
+        linhas.extend([
             'ZT="0"',
             'RM="0"',
             'VW="0"',
@@ -163,7 +163,7 @@ class GeradorMPR:
             'KO="00"',
         ])
         
-        return linhas_furo
+        return linhas
     
     def _gerar_furo_horizontal(self, furo: Dict) -> List[str]:
         """Gera linhas para um furo horizontal"""
