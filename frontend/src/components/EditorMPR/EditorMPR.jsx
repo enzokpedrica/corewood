@@ -555,21 +555,18 @@ const handleExportarMPR = async () => {
                         return;
                       }
                       
-                      const furoAtualizado = {
-                        ...selectedFuro,
-                        quantidade: qtd,
-                        distancia: dist,
-                        direcao_replicacao: dir
-                      };
-                      
-                      setPeca({
-                        ...peca,
-                        furos: peca.furos.map(f => 
-                          f.id === selectedFuro.id ? furoAtualizado : f
-                        )
-                      });
-                      setSelectedFuro(furoAtualizado);
-                      alert(`✅ Furo configurado para replicar ${qtd}x com ${dist}mm de distância!`);
+                      const novosFuros = [];
+                        for (let i = 1; i < qtd; i++) {
+                          novosFuros.push({
+                            ...selectedFuro,
+                            id: Date.now() + i,
+                            x: selectedFuro.x + (dir === 'x' ? dist * i : 0),
+                            y: selectedFuro.y + (dir === 'y' ? dist * i : 0)
+                          });
+                        }
+
+                        setPeca({ ...peca, furos: [...peca.furos, ...novosFuros] });
+                        alert(`✅ ${qtd-1} furos replicados!`);
                     }}
                   >
                     🔁 Aplicar Replicação
