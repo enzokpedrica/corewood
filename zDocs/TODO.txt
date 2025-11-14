@@ -82,4 +82,11 @@
 > Como podemos implementar a IA?
 > Detecção de melhorias? Sistema de ML?
 > Chat de Ajuda
+----------------------------------------------------
 
+------------------------ WEBSCRAPING ------------------------
+
+> Coletor de imagens para ideias em produtos
+	> Puxadores
+	> Tendências de Design
+	> Talvez seleciona 3 e pede pra gerar mais 5 alternativas

@@ -7,6 +7,51 @@ class GeradorMPR:
     def __init__(self):
         self.version = "4.0 Alpha"
         self.ww = "6.0.18"
+
+    def _agrupar_furos_sequenciais(self, furos: List[Dict]) -> List[Dict]:
+        """Agrupa furos que estão em sequência"""
+        if not furos:
+            return []
+        
+        grupos = []
+        furos_ordenados = sorted(furos, key=lambda f: (f['y'], f['x']))
+        
+        i = 0
+        while i < len(furos_ordenados):
+            grupo = {
+                **furos_ordenados[i],
+                'quantidade': 1,
+                'distancia': 0,
+                'direcao_replicacao': 'x'
+            }
+            
+            # Verificar furos sequenciais
+            j = i + 1
+            while j < len(furos_ordenados):
+                f_atual = furos_ordenados[j-1]
+                f_prox = furos_ordenados[j]
+                
+                # Mesmo Y, X sequencial?
+                if (f_prox['y'] == f_atual['y'] and 
+                    f_prox['diametro'] == f_atual['diametro'] and
+                    f_prox['profundidade'] == f_atual['profundidade']):
+                    
+                    dist = f_prox['x'] - f_atual['x']
+                    if grupo['quantidade'] == 1:
+                        grupo['distancia'] = dist
+                        grupo['quantidade'] = 2
+                    elif abs(dist - grupo['distancia']) < 0.1:
+                        grupo['quantidade'] += 1
+                    else:
+                        break
+                    j += 1
+                else:
+                    break
+            
+            grupos.append(grupo)
+            i = j if j > i + 1 else i + 1
+        
+        return grupos    
     
     def gerar_mpr(self, peca_data: Dict) -> str:
         """Gera conteúdo do arquivo MPR"""
@@ -87,9 +132,12 @@ class GeradorMPR:
         mpr.append('AX="0"')
         mpr.append('AY="0"')
         mpr.append(' ')
+
+        # Agrupar furos sequenciais
+        furos_agrupados = self._agrupar_furos_sequenciais(furos_verticais)
         
         # ===== FUROS VERTICAIS =====
-        for furo in furos_verticais:
+        for furo in furos_agrupados:
             mpr.extend(self._gerar_furo_vertical(furo))
         
         # ===== FUROS HORIZONTAIS =====
