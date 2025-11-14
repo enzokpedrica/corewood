@@ -9,13 +9,13 @@
 
 .editor-header {
   background: #1a1a1a !important;
-  padding: 0.25rem 1rem !important;
+  padding: 0.15rem 0.75rem !important;
   border-bottom: 2px solid #8b5cf6 !important;
 }
 
 .editor-header h2 {
   color: #ffffff;
-  font-size: 0.9rem;  /* Pequeno */
+  font-size: 0.8rem;  /* Pequeno */
   margin: 0;
   font-weight: 600;
 }
@@ -27,13 +27,13 @@
 /* Layout principal */
 .editor-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;  /* Sidebar menor */
+  grid-template-columns: 240px 1fr;
   grid-template-rows: 1fr auto;
-  gap: 0.75rem;  /* Gap menor */
-  padding: 0.75rem;  /* Padding menor */
+  gap: 0.5rem;  /* Gap menor */
+  padding: 0.5rem;  /* Padding menor */
   flex: 1;
   overflow: hidden;
-  height: calc(100vh - 60px);  /* Menos espaço pros headers */
+  height: calc(100vh - 50px);  /* Menos espaço pros headers */
 }
 
 /* Sidebars */
@@ -41,9 +41,10 @@
   background: #ffffff;
   border: 1px solid #e5e5e5;
   border-radius: 8px;
-  padding: 0.75rem;  /* Menos padding */
+  padding: 0.5rem;  /* Menos padding */
   overflow-y: auto;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-size: 0.85rem;
 }
 
 .editor-sidebar.left {
@@ -63,14 +64,14 @@
   background: #fafafa;
   border: 1px solid #e5e5e5;
   border-radius: 6px;
-  padding: 0.75rem;  /* Menos padding */
-  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .editor-section h3 {
-  margin: 0 0 0.75rem 0;
   color: #333;
-  font-size: 0.90rem;
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -110,7 +111,8 @@
 
 /* Form groups */
 .form-group {
-  margin-bottom: 0.75rem;
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
 }
 
 .form-group label {
@@ -126,8 +128,8 @@
   width: 100%;
   border: 2px solid #e0e0e0;
   border-radius: 6px;
-  padding: 0.5rem;
-  font-size: 0.9rem;
+  padding: 0.4rem;
+  font-size: 0.85rem;
   transition: border-color 0.2s;
 }
 
@@ -337,7 +339,7 @@
 .editor-footer {
   background: #1a1a1a;
   border-top: 2px solid #8b5cf6;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.75rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -434,7 +436,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
-  max-height: 400px;
+  max-height: 300px;
   overflow-y: auto;
 }
 
