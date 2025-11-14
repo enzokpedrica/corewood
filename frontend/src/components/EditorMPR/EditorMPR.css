@@ -9,14 +9,15 @@
 
 .editor-header {
   background: #1a1a1a !important;
-  padding: 0.5rem 2rem !important;
+  padding: 0.25rem 1rem !important;
   border-bottom: 2px solid #8b5cf6 !important;
 }
 
 .editor-header h2 {
-  font-size: 1.1rem !important;
-  margin: 0 !important;
-  color: #ffffff !important;
+  color: #ffffff;
+  font-size: 0.9rem;  /* Pequeno */
+  margin: 0;
+  font-weight: 600;
 }
 
 .editor-header p {
@@ -26,23 +27,23 @@
 /* Layout principal */
 .editor-layout {
   display: grid;
-  grid-template-columns: 350px 1fr;
+  grid-template-columns: 280px 1fr;  /* Sidebar menor */
   grid-template-rows: 1fr auto;
-  gap: 1.5rem;
-  padding: 1.0rem 0.3rem;  /* Menos padding lateral */
+  gap: 0.75rem;  /* Gap menor */
+  padding: 0.75rem;  /* Padding menor */
   flex: 1;
   overflow: hidden;
-  height: calc(100vh - 100px);
-  max-width: 100%;  /* Ocupa tudo */
+  height: calc(100vh - 60px);  /* Menos espaço pros headers */
 }
 
 /* Sidebars */
 .editor-sidebar {
   background: #ffffff;
   border: 1px solid #e5e5e5;
-  padding: 1.5rem;
+  border-radius: 8px;
+  padding: 0.75rem;  /* Menos padding */
   overflow-y: auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .editor-sidebar.left {
@@ -61,12 +62,15 @@
 .editor-section {
   background: #fafafa;
   border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 0.75rem;  /* Menos padding */
+  margin-bottom: 0.75rem;
 }
 
 .editor-section h3 {
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.75rem 0;
   color: #333;
-  font-size: 1.1rem;
+  font-size: 0.90rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -106,24 +110,24 @@
 
 /* Form groups */
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .form-group label {
   display: block;
   font-weight: 600;
   color: #555;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 0.75rem;
   border: 2px solid #e0e0e0;
   border-radius: 6px;
-  font-size: 1rem;
+  padding: 0.5rem;
+  font-size: 0.9rem;
   transition: border-color 0.2s;
 }
 
@@ -333,11 +337,11 @@
 .editor-footer {
   background: #1a1a1a;
   border-top: 2px solid #8b5cf6;
-  padding: 1.5rem 2rem;
-  display: flex;
+  padding: 0.75rem 1rem;
+  /* display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  gap: 1rem; */
 }
 
 .footer-actions {
