@@ -1117,12 +1117,8 @@ class GeradorDesenhoTecnico:
             # Mostrar cota Y apenas se for o mais à esquerda da linha
             mostrar_y = id(furo) in furos_com_cota_y
             
-            # Inverter Y para origem no topo
-            altura_real = float(peca.dimensoes.comprimento)
-            cota_y_invertida = altura_real - furo.y
-            
             self.desenhar_cota_furo(c, x_origem, y_origem, x_furo, y_furo, 
-                                furo.x, cota_y_invertida,
+                                furo.x, furo.y,
                                 largura_desenhada, altura_desenhada,
                                 escala, mostrar_x, mostrar_y)
             
