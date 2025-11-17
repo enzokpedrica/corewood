@@ -245,19 +245,40 @@ const handleExportarMPR = async () => {
       
       // Extrair furos verticais (102)
       const furosImportados = [];
-      const furoMatches = text.matchAll(/<102[^<]*XA="([\d.]+)"[^<]*YA="([\d.]+)"[^<]*DU="([\d.]+)"(?:[^<]*TI="([\d.]+)")?/g);
-      
+      const furoMatches = text.matchAll(/<102[^<]*XA="([\d.]+)"[^<]*YA="([\d.]+)"[^<]*DU="([\d.]+)"(?:[^<]*TI="([\d.]+)")?(?:[^<]*AN="([\d]+)")?(?:[^<]*AB="([\d.]+)")?(?:[^<]*WI="([\d]+)")?/g);
+
       for (const match of furoMatches) {
-        furosImportados.push({
-          id: Date.now() + Math.random(),
-          tipo: 'vertical',
-          x: parseFloat(match[1]),
-          y: parseFloat(match[2]),
-          diametro: parseFloat(match[3]),
-          profundidade: match[4] ? parseFloat(match[4]) : 0
-        });
+        const x = parseFloat(match[1]);
+        const y = parseFloat(match[2]);
+        const diametro = parseFloat(match[3]);
+        const profundidade = match[4] ? parseFloat(match[4]) : 0;
+        const quantidade = match[5] ? parseInt(match[5]) : 1;
+        const distancia = match[6] ? parseFloat(match[6]) : 0;
+        const wi = match[7] ? parseInt(match[7]) : 0;
+        
+        // Se AN > 1, expandir furos
+        if (quantidade > 1 && distancia > 0) {
+          for (let i = 0; i < quantidade; i++) {
+            furosImportados.push({
+              id: Date.now() + Math.random(),
+              tipo: 'vertical',
+              x: wi === 0 ? x + (distancia * i) : x,
+              y: wi === 90 ? y + (distancia * i) : y,
+              diametro,
+              profundidade
+            });
+          }
+        } else {
+          furosImportados.push({
+            id: Date.now() + Math.random(),
+            tipo: 'vertical',
+            x,
+            y,
+            diametro,
+            profundidade
+          });
+        }
       }
-      
       setPeca({
         nome: file.name.replace('.mpr', '').replace('.MPR', ''),
         largura,
