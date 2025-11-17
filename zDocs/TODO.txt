@@ -1,3 +1,7 @@
+> Verificar a diferença nas coordenadas
+	> Para criar uma peça os eixos começam de cima pra baixo
+	> Para criar o doc o eixo de baixo pra cima
+
 > Evitar sobreposição de cotas
 	> Cota da vista principal que sai pra esquerda e topo
 	> Cota de furos na vista principal
@@ -32,7 +36,6 @@
 	> Ajustar as vistas antes de gerar pdf?
 
 > Processar em lote
-	> Gerar arquivos separados
 	> Salvar arquivos em lugares específicos
 	> Imprimir em lote
 
