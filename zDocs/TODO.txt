@@ -31,12 +31,10 @@
 	> Ajustar as cotas antes de gerar o pdf?
 	> Ajustar as vistas antes de gerar pdf?
 
-> Processar em lote
-	> Salvar arquivos em lugares específicos
-	> Imprimir em lote
-
 > Adicionar algo para juntar PDFS pra Imprimir
+
 > Tradutor automático
+
 > Cadastro de peças
 	> Puxa automático a tabela horizontal
 	> Puxa automático no editor mpr		
@@ -46,7 +44,6 @@
 
 > Melhorar o título no doc
 	> Esta saindo pra fora
-
 
 ## -- Essa parte será um pouco complexa, o ideal seria testar peças que furam somente a superfície primeiramente e realizar os ajustes.
 
@@ -66,8 +63,6 @@
 
 ----------------------------------------------------
 -- CoreCraft --
-> Criar peça e exportar para .mpr
-> Editar furações já criadas
 > Qual a disposição de ferramentas na máquina?
 > Usinagens
 
