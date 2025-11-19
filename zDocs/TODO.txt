@@ -1,3 +1,6 @@
+> Apagar registros banco de dados
+
+
 > Evitar sobreposição de cotas
 	> Cota da vista principal que sai pra esquerda e topo
 	> Cota de furos na vista principal

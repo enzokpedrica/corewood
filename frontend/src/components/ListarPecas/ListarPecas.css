@@ -1,0 +1,187 @@
+.listar-pecas {
+  padding: 2rem;
+  background: #f5f5f5;
+  min-height: calc(100vh - 150px);
+}
+
+.listar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.listar-container h2 {
+  color: #1a1a1a;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.8rem;
+}
+
+.subtitulo {
+  color: #666;
+  margin: 0 0 2rem 0;
+  font-size: 0.95rem;
+}
+
+.busca-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.input-busca {
+  flex: 1;
+  padding: 1rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.input-busca:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.btn-buscar {
+  padding: 1rem 2rem;
+  background: #8b5cf6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-buscar:hover:not(:disabled) {
+  background: #7c3aed;
+  transform: translateY(-2px);
+}
+
+.btn-buscar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.alerta {
+  padding: 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.alerta.erro {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.pecas-lista {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pecas-header {
+  border-bottom: 2px solid #e5e5e5;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pecas-header h3 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 1.2rem;
+}
+
+.peca-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  transition: all 0.2s;
+}
+
+.peca-card:hover {
+  background: #f5f5f5;
+  border-color: #8b5cf6;
+  transform: translateX(4px);
+}
+
+.peca-info {
+  flex: 1;
+}
+
+.peca-codigo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #8b5cf6;
+  margin-bottom: 0.5rem;
+}
+
+.peca-nome {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.peca-dimensoes {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.peca-familia {
+  font-size: 0.85rem;
+  color: #888;
+  font-style: italic;
+}
+
+.peca-acoes {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-editar {
+  padding: 0.75rem 1.5rem;
+  background: #8b5cf6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.btn-editar:hover {
+  background: #7c3aed;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .busca-container {
+    flex-direction: column;
+  }
+
+  .peca-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .peca-acoes {
+    width: 100%;
+  }
+
+  .btn-editar {
+    width: 100%;
+  }
+}
