@@ -35,6 +35,9 @@ async def importar_pecas(
         # Ler Excel
         contents = await file.read()
         df = pd.read_excel(io.BytesIO(contents))
+
+        # Remove última linha (informações desnecessárias)
+        df = df[:-1]
         
         # Validar colunas necessárias
         colunas_necessarias = ['Peça', 'Material', 'C', 'L', 'Cod. Peça', 'Família']

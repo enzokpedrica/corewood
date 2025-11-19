@@ -12,6 +12,7 @@ import { validateMPRFile, validateConfig, formatErrors, formatWarnings } from '.
 import './App.css';
 import EditorMPR from './components/EditorMPR/EditorMPR';
 import ImportarPecas from './components/ImportarPecas/ImportarPecas';
+import ListarPecas from './components/ListarPecas/ListarPecas';
 
 function MainApp() {
   const [modoLote, setModoLote] = useState('individual');
@@ -32,6 +33,7 @@ function MainApp() {
   const [error, setError] = useState(null);
   const [warning, setWarning] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [pecaSelecionada, setPecaSelecionada] = useState(null);
 
   const { user, logout } = useAuth();
 
@@ -50,6 +52,11 @@ function MainApp() {
         setWarning(`Atenção:\n• ${formatWarnings(validation.warnings)}`);
       }
     }
+  };
+
+  const handleSelecionarPeca = (peca) => {
+    setPecaSelecionada(peca);
+    setModoLote('editor'); // Abre no editor
   };
 
   const handleGeneratePDF = async () => {
@@ -192,6 +199,22 @@ function MainApp() {
                 >
                   ✏️ Editor
                 </button>
+
+                <button
+                  onClick={() => setModoLote('listar')}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: modoLote === 'listar' ? '#8b5cf6' : '#2d2d2d',
+                    color: 'white',
+                    border: modoLote === 'listar' ? 'none' : '2px solid #8b5cf6',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: '0.85rem'
+                  }}
+                >
+                  🗂️ Listar
+                </button>
               </div>
               
               <div style={{ textAlign: 'right' }}>
@@ -220,12 +243,15 @@ function MainApp() {
 
       <main className="app-main">
         <div className="container">
-          {modoLote === 'lote' ? (
+          {modoLote === 'listar' ? (
+            // MODO LISTAR
+            <ListarPecas onSelecionarPeca={handleSelecionarPeca} />
+          ) : modoLote === 'lote' ? (
             // MODO LOTE
             <LoteUpload />
           ) : modoLote === 'editor' ? (
             // MODO EDITOR
-            <EditorMPR />
+            <EditorMPR pecaInicial={pecaSelecionada} />
           ) : modoLote === 'importar' ? (
             // MODO IMPORTAR
             <ImportarPecas />
