@@ -11,6 +11,7 @@ import { generatePDF } from './services/api';
 import { validateMPRFile, validateConfig, formatErrors, formatWarnings } from './utils/validation';
 import './App.css';
 import EditorMPR from './components/EditorMPR/EditorMPR';
+import ImportarPecas from './components/ImportarPecas/ImportarPecas';
 
 function MainApp() {
   const [modoLote, setModoLote] = useState('individual');
@@ -160,6 +161,23 @@ function MainApp() {
                 </button>
 
                 <button
+                  onClick={() => setModoLote('importar')}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: modoLote === 'importar' ? '#8b5cf6' : '#2d2d2d',
+                    color: 'white',
+                    border: modoLote === 'importar' ? 'none' : '2px solid #8b5cf6',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: '0.85rem',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  📤 Importar
+                </button>
+
+                <button
                   onClick={() => setModoLote('editor')}
                   style={{
                     padding: '0.75rem 1.5rem',
@@ -208,6 +226,9 @@ function MainApp() {
           ) : modoLote === 'editor' ? (
             // MODO EDITOR
             <EditorMPR />
+          ) : modoLote === 'importar' ? (
+            // MODO IMPORTAR
+            <ImportarPecas />
           ) : (
             // MODO INDIVIDUAL
             <div className="content-grid">
