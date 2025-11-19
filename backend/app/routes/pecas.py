@@ -63,7 +63,7 @@ async def importar_pecas(
         
         for _, row in df.iterrows():
             # Extrair dados
-            codigo_peca = str(row['Cod. Peça']).strip()
+            codigo_peca = str(int(float(row['Cod. Peça']))).strip()
             nome_peca = str(row['Peça']).strip()
             material = str(row['Material']).strip()
             comprimento = float(row['C']) if pd.notna(row['C']) else 0
