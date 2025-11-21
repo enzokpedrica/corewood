@@ -1,22 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Canvas from './Canvas';
 import './EditorMPR.css';
 import { exportarMPR, gerarPDFEditor } from '../../services/api';
 import FuroManual from './FuroManual';
 
-function EditorMPR() {
+function EditorMPR({ pecaInicial }) {
   const [peca, setPeca] = useState({
-    nome: '',
-    largura: 0,
-    comprimento: 0,
-    espessura: 15,
-    furos: []
+    dimensoes: {
+      largura: 0,
+      comprimento: 0,
+      espessura: 15
+    },
+    furos: [],
+    furosHorizontais: []
   });
+
+  const [nomePeca, setNomePeca] = useState('');
+  const [codigoPeca, setCodigoPeca] = useState('');
+  const [material, setMaterial] = useState('');
+
+  useEffect(() => {
+    if (pecaInicial) {
+      // Carregar dados da peça do banco
+      setPeca({
+        dimensoes: {
+          largura: parseFloat(pecaInicial.largura) || 0,
+          comprimento: parseFloat(pecaInicial.comprimento) || 0,
+          espessura: parseFloat(pecaInicial.espessura) || 0
+        },
+        furos: pecaInicial.furos?.verticais || [],
+        furosHorizontais: pecaInicial.furos?.horizontais || []
+      });
+      
+      setNomePeca(pecaInicial.nome || '');
+      setCodigoPeca(pecaInicial.codigo || '');
+      setMaterial(pecaInicial.material || '');
+    }
+  }, [pecaInicial]);
 
   const [selectedTool, setSelectedTool] = useState(null);
   const [selectedFuro, setSelectedFuro] = useState(null);
   const [showFuroConfig, setShowFuroConfig] = useState(false);
-  const [transformacao, setTransformacao] = useState({rotacao: 0,espelhado: false});
+  const [transformacao, setTransformacao] = useState({rotacao: 0, espelhado: false});
   const [pecaOriginal, setPecaOriginal] = useState(null);
 
   // Atualizar dimensões da peça
