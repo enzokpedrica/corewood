@@ -66,10 +66,11 @@ async def importar_pecas(
             db.commit()
             db.refresh(produto)
         else:
-            # Atualizar nome se vier da família
-            if familia_produto and not produto.nome:
+            # Atualizar nome com a família (sempre)
+            if familia_produto:
                 produto.nome = familia_produto
                 db.commit()
+                db.refresh(produto)
         
         # Processar peças
         pecas_criadas = 0
