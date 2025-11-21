@@ -20,14 +20,14 @@ function EditorMPR({ pecaInicial }) {
 
   useEffect(() => {
     if (pecaInicial) {
-      setPeca({
-        ...peca,
+      setPeca(prevPeca => ({
+        ...prevPeca,
         largura: parseFloat(pecaInicial.largura) || 0,
         comprimento: parseFloat(pecaInicial.comprimento) || 0,
         espessura: parseFloat(pecaInicial.espessura) || 0,
         furos: pecaInicial.furos?.verticais || [],
         furosHorizontais: pecaInicial.furos?.horizontais || []
-      });
+      }));
       
       setNomePeca(pecaInicial.nome || '');
       setCodigoPeca(pecaInicial.codigo || '');
