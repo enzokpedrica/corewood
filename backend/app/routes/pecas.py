@@ -49,17 +49,27 @@ async def importar_pecas(
                 detail=f"Colunas faltando no Excel: {', '.join(colunas_faltando)}"
             )
         
+        # Pegar família (nome do produto) da primeira linha
+        familia_produto = None
+        if len(df) > 0 and 'Família' in df.columns:
+            familia_produto = str(df.iloc[0]['Família']).strip() if pd.notna(df.iloc[0]['Família']) else None
+
         # Criar ou buscar produto
         produto = db.query(Produto).filter(Produto.codigo == codigo_produto).first()
-        
+
         if not produto:
             produto = Produto(
                 codigo=codigo_produto,
-                nome=nome_produto or f"Produto {codigo_produto}"
+                nome=familia_produto or nome_produto or f"Produto {codigo_produto}"
             )
             db.add(produto)
             db.commit()
             db.refresh(produto)
+        else:
+            # Atualizar nome se vier da família
+            if familia_produto and not produto.nome:
+                produto.nome = familia_produto
+                db.commit()
         
         # Processar peças
         pecas_criadas = 0
@@ -71,12 +81,6 @@ async def importar_pecas(
             material = str(row['Material']).strip()
             comprimento = float(row['C']) if pd.notna(row['C']) else 0
             largura = float(row['L']) if pd.notna(row['L']) else 0
-            familia_produto = str(row['Família']).strip() if pd.notna(row['Família']) else None
-
-            # Atualizar nome do produto se vier vazio
-            if produto and not produto.nome and familia_produto:
-                produto.nome = familia_produto
-                db.commit()
             espessura = extrair_espessura(material)
             
             # Verificar se peça já existe
