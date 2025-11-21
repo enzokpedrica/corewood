@@ -6,16 +6,13 @@ import FuroManual from './FuroManual';
 
 function EditorMPR({ pecaInicial }) {
   const [peca, setPeca] = useState({
-    dimensoes: {
-      largura: 0,
-      comprimento: 0,
-      espessura: 15
-    },
-    furos: [],
-    furosHorizontais: []
+    nome: '',
+    largura: 0,
+    comprimento: 0,
+    espessura: 15,
+    furos: []
   });
 
-  const [nomePeca, setNomePeca] = useState('');
   const [codigoPeca, setCodigoPeca] = useState('');
   const [material, setMaterial] = useState('');
 
@@ -37,11 +34,12 @@ function EditorMPR({ pecaInicial }) {
       setMaterial(pecaInicial.material || '');
     }
   }, [pecaInicial]);
+  
 
   const [selectedTool, setSelectedTool] = useState(null);
   const [selectedFuro, setSelectedFuro] = useState(null);
   const [showFuroConfig, setShowFuroConfig] = useState(false);
-  const [transformacao, setTransformacao] = useState({rotacao: 0, espelhado: false});
+  const [transformacao, setTransformacao] = useState({rotacao: 0,espelhado: false});
   const [pecaOriginal, setPecaOriginal] = useState(null);
 
   // Atualizar dimensões da peça
