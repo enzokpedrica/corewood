@@ -151,6 +151,8 @@ async def generate_pdf_from_editor(
         )
         
         # Gerar PDF
+
+        
         with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
             pdf_path = tmp_file.name
         
