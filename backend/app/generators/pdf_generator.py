@@ -651,9 +651,15 @@ class GeradorDesenhoTecnico:
                 elif campo_nome == "Data":
                     valor = datetime.now().strftime("%d/%m/%Y")
                 elif campo_nome == "Código":
-                    valor = "510524006 - Contra Frente Gaveta"
+                    # Tenta pegar de dados_adicionais, senão usa padrão
+                    codigo = dados_adicionais.get('codigo_peca', '')
+                    nome = dados_adicionais.get('nome_peca', '')
+                    valor = f"{codigo} - {nome}" if codigo and nome else "---"
+                    
                 elif campo_nome == "Nome_Produto":
-                    valor = "8100015098 - AEREO 3 PORTAS 1 NICHO 1.2M ALLURE"
+                    cod_prod = dados_adicionais.get('codigo_produto', '')
+                    nome_prod = dados_adicionais.get('nome_produto', '')
+                    valor = f"{cod_prod} - {nome_prod}" if cod_prod and nome_prod else "---"
                 elif campo_nome == "Deslocamento":
                     valor = "---"
                 elif campo_nome == "Batente":

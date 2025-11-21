@@ -45,6 +45,12 @@
 > Melhorar o título no doc
 	> Esta saindo pra fora
 
+> Suporte
+	> Deu problema e agora?
+	> Abrir chamado
+	> Bot de atendimento
+	> Bot que aprende com as soluções
+
 ## -- Essa parte será um pouco complexa, o ideal seria testar peças que furam somente a superfície primeiramente e realizar os ajustes.
 
 > Lógica para Furação
