@@ -5,7 +5,6 @@ from typing import Optional, Any
 class PecaBase(BaseModel):
     codigo: str
     nome: Optional[str] = None
-    familia: Optional[str] = None
     material: Optional[str] = None
     espessura: Optional[float] = None
     comprimento: Optional[float] = None

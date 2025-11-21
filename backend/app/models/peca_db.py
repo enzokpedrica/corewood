@@ -10,7 +10,6 @@ class PecaDB(Base):
     produto_id = Column(Integer, ForeignKey("produtos.id", ondelete="CASCADE"), nullable=False, index=True)
     codigo = Column(String(20), nullable=False, index=True)
     nome = Column(String(200))
-    familia = Column(String(200))
     material = Column(String(100))
     espessura = Column(Numeric(10, 2))
     comprimento = Column(Numeric(10, 2))
