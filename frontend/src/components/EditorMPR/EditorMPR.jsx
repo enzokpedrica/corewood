@@ -6,11 +6,10 @@ import FuroManual from './FuroManual';
 
 function EditorMPR({ pecaInicial }) {
   const [peca, setPeca] = useState({
-    dimensoes: {
-      largura: 0,
-      comprimento: 0,
-      espessura: 15
-    },
+    nome: '',
+    largura: 0,
+    comprimento: 0,
+    espessura: 15,
     furos: [],
     furosHorizontais: []
   });
@@ -22,11 +21,10 @@ function EditorMPR({ pecaInicial }) {
   useEffect(() => {
     if (pecaInicial) {
       setPeca({
-        dimensoes: {
-          largura: parseFloat(pecaInicial.largura) || 0,
-          comprimento: parseFloat(pecaInicial.comprimento) || 0,
-          espessura: parseFloat(pecaInicial.espessura) || 0
-        },
+        ...peca,
+        largura: parseFloat(pecaInicial.largura) || 0,
+        comprimento: parseFloat(pecaInicial.comprimento) || 0,
+        espessura: parseFloat(pecaInicial.espessura) || 0,
         furos: pecaInicial.furos?.verticais || [],
         furosHorizontais: pecaInicial.furos?.horizontais || []
       });
