@@ -337,6 +337,41 @@ const handleExportarMPR = async () => {
     setSelectedTool(null);
   };
 
+  const handleSalvarPeca = async () => {
+    if (!pecaInicial?.id) {
+      alert('⚠️ Peça não identificada para salvar');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('largura', peca.largura);
+      formData.append('comprimento', peca.comprimento);
+      formData.append('espessura', peca.espessura);
+      formData.append('furos', JSON.stringify({
+        verticais: peca.furos || [],
+        horizontais: peca.furosHorizontais || []
+      }));
+
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/pecas/${pecaInicial.id}/salvar`,
+        {
+          method: 'PUT',
+          body: formData
+        }
+      );
+
+      if (response.ok) {
+        alert('✅ Peça salva com sucesso!');
+      } else {
+        alert('❌ Erro ao salvar peça');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('❌ Erro de conexão');
+    }
+  };
+
   return (
     <div className="editor-mpr">
 
@@ -711,6 +746,16 @@ const handleExportarMPR = async () => {
         <button className="btn-secondary" onClick={handleNovaPeca}>
           🆕 Nova Peça
         </button>
+
+        {pecaInicial && (
+          <button
+            className="btn-secondary"
+            onClick={handleSalvarPeca}
+            disabled={loading}
+          >
+            💾 Salvar Alterações
+          </button>
+        )}
 
         <div className="footer-actions">
           <button

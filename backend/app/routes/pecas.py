@@ -16,6 +16,8 @@ def extrair_espessura(material: str) -> float:
     match = re.search(r'(\d+)', material)
     return float(match.group(1)) if match else 15.0
 
+
+
 @router.post("/importar", response_model=dict)
 async def importar_pecas(
     codigo_produto: str = Form(...),
@@ -123,6 +125,37 @@ async def importar_pecas(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro ao importar: {str(e)}")
+    
+@router.put("/{peca_id}/salvar", response_model=PecaResponse)
+async def salvar_peca(
+    peca_id: int,
+    largura: float = Form(...),
+    comprimento: float = Form(...),
+    espessura: float = Form(...),
+    furos: str = Form("{}"),  # JSON string
+    db: Session = Depends(get_db)
+):
+    """Salva alterações da peça (dimensões + furos)"""
+    
+    peca = db.query(PecaDB).filter(PecaDB.id == peca_id).first()
+    
+    if not peca:
+        raise HTTPException(status_code=404, detail="Peça não encontrada")
+    
+    # Atualizar dimensões
+    peca.largura = largura
+    peca.comprimento = comprimento
+    peca.espessura = espessura
+    
+    # Atualizar furos (JSON)
+    import json
+    peca.furos = json.loads(furos)
+    
+    db.commit()
+    db.refresh(peca)
+    
+    return peca    
+    
 
 @router.get("/produto/{codigo_produto}", response_model=List[PecaResponse])
 def listar_pecas_produto(codigo_produto: str, db: Session = Depends(get_db)):
