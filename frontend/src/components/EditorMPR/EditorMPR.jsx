@@ -17,6 +17,7 @@ function EditorMPR({ pecaInicial }) {
   const [nomePeca, setNomePeca] = useState('');
   const [codigoPeca, setCodigoPeca] = useState('');
   const [material, setMaterial] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (pecaInicial) {
@@ -343,6 +344,8 @@ const handleExportarMPR = async () => {
       return;
     }
 
+    setLoading(true);
+
     try {
       const formData = new FormData();
       formData.append('largura', peca.largura);
@@ -369,9 +372,10 @@ const handleExportarMPR = async () => {
     } catch (error) {
       console.error(error);
       alert('❌ Erro de conexão');
+    } finally {
+      setLoading(false);
     }
   };
-
   return (
     <div className="editor-mpr">
 
