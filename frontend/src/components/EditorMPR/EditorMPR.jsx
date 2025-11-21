@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Canvas from './Canvas';
 import './EditorMPR.css';
 import { exportarMPR, gerarPDFEditor } from '../../services/api';
@@ -13,8 +13,9 @@ function EditorMPR({ pecaInicial }) {
     furos: []
   });
 
-  const [codigoPeca, setCodigoPeca] = useState('');
-  const [material, setMaterial] = useState('');
+  // const [nomePeca, setNomePeca] = useState('');
+  // const [codigoPeca, setCodigoPeca] = useState('');
+  // const [material, setMaterial] = useState('');
 
   useEffect(() => {
     if (pecaInicial) {
