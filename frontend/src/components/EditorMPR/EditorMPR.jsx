@@ -16,7 +16,6 @@ function EditorMPR({ pecaInicial }) {
 
   const [nomePeca, setNomePeca] = useState('');
   const [codigoPeca, setCodigoPeca] = useState('');
-  const [material, setMaterial] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -33,7 +32,6 @@ function EditorMPR({ pecaInicial }) {
       
       setNomePeca(pecaInicial.nome || '');
       setCodigoPeca(pecaInicial.codigo || '');
-      setMaterial(pecaInicial.material || '');
     }
   }, [pecaInicial]);
   
@@ -409,17 +407,6 @@ const handleExportarMPR = async () => {
                 value={nomePeca}
                 onChange={(e) => setNomePeca(e.target.value)}
                 placeholder="Ex: Lateral Direita"
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Material</label>
-              <input
-                type="text"
-                value={material}
-                onChange={(e) => setMaterial(e.target.value)}
-                placeholder="Ex: MDF15"
-                disabled
               />
             </div>
           </div>
