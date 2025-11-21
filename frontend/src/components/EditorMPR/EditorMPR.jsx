@@ -23,6 +23,7 @@ function EditorMPR({ pecaInicial }) {
     if (pecaInicial) {
       setPeca(prevPeca => ({
         ...prevPeca,
+        nome: pecaInicial.nome || '',
         largura: parseFloat(pecaInicial.largura) || 0,
         comprimento: parseFloat(pecaInicial.comprimento) || 0,
         espessura: parseFloat(pecaInicial.espessura) || 0,
@@ -773,7 +774,7 @@ const handleExportarMPR = async () => {
           <button
             className="btn-primary"
             onClick={handleGerarPDF}
-            disabled={!peca.nome || peca.furos.length === 0}
+            disabled={!peca.nome && !nomePeca}
           >
             📄 Gerar PDF
           </button>
