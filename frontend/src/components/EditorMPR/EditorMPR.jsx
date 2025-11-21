@@ -350,6 +350,41 @@ const handleExportarMPR = async () => {
       <div className="editor-layout">
         {/* SIDEBAR ESQUERDA - Dimensões e Ferramentas */}
         <div className="editor-sidebar left">
+          {/* Informações da Peça */}
+          <div className="editor-section">
+            <h3>📋 Informações</h3>
+            
+            <div className="form-group">
+              <label>Código</label>
+              <input
+                type="text"
+                value={codigoPeca}
+                onChange={(e) => setCodigoPeca(e.target.value)}
+                placeholder="Ex: 510536001"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Nome da Peça</label>
+              <input
+                type="text"
+                value={nomePeca}
+                onChange={(e) => setNomePeca(e.target.value)}
+                placeholder="Ex: Lateral Direita"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Material</label>
+              <input
+                type="text"
+                value={material}
+                onChange={(e) => setMaterial(e.target.value)}
+                placeholder="Ex: MDF15"
+                disabled
+              />
+            </div>
+          </div>
           <div className="editor-section">
             <h3>📏 Dimensões da Peça</h3>
             
