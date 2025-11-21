@@ -6,20 +6,21 @@ import FuroManual from './FuroManual';
 
 function EditorMPR({ pecaInicial }) {
   const [peca, setPeca] = useState({
-    nome: '',
-    largura: 0,
-    comprimento: 0,
-    espessura: 15,
-    furos: []
+    dimensoes: {
+      largura: 0,
+      comprimento: 0,
+      espessura: 15
+    },
+    furos: [],
+    furosHorizontais: []
   });
 
-  // const [nomePeca, setNomePeca] = useState('');
-  // const [codigoPeca, setCodigoPeca] = useState('');
-  // const [material, setMaterial] = useState('');
+  const [nomePeca, setNomePeca] = useState('');
+  const [codigoPeca, setCodigoPeca] = useState('');
+  const [material, setMaterial] = useState('');
 
   useEffect(() => {
     if (pecaInicial) {
-      // Carregar dados da peça do banco
       setPeca({
         dimensoes: {
           largura: parseFloat(pecaInicial.largura) || 0,
