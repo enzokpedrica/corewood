@@ -71,7 +71,12 @@ async def importar_pecas(
             material = str(row['Material']).strip()
             comprimento = float(row['C']) if pd.notna(row['C']) else 0
             largura = float(row['L']) if pd.notna(row['L']) else 0
-            familia = str(row['Família']).strip() if pd.notna(row['Família']) else None
+            familia_produto = str(row['Família']).strip() if pd.notna(row['Família']) else None
+
+            # Atualizar nome do produto se vier vazio
+            if produto and not produto.nome and familia_produto:
+                produto.nome = familia_produto
+                db.commit()
             espessura = extrair_espessura(material)
             
             # Verificar se peça já existe
@@ -87,7 +92,6 @@ async def importar_pecas(
                 peca_existente.comprimento = comprimento
                 peca_existente.largura = largura
                 peca_existente.espessura = espessura
-                peca_existente.familia = familia
             else:
                 # Criar nova
                 nova_peca = PecaDB(
@@ -98,7 +102,6 @@ async def importar_pecas(
                     comprimento=comprimento,
                     largura=largura,
                     espessura=espessura,
-                    familia=familia
                 )
                 db.add(nova_peca)
                 pecas_criadas += 1
