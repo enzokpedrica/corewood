@@ -5,6 +5,8 @@ from fastapi.responses import Response
 from app.core.auth import get_current_active_user
 from app.models.user import User
 from app.generators.mpr_generator import GeradorMPR
+from app.database import get_db
+from sqlalchemy.orm import Session
 import tempfile
 
 router = APIRouter(prefix="/editor", tags=["editor"])
