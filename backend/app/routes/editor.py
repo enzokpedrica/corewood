@@ -25,6 +25,7 @@ class PecaData(BaseModel):
     comprimento: float
     espessura: float
     furos: List[FuroData]
+    peca_id: Optional[int] = None
 
 
 @router.post("/export-mpr")
@@ -107,10 +108,36 @@ async def generate_pdf_from_editor(
         from app.parsers.mpr_parser import Peca, Dimensoes, FuroVertical, FuroHorizontal
         from app.generators.pdf_generator import GeradorDesenhoTecnico
         from fastapi.responses import FileResponse
+        from app.models.peca_db import PecaDB
+        from app.models.produto import Produto
+        
         
         print(f"\n📄 ===== GERANDO PDF DO EDITOR =====")
         print(f"👤 Usuário: {current_user.username}")
         print(f"📦 Peça: {peca.nome}")
+
+        # NOVO: Buscar dados da peça se vier peca_id
+        codigo_peca = None
+        nome_peca_db = None
+        codigo_produto = None
+        nome_produto = None
+        
+        if hasattr(peca, 'peca_id') and peca.peca_id:
+            peca_db = db.query(PecaDB).filter(PecaDB.id == peca.peca_id).first()
+            
+            if peca_db:
+                produto = db.query(Produto).filter(Produto.id == peca_db.produto_id).first()
+                
+                codigo_peca = peca_db.codigo
+                nome_peca_db = peca_db.nome
+                codigo_produto = produto.codigo if produto else None
+                nome_produto = produto.nome if produto else None
+                
+                print(f"📋 Dados do banco:")
+                print(f"   Código Peça: {codigo_peca}")
+                print(f"   Nome Peça: {nome_peca_db}")
+                print(f"   Código Produto: {codigo_produto}")
+                print(f"   Nome Produto: {nome_produto}")
         
         # Converter dados do editor para formato Peca
         dimensoes = Dimensoes(
@@ -162,7 +189,12 @@ async def generate_pdf_from_editor(
             'espelhar_peca': False,
             'bordas': {'top': None, 'bottom': None, 'left': None, 'right': None},
             'alerta': None,
-            'revisao': '00'
+            'revisao': '00',
+            # NOVO: Adicionar dados da peça
+            'codigo_peca': codigo_peca,
+            'nome_peca': nome_peca_db,
+            'codigo_produto': codigo_produto,
+            'nome_produto': nome_produto
         }
         
         gerador.gerar_pdf(peca_obj, pdf_path, dados_adicionais)
