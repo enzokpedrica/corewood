@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Form
 from pydantic import BaseModel
 from typing import List, Optional
 from fastapi.responses import Response
@@ -92,38 +92,41 @@ async def export_mpr(
 
 @router.post("/generate-pdf")
 async def generate_pdf_from_editor(
-    peca: PecaData,
-    current_user: User = Depends(get_current_active_user)
+    largura: float = Form(...),
+    comprimento: float = Form(...),
+    espessura: float = Form(...),
+    nome_peca: str = Form(...),
+    furos_verticais: str = Form("[]"),
+    furos_horizontais: str = Form("[]"),
+    peca_id: Optional[int] = Form(None),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
     """
     Gera PDF diretamente dos dados do editor (sem passar por MPR)
-    
-    Args:
-        peca: Dados da peça com dimensões e furos
-        
-    Returns:
-        Arquivo PDF para download
     """
     try:
+        import json
         from app.parsers.mpr_parser import Peca, Dimensoes, FuroVertical, FuroHorizontal
         from app.generators.pdf_generator import GeradorDesenhoTecnico
         from fastapi.responses import FileResponse
         from app.models.peca_db import PecaDB
         from app.models.produto import Produto
         
-        
         print(f"\n📄 ===== GERANDO PDF DO EDITOR =====")
         print(f"👤 Usuário: {current_user.username}")
-        print(f"📦 Peça: {peca.nome}")
+        print(f"📦 Peça: {nome_peca}")
+        print(f"🆔 peca_id recebido: {peca_id}")
 
-        # NOVO: Buscar dados da peça se vier peca_id
+        # Buscar dados da peça se vier peca_id
         codigo_peca = None
         nome_peca_db = None
         codigo_produto = None
         nome_produto = None
         
-        if hasattr(peca, 'peca_id') and peca.peca_id:
-            peca_db = db.query(PecaDB).filter(PecaDB.id == peca.peca_id).first()
+        if peca_id:
+            print(f"🔍 Buscando peça ID {peca_id} no banco...")
+            peca_db = db.query(PecaDB).filter(PecaDB.id == peca_id).first()
             
             if peca_db:
                 produto = db.query(Produto).filter(Produto.id == peca_db.produto_id).first()
@@ -133,53 +136,59 @@ async def generate_pdf_from_editor(
                 codigo_produto = produto.codigo if produto else None
                 nome_produto = produto.nome if produto else None
                 
-                print(f"📋 Dados do banco:")
+                print(f"📋 Dados do banco encontrados:")
                 print(f"   Código Peça: {codigo_peca}")
                 print(f"   Nome Peça: {nome_peca_db}")
                 print(f"   Código Produto: {codigo_produto}")
                 print(f"   Nome Produto: {nome_produto}")
+            else:
+                print(f"⚠️ Peça ID {peca_id} não encontrada no banco")
+        
+        # Converter JSON strings para objetos
+        furos_vert = json.loads(furos_verticais)
+        furos_horiz = json.loads(furos_horizontais)
         
         # Converter dados do editor para formato Peca
         dimensoes = Dimensoes(
-            largura=peca.largura,
-            comprimento=peca.comprimento,
-            espessura=peca.espessura
+            largura=largura,
+            comprimento=comprimento,
+            espessura=espessura
         )
         
-        furos_verticais = []
-        furos_horizontais = []
+        furos_verticais_obj = []
+        furos_horizontais_obj = []
         
-        for furo in peca.furos:
-            if furo.tipo == 'vertical':
-                furos_verticais.append(
+        for furo in furos_vert:
+            if furo.get('tipo') == 'vertical':
+                furos_verticais_obj.append(
                     FuroVertical(
-                        x=furo.x,
-                        y=furo.y,
-                        diametro=furo.diametro,
-                        profundidade=furo.profundidade
+                        x=furo['x'],
+                        y=furo['y'],
+                        diametro=furo['diametro'],
+                        profundidade=furo.get('profundidade', 0)
                     )
                 )
-            elif furo.tipo == 'horizontal':
-                furos_horizontais.append(
+        
+        for furo in furos_horiz:
+            if furo.get('tipo') == 'horizontal':
+                furos_horizontais_obj.append(
                     FuroHorizontal(
-                        lado=furo.lado or 'XP',
-                        y=furo.y,
-                        z=furo.x,  # No horizontal, X vira Z
-                        diametro=furo.diametro,
-                        profundidade=furo.profundidade
+                        lado=furo.get('lado', 'XP'),
+                        y=furo['y'],
+                        z=furo['x'],
+                        diametro=furo['diametro'],
+                        profundidade=furo.get('profundidade', 0)
                     )
                 )
         
         peca_obj = Peca(
-            nome_peca=peca.nome,
+            nome_peca=nome_peca,
             dimensoes=dimensoes,
-            furos_verticais=furos_verticais,
-            furos_horizontais=furos_horizontais
+            furos_verticais=furos_verticais_obj,
+            furos_horizontais=furos_horizontais_obj
         )
         
         # Gerar PDF
-
-        
         with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
             pdf_path = tmp_file.name
         
@@ -190,7 +199,6 @@ async def generate_pdf_from_editor(
             'bordas': {'top': None, 'bottom': None, 'left': None, 'right': None},
             'alerta': None,
             'revisao': '00',
-            # NOVO: Adicionar dados da peça
             'codigo_peca': codigo_peca,
             'nome_peca': nome_peca_db,
             'codigo_produto': codigo_produto,
@@ -204,7 +212,7 @@ async def generate_pdf_from_editor(
         return FileResponse(
             pdf_path,
             media_type='application/pdf',
-            filename=f"{peca.nome}_furacao.pdf",
+            filename=f"{nome_peca}_furacao.pdf",
             background=None
         )
         
