@@ -31,7 +31,7 @@ app = FastAPI(
 # CORS - Permitir acesso do frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Em produção, especificar domínio do Netlify
+    allow_origins=["https://corewood.pages.dev"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
