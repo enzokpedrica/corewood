@@ -31,7 +31,11 @@ app = FastAPI(
 # CORS - Permitir acesso do frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://corewood.pages.dev"],
+    allow_origins=[
+        "https://corewood.pages.dev",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
