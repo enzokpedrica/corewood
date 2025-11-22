@@ -109,7 +109,7 @@ async def generate_pdf_from_editor(
     """
     try:
         import json
-        from app.parsers.mpr_parser import Peca, Dimensoes, FuroVertical, FuroHorizontal
+        from app.models.peca import Peca, Dimensoes, FuroVertical, FuroHorizontal
         from app.generators.pdf_generator import GeradorDesenhoTecnico
         from fastapi.responses import FileResponse
         from app.models.peca_db import PecaDB
