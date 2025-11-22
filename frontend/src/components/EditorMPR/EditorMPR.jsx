@@ -231,7 +231,13 @@ const handleExportarMPR = async () => {
     try {
       console.log('📄 Gerando PDF:', peca);
       
-      const pdfBlob = await gerarPDFEditor(peca);
+      // NOVO: Adicionar peca_id se existir
+      const pecaComId = {
+        ...peca,
+        peca_id: pecaInicial?.id || null  // ← ADICIONA ISSO
+      };
+      
+      const pdfBlob = await gerarPDFEditor(pecaComId);
       
       // Download automático
       const url = window.URL.createObjectURL(pdfBlob);

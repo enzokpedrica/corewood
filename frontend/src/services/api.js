@@ -136,11 +136,35 @@ export const exportarMPR = async (pecaData) => {
  */
 export const gerarPDFEditor = async (pecaData) => {
   try {
+    const formData = new FormData();
+    
+    // Dados da peça
+    formData.append('largura', pecaData.largura || 0);
+    formData.append('comprimento', pecaData.comprimento || 0);
+    formData.append('espessura', pecaData.espessura || 15);
+    formData.append('nome_peca', pecaData.nome || 'Peça sem nome');
+    
+    // NOVO: ID da peça (se existir)
+    if (pecaData.peca_id) {
+      formData.append('peca_id', pecaData.peca_id);
+    }
+    
+    // Furos verticais
+    const furosVerticais = pecaData.furos || [];
+    formData.append('furos_verticais', JSON.stringify(furosVerticais));
+    
+    // Furos horizontais
+    const furosHorizontais = pecaData.furosHorizontais || [];
+    formData.append('furos_horizontais', JSON.stringify(furosHorizontais));
+    
     const response = await axios.post(
       `${API_URL}/editor/generate-pdf`,
-      pecaData,
+      formData,
       {
-        responseType: 'blob'
+        responseType: 'blob',
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       }
     );
     
