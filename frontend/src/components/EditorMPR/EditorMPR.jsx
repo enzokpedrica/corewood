@@ -229,13 +229,21 @@ const handleExportarMPR = async () => {
     }
 
     try {
+      // DEBUG - ADICIONA AQUI
+      console.log('🔍 DEBUG - pecaInicial:', pecaInicial);
+      console.log('🔍 DEBUG - pecaInicial?.id:', pecaInicial?.id);
+      
       console.log('📄 Gerando PDF:', peca);
       
       // NOVO: Adicionar peca_id se existir
       const pecaComId = {
         ...peca,
-        peca_id: pecaInicial?.id || null  // ← ADICIONA ISSO
+        peca_id: pecaInicial?.id || null
       };
+      
+      // DEBUG - ADICIONA AQUI
+      console.log('🔍 DEBUG - pecaComId:', pecaComId);
+      console.log('🔍 DEBUG - peca_id enviado:', pecaComId.peca_id);
       
       const pdfBlob = await gerarPDFEditor(pecaComId);
       
