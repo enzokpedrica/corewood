@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 from .parser.mpr_parser import parse_furacao
 from .generators.pdf_generator import GeradorDesenhoTecnico
-from .database import engine, Base
+from .database import engine, Base, get_db
 from .routes import auth
 from .core.auth import get_current_active_user
 from .models.user import User
@@ -228,31 +228,54 @@ async def generate_pdf(
     file: UploadFile = File(...),
     angulo_rotacao: int = 0,
     espelhar_peca: bool = False,
-    bordas: str = "{}",  # JSON string com bordas
+    bordas: str = "{}",
     alerta: str = None,
     revisao: str = None,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)  # ← ADICIONA
 ):
     """
     Gera PDF técnico a partir de arquivo MPR
-    
-    Args:
-        file: Arquivo MPR
-        angulo_rotacao: 0, 90, 180, 270
-        espelhar_peca: True/False
-        posicao_borda_comprimento: 'top', 'bottom', None
-        posicao_borda_largura: 'left', 'right', None
-        alerta: Texto de alerta (opcional)
-        
-    Returns:
-        Arquivo PDF para download
     """
     try:
+        from app.models.peca_db import PecaDB  # ← ADICIONA
+        from app.models.produto import Produto  # ← ADICIONA
+        
         # Parse do arquivo
         content = await file.read()
         content_str = content.decode('utf-8', errors='ignore')
         nome_peca = file.filename.replace('.mpr', '').replace('.MPR', '')
         peca = parse_furacao(content_str, nome_peca)
+        
+        print(f"\n📄 ===== GERANDO PDF INDIVIDUAL =====")
+        print(f"👤 Usuário: {current_user.username}")
+        print(f"📦 Arquivo: {file.filename}")
+        print(f"🔑 Nome extraído: {nome_peca}")
+        
+        # NOVO: Buscar dados da peça pelo código (nome do arquivo)
+        codigo_peca = None
+        nome_peca_db = None
+        codigo_produto = None
+        nome_produto = None
+        
+        # Tenta buscar no banco usando o nome do arquivo como código
+        peca_db = db.query(PecaDB).filter(PecaDB.codigo == nome_peca).first()
+        
+        if peca_db:
+            produto = db.query(Produto).filter(Produto.id == peca_db.produto_id).first()
+            
+            codigo_peca = peca_db.codigo
+            nome_peca_db = peca_db.nome
+            codigo_produto = produto.codigo if produto else None
+            nome_produto = produto.nome if produto else None
+            
+            print(f"✅ Peça encontrada no banco:")
+            print(f"   Código Peça: {codigo_peca}")
+            print(f"   Nome Peça: {nome_peca_db}")
+            print(f"   Código Produto: {codigo_produto}")
+            print(f"   Nome Produto: {nome_produto}")
+        else:
+            print(f"⚠️ Peça '{nome_peca}' não encontrada no banco")
         
         # Parse das bordas JSON
         try:
@@ -264,9 +287,14 @@ async def generate_pdf(
         dados_adicionais = {
             'angulo_rotacao': angulo_rotacao,
             'espelhar_peca': espelhar_peca,
-            'bordas': bordas_dict,  # ← Novo formato!
+            'bordas': bordas_dict,
             'alerta': alerta,
-            'revisao': revisao
+            'revisao': revisao,
+            # NOVO: Adicionar dados do banco
+            'codigo_peca': codigo_peca,
+            'nome_peca': nome_peca_db,
+            'codigo_produto': codigo_produto,
+            'nome_produto': nome_produto
         }
         
         # Gerar PDF em arquivo temporário
@@ -276,20 +304,18 @@ async def generate_pdf(
         gerador = GeradorDesenhoTecnico()
         gerador.gerar_pdf(peca, pdf_path, dados_adicionais)
         
+        print(f"✅ PDF gerado: {pdf_path}")
+        
         # Retornar arquivo
         return FileResponse(
             pdf_path,
             media_type='application/pdf',
             filename=f"{nome_peca}_furacao.pdf",
-            background=None  # Não deletar automaticamente
+            background=None
         )
         
     except Exception as e:
+        print(f"❌ Erro ao gerar PDF: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro ao gerar PDF: {str(e)}")
-
-
-if __name__ == "__main__":
-    import uvicorn
-    import os
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("app.main:app", host="0.0.0.0", port=port)
