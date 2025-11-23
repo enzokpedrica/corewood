@@ -184,10 +184,11 @@ async def generate_pdf_from_editor(
                 )
         
         peca_obj = Peca(
-            nome_peca=nome_peca,
+            nome=nome_peca,
             dimensoes=dimensoes,
             furos_verticais=furos_verticais_obj,
-            furos_horizontais=furos_horizontais_obj
+            furos_horizontais=furos_horizontais_obj,
+            comentarios=[]
         )
         
         # Gerar PDF
