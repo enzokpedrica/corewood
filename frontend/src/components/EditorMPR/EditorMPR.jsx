@@ -183,38 +183,42 @@ function EditorMPR({ pecaInicial }) {
   };
 
   // Exportar MPR
-const handleExportarMPR = async () => {
-  if (!peca.nome || !peca.largura || !peca.comprimento) {
-    alert('⚠️ Preencha nome e dimensões da peça!');
-    return;
-  }
+  const handleExportarMPR = async () => {
+    if (!peca.nome || !peca.largura || !peca.comprimento) {
+      alert('⚠️ Preencha nome e dimensões da peça!');
+      return;
+    }
 
-  if (peca.furos.length === 0) {
-    alert('⚠️ Adicione pelo menos um furo!');
-    return;
-  }
+    if (peca.furos.length === 0) {
+      alert('⚠️ Adicione pelo menos um furo!');
+      return;
+    }
 
-  try {
-    console.log('📤 Exportando MPR:', peca);
-    
-    const mprBlob = await exportarMPR(peca);
-    
-    // Download automático
-    const url = window.URL.createObjectURL(mprBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${peca.nome}.mpr`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-    
-    alert('✅ MPR exportado com sucesso!');
-  } catch (error) {
-    console.error('Erro ao exportar MPR:', error);
-    alert(`❌ Erro ao exportar MPR:\n${error.response?.data?.detail || error.message}`);
-  }
-};
+    try {
+      console.log('📤 Exportando MPR:', peca);
+      
+      const mprBlob = await exportarMPR(peca);
+      
+      // Download automático
+      const url = window.URL.createObjectURL(mprBlob);
+      const link = document.createElement('a');
+      link.href = url;
+
+      // Usar código da peça se existir, senão usa nome
+      const nomeArquivo = codigoPeca || peca.nome || 'peca';
+      link.download = `${nomeArquivo}.mpr`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      alert('✅ MPR exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar MPR:', error);
+      alert(`❌ Erro ao exportar MPR:\n${error.response?.data?.detail || error.message}`);
+    }
+  };
 
   // Gerar PDF direto
   const handleGerarPDF = async () => {
