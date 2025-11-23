@@ -23,8 +23,8 @@ class FuroData(BaseModel):
 
 class PecaData(BaseModel):
     nome: str
-    largura: float
     comprimento: float
+    largura: float
     espessura: float
     furos: List[FuroData]
     peca_id: Optional[int] = None
@@ -94,8 +94,8 @@ async def export_mpr(
 
 @router.post("/generate-pdf")
 async def generate_pdf_from_editor(
-    largura: float = Form(...),
     comprimento: float = Form(...),
+    largura: float = Form(...),
     espessura: float = Form(...),
     nome_peca: str = Form(...),
     furos_verticais: str = Form("[]"),
