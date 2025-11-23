@@ -152,8 +152,8 @@ async def generate_pdf_from_editor(
         
         # Converter dados do editor para formato Peca
         dimensoes = Dimensoes(
-            largura=largura,
-            comprimento=comprimento,
+            largura=comprimento,
+            comprimento=largura,
             espessura=espessura
         )
         
