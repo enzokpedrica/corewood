@@ -12,6 +12,7 @@ from pathlib import Path
 from .parser.mpr_parser import parse_furacao
 from .generators.pdf_generator import GeradorDesenhoTecnico
 from .database import engine, Base, get_db
+from sqlalchemy.orm import Session
 from .routes import auth
 from .core.auth import get_current_active_user
 from .models.user import User
