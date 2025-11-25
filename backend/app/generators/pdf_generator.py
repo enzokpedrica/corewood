@@ -871,6 +871,7 @@ class GeradorDesenhoTecnico:
             # Fonte varia por campo
             if label == "Código/Descrição Peça":
                 tamanho_fonte = self.calcular_tamanho_fonte(valor)
+                print(f"DEBUG - Valor: {valor} | Chars: {len(valor)} | Fonte: {tamanho_fonte}")
                 c.setFont("Helvetica", tamanho_fonte)
             elif label == "Responsável":
                 c.setFont("Helvetica", 10) 
