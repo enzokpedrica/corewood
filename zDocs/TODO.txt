@@ -1,6 +1,6 @@
 > Segurança
 	> Adicionar token de segurança estático 
-		> serve em 2 computadores diferentes
+		> serve em 2 computadores diferentes	
 
 > Evitar sobreposição de cotas
 	> Cota da vista principal que sai pra esquerda e topo
@@ -69,17 +69,7 @@
 		> Qual batente a ser utilizado
 			> Texto do batente precisa aparecer na tabela horizontal
 
-----------------------------------------------------
--- CoreCraft --
-> Qual a disposição de ferramentas na máquina?
-> Usinagens
-
-
-> Monetizar
-	> 30 arquivos por mês
-	> Assinatura
-
-> Intranet?
+> Adicionar operação de usinagem	
 ----------------------------------------------------
 
 ------------------------ IA ------------------------
