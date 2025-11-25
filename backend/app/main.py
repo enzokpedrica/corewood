@@ -177,7 +177,8 @@ async def generate_pdf_batch(
                         'espelhar_peca': config_dict.get('espelhar_peca', False),
                         'bordas': bordas_dict,
                         'alerta': config_dict.get('alerta'),
-                        'revisao': config_dict.get('revisao')
+                        'revisao': config_dict.get('revisao'),
+                        'responsavel': current_user.username
                     }                    
 
                     # Gerar PDF
@@ -295,7 +296,8 @@ async def generate_pdf(
             'codigo_peca': codigo_peca,
             'nome_peca': nome_peca_db,
             'codigo_produto': codigo_produto,
-            'nome_produto': nome_produto
+            'nome_produto': nome_produto,
+            'responsavel': current_user.username
         }
         
         # Gerar PDF em arquivo temporário
