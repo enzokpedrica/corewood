@@ -50,7 +50,7 @@ function Login() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Seu username"
+              placeholder="Username"
               required
               autoFocus
             />
@@ -62,7 +62,7 @@ function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Sua senha"
+              placeholder="Senha"
               required
             />
           </div>
