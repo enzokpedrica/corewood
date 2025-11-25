@@ -701,8 +701,8 @@ class GeradorDesenhoTecnico:
         colunas_linha_2 = 6
 
         # Defina as larguras para cada linha separadamente
-        larguras_linha_1 = [300, 100, 70, 70, 80, 60, 70]  # 7 colunas
-        larguras_linha_2 = [250, 65, 95, 140, 70, 130]       # 6 colunas     
+        larguras_linha_1 = [250, 100, 70, 70, 80, 60, 70]  # 7 colunas
+        larguras_linha_2 = [250, 65, 95, 100, 70, 120]       # 6 colunas     
 
         # Dimensões
         num_linhas = 2
@@ -879,7 +879,8 @@ class GeradorDesenhoTecnico:
             elif label == "Conferente":
                 c.setFont("Helvetica", 10)
             elif label == "Status":
-                c.setFont("Helvetica", 12)
+                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 8, "Helvetica", tamanho_base=10)
+                c.setFont("Helvetica", tamanho_fonte)
                 c.setFillColor(colors.HexColor("#FF0000"))
                 #Aqui terá 3 STATUS CÓPIA CONTROLADA (AZUL) - EM REVISÃO (VERMELHO) - CÓPIA ÚNICA (VERMELHO)                 
             else:
