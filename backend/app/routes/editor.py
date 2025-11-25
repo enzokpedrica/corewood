@@ -205,7 +205,8 @@ async def generate_pdf_from_editor(
             'codigo_peca': codigo_peca,
             'nome_peca': nome_peca_db,
             'codigo_produto': codigo_produto,
-            'nome_produto': nome_produto
+            'nome_produto': nome_produto,
+            'responsavel': current_user.username
         }
         
         gerador.gerar_pdf(peca_obj, pdf_path, dados_adicionais)
