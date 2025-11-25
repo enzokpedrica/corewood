@@ -826,7 +826,7 @@ class GeradorDesenhoTecnico:
             # Centralizar valor horizontal e verticalmente
             x_centro_valor = x_celula + largura_celula / 2
             y_centro_valor = y_celula + (altura_linha / 4)  # Ajuste fino da altura
-            c.drawCentredString(x_centro_valor, y_centro_valor, valor_exibido)
+            c.drawCentredString(x_centro_valor, y_centro_valor, valor)
             
             indice_dados += 1
 
