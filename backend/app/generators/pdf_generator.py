@@ -603,6 +603,15 @@ class GeradorDesenhoTecnico:
         c.drawString(x_texto + 60, y_texto, texto_atencao)
         
         c.setFillColor(colors.black)
+
+    def calcular_tamanho_fonte(self, texto: str, tamanho_base: int = 12) -> int:
+        """Reduz fonte em 1pt a cada 35 caracteres acima do limite"""
+        if len(texto) <= 35:
+            return tamanho_base
+        
+        excesso = len(texto) - 35
+        reducao = (excesso // 35) + 1
+        return max(tamanho_base - reducao, 6)    
     
     def desenhar_tabela_horizontal(self, c: canvas.Canvas, x: float, y: float, 
                                 largura: float, altura: float, peca: Peca, 
@@ -865,7 +874,8 @@ class GeradorDesenhoTecnico:
             
             # Fonte varia por campo
             if label == "Código/Descrição Peça":
-                c.setFont("Helvetica", 12)
+                tamanho_fonte = self.calcular_tamanho_fonte(valor)
+                c.setFont("Helvetica", tamanho_fonte)
             elif label == "Responsável":
                 c.setFont("Helvetica", 10) 
             elif label == "Conferente":

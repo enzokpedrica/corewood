@@ -1,13 +1,11 @@
 > Evitar sobreposição de cotas
 	> Cota da vista principal que sai pra esquerda e topo
 	> Cota de furos na vista principal
-	> Deixar o texto um pouco afastado da linha da cota
-	> A profundidade do furo esta vindo 11.0
-		> Só deve vir com o decimal quando de fato for >0
+	> Deixar o texto um pouco afastado da linha da cota 
 
 > Melhorar o layout das vistas
 	> Redimensionar conforme tamanho
-	> Fontes são sempre mesmo tamanho e tipo
+	> Fontes são sempre mesmo tamanho e tip
 
 > Layout Folha
 	> Colocar Margem
