@@ -668,6 +668,8 @@ class GeradorDesenhoTecnico:
                     cod_prod = dados_adicionais.get('codigo_produto', '')
                     nome_prod = dados_adicionais.get('nome_produto', '')
                     valor = f"{cod_prod} - {nome_prod}" if cod_prod and nome_prod else "---"
+                elif campo_nome == "responsavel":
+                    valor = dados_adicionais.get('responsavel', '---')
                 elif campo_nome == "Deslocamento":
                     valor = "---"
                 elif campo_nome == "Batente":
