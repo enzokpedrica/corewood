@@ -812,7 +812,7 @@ class GeradorDesenhoTecnico:
                 c.drawString(x_celula + 4, y_label, label_exibido)
 
             
-            # DESENHAR VALOR (normal, maior, embaixo)
+            # DESENHAR VALOR (normal, maior, embaix)
             c.setFillColor(colors.black)
 
             # Fonte varia por campo
