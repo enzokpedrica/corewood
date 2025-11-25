@@ -823,10 +823,6 @@ class GeradorDesenhoTecnico:
             else:
                 c.setFont(fonte, 12)
             
-            # Calcular quantos caracteres cabem na célula
-            max_chars_valor = int((largura_celula - 8) / 5)
-            valor_exibido = valor[:max_chars_valor] + "..." if len(valor) > max_chars_valor else valor
-            
             # Centralizar valor horizontal e verticalmente
             x_centro_valor = x_celula + largura_celula / 2
             y_centro_valor = y_celula + (altura_linha / 4)  # Ajuste fino da altura
