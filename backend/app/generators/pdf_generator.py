@@ -712,7 +712,9 @@ class GeradorDesenhoTecnico:
         largura_conteudo = max(sum(larguras_linha_1), sum(larguras_linha_2))
         largura_total = largura_logo + largura_conteudo
         
-        x = 5  # Margem esquerda
+        # Margem a esquerda
+        largura_total = largura_logo + max(sum(larguras_linha_1), sum(larguras_linha_2))
+        x = (841.89 - largura_total) / 2
         x_conteudo = x + largura_logo
 
         # DESENHAR BORDA EXTERNA
