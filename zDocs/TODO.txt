@@ -1,3 +1,7 @@
+> Segurança
+	> Adicionar token de segurança estático 
+		> serve em 2 computadores diferentes
+
 > Evitar sobreposição de cotas
 	> Cota da vista principal que sai pra esquerda e topo
 	> Cota de furos na vista principal
