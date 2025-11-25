@@ -817,7 +817,8 @@ class GeradorDesenhoTecnico:
 
             # Fonte varia por campo
             if label == "PLANO DE FURAÇÃO":
-                c.setFont("Helvetica", 10)
+                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 8, "Helvetica", tamanho_base=10)
+                c.setFont("Helvetica", tamanho_fonte)
             elif label == "Página":
                 c.setFont("Helvetica", 15)    
             else:
@@ -873,7 +874,8 @@ class GeradorDesenhoTecnico:
                 tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 8, "Helvetica")
                 c.setFont("Helvetica", tamanho_fonte)
             elif label == "Responsável":
-                c.setFont("Helvetica", 10) 
+                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 8, "Helvetica", tamanho_base=10)
+                c.setFont("Helvetica", tamanho_fonte)
             elif label == "Conferente":
                 c.setFont("Helvetica", 10)
             elif label == "Status":
