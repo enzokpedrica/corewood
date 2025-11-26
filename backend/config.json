@@ -73,6 +73,11 @@
       "label": "Conferente",
       "source": "auto",
       "campo": "Conferente"
+    },
+    {
+      "label": "Status",
+      "source": "auto",
+      "campo": "Status"
     }
   ],
   "comentarios": {
