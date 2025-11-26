@@ -202,6 +202,7 @@ async def generate_pdf_from_editor(
             'bordas': {'top': None, 'bottom': None, 'left': None, 'right': None},
             'alerta': None,
             'revisao': '00',
+            'status': 'CÓPIA CONTROLADA',
             'codigo_peca': codigo_peca,
             'nome_peca': nome_peca_db,
             'codigo_produto': codigo_produto,

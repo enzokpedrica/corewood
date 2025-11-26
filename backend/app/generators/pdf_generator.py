@@ -887,8 +887,10 @@ class GeradorDesenhoTecnico:
             elif label == "Status":
                 tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 8, "Helvetica", tamanho_base=10)
                 c.setFont("Helvetica", tamanho_fonte)
-                c.setFillColor(colors.HexColor("#FF0000"))
-                #Aqui terá 3 STATUS CÓPIA CONTROLADA (AZUL) - EM REVISÃO (VERMELHO) - CÓPIA ÚNICA (VERMELHO)                 
+                if valor == "CÓPIA CONTROLADA":
+                    c.setFillColor(colors.HexColor("#0000FF"))  # Azul
+                else:
+                    c.setFillColor(colors.HexColor("#FF0000"))  # Vermelho              
             else:
                 c.setFont(fonte, 12)
             
@@ -1047,7 +1049,7 @@ class GeradorDesenhoTecnico:
         texto_titulo = "PLANO DE FURAÇÃO"
         largura_texto = c.stringWidth(texto_titulo, "Helvetica-Bold", 16)
         titulo_x = (largura_pagina - largura_texto) / 2
-        titulo_y = y_origem + altura_desenhada + 90
+        titulo_y = y_origem + altura_desenhada + 60
         c.drawCentredString(largura_pagina / 2, titulo_y, texto_titulo)
 
         # Desenhar peça (vista de topo)
@@ -1149,18 +1151,16 @@ class GeradorDesenhoTecnico:
                                      peca, config, dados_adicionais)
         
         # ===== MARGEM EXTERNA (envolve tudo) =====
-        # Usar mesma largura e posição X da tabela
+        # Usar EXATAMENTE a mesma largura e posição X da tabela
         largura_logo = 80
-        largura_conteudo = max(
-            sum([300, 100, 70, 70, 80, 60, 70]),  # larguras_linha_1
-            sum([250, 65, 95, 140, 70, 130])       # larguras_linha_2
-        )
-        largura_total_tabela = largura_logo + largura_conteudo
+        larguras_linha_1 = [250, 100, 70, 70, 80, 60, 70]
+        larguras_linha_2 = [250, 65, 95, 100, 70, 120]  
+        largura_total_tabela = largura_logo + max(sum(larguras_linha_1), sum(larguras_linha_2))
         x_margem = (841.89 - largura_total_tabela) / 2
 
         # Altura: do fundo da tabela até acima do título
         y_margem_inferior = y_tabela
-        y_margem_superior = titulo_y + 25  # 25pts acima do título
+        y_margem_superior = titulo_y + 20
 
         c.setStrokeColor(colors.black)
         c.setLineWidth(0.5)

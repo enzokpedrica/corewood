@@ -97,6 +97,18 @@ function ConfigForm({ config, onChange }) {
           maxLength={100}
         />
       </div>
+      {/* Status */}
+      <div className="form-group">
+        <label>Status</label>
+        <select
+          value={config.status || 'CÓPIA CONTROLADA'}
+          onChange={(e) => handleChange('status', e.target.value)}
+        >
+          <option value="CÓPIA CONTROLADA">CÓPIA CONTROLADA</option>
+          <option value="EM REVISÃO">EM REVISÃO</option>
+          <option value="CÓPIA ÚNICA">CÓPIA ÚNICA</option>
+        </select>
+      </div>
     </div>
   );
 }

@@ -178,6 +178,7 @@ async def generate_pdf_batch(
                         'bordas': bordas_dict,
                         'alerta': config_dict.get('alerta'),
                         'revisao': config_dict.get('revisao'),
+                        'status': config_dict.get('status', 'CÓPIA CONTROLADA'),
                         'responsavel': current_user.username
                     }                    
 
@@ -233,6 +234,7 @@ async def generate_pdf(
     bordas: str = "{}",
     alerta: str = None,
     revisao: str = None,
+    status: str = "CÓPIA CONTROLADA",
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)  # ← ADICIONA
 ):
@@ -292,6 +294,7 @@ async def generate_pdf(
             'bordas': bordas_dict,
             'alerta': alerta,
             'revisao': revisao,
+            'status': status,
             # NOVO: Adicionar dados do banco
             'codigo_peca': codigo_peca,
             'nome_peca': nome_peca_db,
