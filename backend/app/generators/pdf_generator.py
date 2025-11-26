@@ -607,11 +607,11 @@ class GeradorDesenhoTecnico:
     def calcular_tamanho_fonte_dinamico(self, c, texto: str, largura_max: float, fonte: str, tamanho_base: int = 12) -> int:
         """Reduz fonte até caber na célula"""
         tamanho = tamanho_base
-        while tamanho > 6:
+        while tamanho > 7:
             if c.stringWidth(texto, fonte, tamanho) <= largura_max:
                 return tamanho
             tamanho -= 1
-        return 6    
+        return 7    
     
     def desenhar_tabela_horizontal(self, c: canvas.Canvas, x: float, y: float, 
                                 largura: float, altura: float, peca: Peca, 
@@ -1049,7 +1049,7 @@ class GeradorDesenhoTecnico:
         texto_titulo = "PLANO DE FURAÇÃO"
         largura_texto = c.stringWidth(texto_titulo, "Helvetica-Bold", 16)
         titulo_x = (largura_pagina - largura_texto) / 2
-        titulo_y = altura_pagina - self.margem - 15
+        titulo_y = altura_pagina - self.margem - 5
         c.drawCentredString(largura_pagina / 2, titulo_y, texto_titulo)
 
         # Desenhar peça (vista de topo)
@@ -1196,7 +1196,7 @@ class GeradorDesenhoTecnico:
             # Posições BASE (sem alerta)
             x_vista_esquerda = self.margem + 30
             x_vista_principal = x_vista_esquerda + largura_vista_lateral + espaco_entre_vistas
-            x_vista_direita = x_vista_principal + largura_vista_principal + espaco_entre_vistas
+            x_vista_direita = x_vista_principal + largura_vista_principal + espaco_entre_vistas - 40
 
             # Se tiver alerta, desloca APENAS a vista esquerda
             if dados_adicionais and dados_adicionais.get('alerta'):
