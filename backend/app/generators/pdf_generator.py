@@ -681,7 +681,7 @@ class GeradorDesenhoTecnico:
                 elif campo_nome == "Conferente":
                     valor = "TARCÍSIO"
                 elif campo_nome == "Status":
-                    valor = "CÓPIA AUTENTICADA"                   
+                    valor = dados_adicionais.get('status', 'CÓPIA CONTROLADA')                
                     
             elif source == "config":
                 # Dados do arquivo de configuração
