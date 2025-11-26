@@ -1,6 +1,6 @@
 > Segurança
 	> Adicionar token de segurança estático 
-		> serve em 2 computadores diferentes	
+		> serve em 2 computadores diferentes?	
 
 > Evitar sobreposição de cotas
 	> Cota da vista principal que sai pra esquerda e topo
@@ -18,40 +18,25 @@
 > Tabela Horizontal
 	> Puxar descrição automática
 		> Formulário para preenchimento
-			> Código Produto + Nome Produto
-			> Revisão
-			> Código Peça + Nome Peça
-			> Seleção de Status
+		> Revisão precisa verificar qual a última versão e alterar
+		> Seleção de Status
 		> O Responsável puxa de acordo com o login do usuário
 		> Como vai saber o tanto de páginas?
 		> Nome do conferente
 	> Ponto de Atenção
 	> Revisão precisa ser valor obrigatório
-	> Letra dentro das células precisam redimensionar
 
 > Deixar algo mais interativo?
 	> Ajustar as cotas antes de gerar o pdf?
 	> Ajustar as vistas antes de gerar pdf?
 
-> Adicionar algo para juntar PDFS pra Imprimir
-
-> Tradutor automático
-
-> Cadastro de peças
-	> Puxa automático a tabela horizontal
-	> Puxa automático no editor mpr		
+> Cadastro de peças	
 		> Salvar arquivos BHX para detectar hora que importa o arquivo
 			> Ou poder navegar pra achar a copia
 	> Onde Salvar?
 
 > Melhorar o título no doc
 	> Esta saindo pra fora
-
-> Suporte
-	> Deu problema e agora?
-	> Abrir chamado
-	> Bot de atendimento
-	> Bot que aprende com as soluções
 
 ## -- Essa parte será um pouco complexa, o ideal seria testar peças que furam somente a superfície primeiramente e realizar os ajustes.
 
@@ -70,6 +55,16 @@
 			> Texto do batente precisa aparecer na tabela horizontal
 
 > Adicionar operação de usinagem	
+----------------------------------------------------
+
+> Suporte
+	> Deu problema e agora?
+	> Abrir chamado
+	> Bot de atendimento
+	> Bot que aprende com as soluções
+
+> Tradutor automático
+> Adicionar algo para juntar PDFS pra Imprimir
 ----------------------------------------------------
 
 ------------------------ IA ------------------------
