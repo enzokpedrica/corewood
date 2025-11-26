@@ -43,7 +43,8 @@ export const generatePDF = async (file, config) => {
     espelhar_peca: config.espelhar_peca || false,
     bordas: bordasJson,
     revisao: config.revisao || '',
-    alerta: config.alerta || ''
+    alerta: config.alerta || '',
+    status: config.status || 'CÓPIA CONTROLADA'
   });
   
   const response = await api.post(`/generate-pdf?${params}`, formData, {
@@ -71,7 +72,8 @@ export const generatePDFBatch = async (arquivos, onProgress) => {
     espelhar_peca: arq.config.espelhar_peca || false,
     bordas: arq.config.bordas || { top: null, bottom: null, left: null, right: null },
     revisao: arq.config.revisao || '',
-    alerta: arq.config.alerta || ''
+    alerta: arq.config.alerta || '',
+    status: arq.config.status || 'CÓPIA CONTROLADA'    
   }));
 
   console.log('📤 Enviando configs:', configs);
