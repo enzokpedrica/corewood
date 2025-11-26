@@ -877,15 +877,15 @@ class GeradorDesenhoTecnico:
             
             # Fonte varia por campo
             if label == "Código/Descrição Peça":
-                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 8, "Helvetica")
+                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 5, "Helvetica")
                 c.setFont("Helvetica", tamanho_fonte)
             elif label == "Responsável":
-                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 5, "Helvetica", tamanho_base=10)
+                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 3, "Helvetica", tamanho_base=10)
                 c.setFont("Helvetica", tamanho_fonte)
             elif label == "Conferente":
                 c.setFont("Helvetica", 10)
             elif label == "Status":
-                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 8, "Helvetica", tamanho_base=10)
+                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 3, "Helvetica", tamanho_base=10)
                 c.setFont("Helvetica", tamanho_fonte)
                 if valor == "CÓPIA CONTROLADA":
                     c.setFillColor(colors.HexColor("#0000FF"))  # Azul
