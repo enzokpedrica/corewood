@@ -1049,7 +1049,7 @@ class GeradorDesenhoTecnico:
         texto_titulo = "PLANO DE FURAÇÃO"
         largura_texto = c.stringWidth(texto_titulo, "Helvetica-Bold", 16)
         titulo_x = (largura_pagina - largura_texto) / 2
-        titulo_y = y_origem + altura_desenhada + 60
+        titulo_y = altura_pagina - self.margem - 30
         c.drawCentredString(largura_pagina / 2, titulo_y, texto_titulo)
 
         # Desenhar peça (vista de topo)
