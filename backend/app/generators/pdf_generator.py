@@ -880,7 +880,7 @@ class GeradorDesenhoTecnico:
                 tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 8, "Helvetica")
                 c.setFont("Helvetica", tamanho_fonte)
             elif label == "Responsável":
-                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 8, "Helvetica", tamanho_base=10)
+                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 5, "Helvetica", tamanho_base=10)
                 c.setFont("Helvetica", tamanho_fonte)
             elif label == "Conferente":
                 c.setFont("Helvetica", 10)
@@ -1042,15 +1042,13 @@ class GeradorDesenhoTecnico:
         y_origem = y_origem_principal
 
         # Título da vista principal - CENTRALIZADO
-        c.setFont("Helvetica", 16)  # Fonte maior e negrito
+        c.setFont("Helvetica-Bold", 16)
         c.setFillColor(colors.black)
-
         texto_titulo = "PLANO DE FURAÇÃO"
         largura_texto = c.stringWidth(texto_titulo, "Helvetica-Bold", 16)
-        titulo_x = (largura_pagina - largura_texto) / 2  # Centraliza perfeitamente
+        titulo_x = (largura_pagina - largura_texto) / 2
         titulo_y = y_origem + altura_desenhada + 90
-
-        c.drawString(titulo_x, titulo_y, texto_titulo)
+        c.drawCentredString(largura_pagina / 2, titulo_y, texto_titulo)
 
         # Desenhar peça (vista de topo)
         self.desenhar_retangulo_peca(c, x_origem, y_origem, largura_desenhada, altura_desenhada)
@@ -1149,6 +1147,31 @@ class GeradorDesenhoTecnico:
         y_tabela = self.margem - 40
         self.desenhar_tabela_horizontal(c, x_tabela, y_tabela, largura_tabela, altura_tabela,
                                      peca, config, dados_adicionais)
+        
+        # ===== MARGEM EXTERNA (envolve tudo) =====
+        # Usar mesma largura e posição X da tabela
+        largura_logo = 80
+        largura_conteudo = max(
+            sum([300, 100, 70, 70, 80, 60, 70]),  # larguras_linha_1
+            sum([250, 65, 95, 140, 70, 130])       # larguras_linha_2
+        )
+        largura_total_tabela = largura_logo + largura_conteudo
+        x_margem = (841.89 - largura_total_tabela) / 2
+
+        # Altura: do fundo da tabela até acima do título
+        y_margem_inferior = y_tabela
+        y_margem_superior = titulo_y + 25  # 25pts acima do título
+
+        c.setStrokeColor(colors.black)
+        c.setLineWidth(0.5)
+        c.rect(
+            x_margem, 
+            y_margem_inferior, 
+            largura_total_tabela, 
+            y_margem_superior - y_margem_inferior, 
+            stroke=1, 
+            fill=0
+        )
             
         # Desenhar alerta de atenção (se houver)
         texto_alerta = dados_adicionais.get('alerta', None)  # Vem do usuário
