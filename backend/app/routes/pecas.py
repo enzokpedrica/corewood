@@ -16,6 +16,14 @@ def extrair_espessura(material: str) -> float:
     match = re.search(r'(\d+)', material)
     return float(match.group(1)) if match else 15.0
 
+def converter_numero(valor):
+    if pd.isna(valor):
+        return 0
+    if isinstance(valor, (int, float)):
+        return float(valor)
+    # Tratar string com vírgula como decimal
+    return float(str(valor).strip().replace(',', '.'))
+
 
 
 @router.post("/importar", response_model=dict)
@@ -106,8 +114,8 @@ async def importar_pecas(
             codigo_peca = str(int(float(row['Cod. Peça']))).strip()
             nome_peca = str(row['Peça']).strip()
             material = str(row['Material']).strip()
-            comprimento = float(row['C']) if pd.notna(row['C']) else 0
-            largura = float(row['L']) if pd.notna(row['L']) else 0
+            comprimento = converter_numero(row['C'])
+            largura = converter_numero(row['L'])
             espessura = extrair_espessura(material)
             
             # Verificar se peça já existe
