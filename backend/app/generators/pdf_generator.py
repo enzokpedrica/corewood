@@ -208,9 +208,10 @@ class GeradorDesenhoTecnico:
         c.rect(x_origem, y_origem, largura, altura, stroke=1, fill=0)
     
     def desenhar_cota_furo(self, c: canvas.Canvas, x_origem_peca: float, y_origem_peca: float,
-                          x_furo: float, y_furo: float, distancia_x: float, distancia_y: float,
-                          largura_peca: float, altura_peca: float, escala: float, 
-                          mostrar_x: bool = True, mostrar_y: bool = True):
+                      x_furo: float, y_furo: float, distancia_x: float, distancia_y: float,
+                      largura_peca: float, altura_peca: float, escala: float, 
+                      mostrar_x: bool = True, mostrar_y: bool = True,
+                      offset_externo_x: float = 25, offset_externo_y: float = 25):
         """
         Desenha cotas de posição do furo em relação às bordas
         Cotas saem DO FURO para FORA da peça
@@ -226,45 +227,42 @@ class GeradorDesenhoTecnico:
         c.setStrokeColor(colors.HexColor("#A5A6A68A"))
         c.setLineWidth(0.3)
         
-        offset_externo = 15  # Distância para fora da peça
-        
         # COTA HORIZONTAL (X) - sai do furo para CIMA
         if mostrar_x and distancia_x > 0:
             # Borda superior da peça
             y_borda_superior = y_origem_peca + altura_peca
             
             # Linha do furo até fora da peça
-
-            c.line(x_furo, y_furo, x_furo, y_borda_superior + offset_externo)
+            c.line(x_furo, y_furo, x_furo, y_borda_superior + offset_externo_x)
             c.setDash()  # Sólida
             
             # Texto VERTICAL acima
             c.setFont("Helvetica", 14)
             c.setFillColor(colors.HexColor("#000000"))
             c.saveState()
-            x_texto = x_furo
-            y_texto = y_borda_superior + offset_externo + 8
+            x_texto = x_furo - 3
+            y_texto = y_borda_superior + offset_externo_x + 10
             c.translate(x_texto, y_texto)
             c.rotate(90)
             c.drawCentredString(0, 0, self.formatar_cota(distancia_x))
             c.restoreState()
-        
+
         # COTA VERTICAL (Y) - sai do furo para a ESQUERDA
         if mostrar_y and distancia_y > 0:
             # Borda esquerda da peça
             x_borda_esquerda = x_origem_peca
             
             # Linha do furo até fora da peça
-            c.line(x_furo, y_furo, x_borda_esquerda - offset_externo, y_furo)
+            c.line(x_furo, y_furo, x_borda_esquerda - offset_externo_y, y_furo)
             c.setDash()  # Sólida
             
             # Texto HORIZONTAL à esquerda
             c.setFont("Helvetica", 14)
             c.setFillColor(colors.HexColor("#000000"))
             y_texto = y_furo
-            x_texto = x_borda_esquerda - offset_externo - 8
+            x_texto = x_borda_esquerda - offset_externo_y - 10
             c.drawRightString(x_texto, y_texto - 3, self.formatar_cota(distancia_y))
-        
+
         c.setFillColor(colors.black)  # Restaura cor
     
     def desenhar_furo_vertical(self, c: canvas.Canvas, x_origem: float, y_origem: float,
@@ -1049,7 +1047,7 @@ class GeradorDesenhoTecnico:
         texto_titulo = "PLANO DE FURAÇÃO"
         largura_texto = c.stringWidth(texto_titulo, "Helvetica-Bold", 16)
         titulo_x = (largura_pagina - largura_texto) / 2
-        titulo_y = altura_pagina - self.margem + 5
+        titulo_y = altura_pagina - self.margem + 15
         c.drawCentredString(largura_pagina / 2, titulo_y, texto_titulo)
 
         # Desenhar peça (vista de topo)
@@ -1127,6 +1125,52 @@ class GeradorDesenhoTecnico:
             furo_mais_proximo_topo = max(furos_na_coluna, key=lambda f: float(f.y))
             furos_com_cota_x.add(id(furo_mais_proximo_topo))
 
+        # ===== DETECTAR COTAS Y PRÓXIMAS E ESCALONAR OFFSETS =====
+        # Pegar os furos que terão cota Y e ordenar por Y
+        furos_com_cota_y_lista = [f for f in peca.furos_verticais if id(f) in furos_com_cota_y]
+        furos_com_cota_y_lista = sorted(furos_com_cota_y_lista, key=lambda f: float(f.y))
+
+        # Calcular offset para cada furo baseado na proximidade
+        offset_cota_y = {}  # id(furo) -> offset
+        distancia_minima = 15  # mm - se dois furos estão mais próximos que isso, escalonar
+
+        offset_base = 25
+        offset_incremento = 20
+
+        for i, furo in enumerate(furos_com_cota_y_lista):
+            if i == 0:
+                offset_cota_y[id(furo)] = offset_base
+            else:
+                furo_anterior = furos_com_cota_y_lista[i - 1]
+                diferenca_y = abs(float(furo.y) - float(furo_anterior.y))
+                
+                if diferenca_y < distancia_minima:
+                    # Muito próximo - aumentar offset
+                    offset_anterior = offset_cota_y[id(furo_anterior)]
+                    offset_cota_y[id(furo)] = offset_anterior + offset_incremento
+                else:
+                    # Distante o suficiente - volta ao offset base
+                    offset_cota_y[id(furo)] = offset_base
+
+        # ===== DETECTAR COTAS X PRÓXIMAS E ESCALONAR OFFSETS =====
+        furos_com_cota_x_lista = [f for f in peca.furos_verticais if id(f) in furos_com_cota_x]
+        furos_com_cota_x_lista = sorted(furos_com_cota_x_lista, key=lambda f: float(f.x))
+
+        offset_cota_x = {}  # id(furo) -> offset
+
+        for i, furo in enumerate(furos_com_cota_x_lista):
+            if i == 0:
+                offset_cota_x[id(furo)] = offset_base
+            else:
+                furo_anterior = furos_com_cota_x_lista[i - 1]
+                diferenca_x = abs(float(furo.x) - float(furo_anterior.x))
+                
+                if diferenca_x < distancia_minima:
+                    offset_anterior = offset_cota_x[id(furo_anterior)]
+                    offset_cota_x[id(furo)] = offset_anterior + offset_incremento
+                else:
+                    offset_cota_x[id(furo)] = offset_base    
+
         # Desenhar furos verticais com cotas inteligentes
         for i, furo in enumerate(peca.furos_verticais):
             x_furo, y_furo = self.desenhar_furo_vertical(c, x_origem, y_origem, furo, escala)
@@ -1137,10 +1181,15 @@ class GeradorDesenhoTecnico:
             # Mostrar cota Y apenas se for o mais à esquerda da linha
             mostrar_y = id(furo) in furos_com_cota_y
             
+            # Pegar offsets escalonados (ou usar padrão)
+            offset_x = offset_cota_x.get(id(furo), 25)
+            offset_y = offset_cota_y.get(id(furo), 25)
+            
             self.desenhar_cota_furo(c, x_origem, y_origem, x_furo, y_furo, 
-                                furo.x, furo.y,
-                                largura_desenhada, altura_desenhada,
-                                escala, mostrar_x, mostrar_y)
+                                    furo.x, furo.y,
+                                    largura_desenhada, altura_desenhada,
+                                    escala, mostrar_x, mostrar_y,
+                                    offset_x, offset_y)
             
         # Tabela horizontal abaixo do desenho
         largura_tabela = largura_pagina - 2 * self.margem
