@@ -147,7 +147,7 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
       ) {
     
     const furoX = (clickX - offset.x) / (PIXELS_PER_MM * scale);
-    const furoY = peca.largura - ((clickY - offset.y) / (PIXELS_PER_MM * scale));  // ← CORRIGIDO!
+    const furoY = (clickY - offset.y) / (PIXELS_PER_MM * scale);
 
       onAddFuro({
         x: Math.round(furoX * 10) / 10,
