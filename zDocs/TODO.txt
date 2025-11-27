@@ -2,6 +2,8 @@
 	> Adicionar token de segurança estático 
 		> serve em 2 computadores diferentes?	
 
+> Quando importo uma peça no editorMPR não esta puxando profundidade dos furos		
+
 > Cadastro de Borda na peça
 	> Definir no editorMPR para amarrar junto com Furação		
 
