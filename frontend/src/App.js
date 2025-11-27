@@ -34,7 +34,6 @@ function MainApp() {
   const [warning, setWarning] = useState(null);
   const [success, setSuccess] = useState(false);
   const [pecaSelecionada, setPecaSelecionada] = useState(null);
-
   const { user, logout } = useAuth();
 
   const handleFileSelect = (selectedFile) => {
