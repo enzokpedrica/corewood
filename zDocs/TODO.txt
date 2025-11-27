@@ -14,34 +14,26 @@
 
 > Melhorar o layout das vistas
 	> Redimensionar conforme tamanho
-	> Fontes são sempre mesmo tamanho e tip
-
-> Layout Folha
-	> Colocar Margem
-	> Centralizar texto do título
+	> Fontes são sempre mesmo tamanho e tipo
+	> Vista principal precisa deslocar um pouco mais abaixo, cotas pegando no título
 
 > Tabela Horizontal
 	> Puxar descrição automática
-		> Formulário para preenchimento
 		> Revisão precisa verificar qual a última versão e alterar
-		> Seleção de Status
+		> Aumentar tamanho da fonte de Status
 		> O Responsável puxa de acordo com o login do usuário
+			> Aumentar tamanho da fonte
 		> Como vai saber o tanto de páginas?
 		> Nome do conferente
 	> Ponto de Atenção
-	> Revisão precisa ser valor obrigatório
 
 > Deixar algo mais interativo?
 	> Ajustar as cotas antes de gerar o pdf?
 	> Ajustar as vistas antes de gerar pdf?
 
-> Cadastro de peças	
-		> Salvar arquivos BHX para detectar hora que importa o arquivo
-			> Ou poder navegar pra achar a copia
-	> Onde Salvar?
-
-> Melhorar o título no doc
-	> Esta saindo pra fora
+> Salvar arquivos BHX
+	> Salvamento automático
+		> Tanto PDF gerado quanto arquivo .mpr
 
 ## -- Essa parte será um pouco complexa, o ideal seria testar peças que furam somente a superfície primeiramente e realizar os ajustes.
 
@@ -60,16 +52,33 @@
 			> Texto do batente precisa aparecer na tabela horizontal
 
 > Adicionar operação de usinagem	
-----------------------------------------------------
-
 > Suporte
 	> Deu problema e agora?
 	> Abrir chamado
 	> Bot de atendimento
 	> Bot que aprende com as soluções
+----------------------------------------------------
 
+---------------------IDEIAS-------------------------
+
+> A partir do CoreWood
+	> Roteiro automático
+	> CM automático
 > Tradutor automático
 > Adicionar algo para juntar PDFS pra Imprimir
+> WEBSCRAPING
+> Plataforma de Custos Produto
+> Simulador de Frete
+> Rondas de Qualidade
+> RNCs
+> Incubadora de Ideias
+> Lista Mestre (CoreDoc)
+> Catálogo online 3D
+	> Função de teste na sua casa
+		> Testar como o móvel ficaria na casa da pessoa
+> IA para atendimentos de chamados
+
+
 ----------------------------------------------------
 
 ------------------------ IA ------------------------
@@ -85,3 +94,4 @@
 	> Puxadores
 	> Tendências de Design
 	> Talvez seleciona 3 e pede pra gerar mais 5 alternativas
+	> Ja manda a ideia pro fornecedor solicitando orçamento
