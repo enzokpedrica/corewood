@@ -1186,7 +1186,7 @@ class GeradorDesenhoTecnico:
             offset_y = offset_cota_y.get(id(furo), 25)
             
             self.desenhar_cota_furo(c, x_origem, y_origem, x_furo, y_furo, 
-                                    furo.x, furo.y,
+                                    furo.x, peca.dimensoes.comprimento - furo.y,  # ← invertido
                                     largura_desenhada, altura_desenhada,
                                     escala, mostrar_x, mostrar_y,
                                     offset_x, offset_y)
