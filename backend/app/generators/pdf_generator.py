@@ -266,7 +266,7 @@ class GeradorDesenhoTecnico:
         c.setFillColor(colors.black)  # Restaura cor
     
     def desenhar_furo_vertical(self, c: canvas.Canvas, x_origem: float, y_origem: float,
-                               furo: FuroVertical, escala: float):
+                           furo: FuroVertical, escala: float, altura_peca: float):
         """
         Desenha marcação de furo vertical (vista de topo)
         
@@ -277,7 +277,7 @@ class GeradorDesenhoTecnico:
         """
         # Posição do furo no desenho
         x_furo = x_origem + (furo.x * mm * escala)
-        y_furo = y_origem + (furo.y * mm * escala)
+        y_furo = y_origem + altura_peca - (furo.y * mm * escala)
         raio = (furo.diametro / 2) * mm * escala
         
         # Desenhar círculo do furo
@@ -1173,7 +1173,7 @@ class GeradorDesenhoTecnico:
 
         # Desenhar furos verticais com cotas inteligentes
         for i, furo in enumerate(peca.furos_verticais):
-            x_furo, y_furo = self.desenhar_furo_vertical(c, x_origem, y_origem, furo, escala)
+            x_furo, y_furo = self.desenhar_furo_vertical(c, x_origem, y_origem, furo, escala, altura_desenhada)
             
             # Mostrar cota X apenas se for o mais próximo do topo na coluna
             mostrar_x = id(furo) in furos_com_cota_x
@@ -1186,7 +1186,7 @@ class GeradorDesenhoTecnico:
             offset_y = offset_cota_y.get(id(furo), 25)
             
             self.desenhar_cota_furo(c, x_origem, y_origem, x_furo, y_furo, 
-                                    furo.x, peca.dimensoes.comprimento - furo.y,  # ← invertido
+                                    furo.x, furo.y,
                                     largura_desenhada, altura_desenhada,
                                     escala, mostrar_x, mostrar_y,
                                     offset_x, offset_y)
