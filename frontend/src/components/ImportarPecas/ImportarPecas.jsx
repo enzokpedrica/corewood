@@ -93,7 +93,7 @@ function ImportarPecas() {
               <input
                 type="file"
                 id="file-input"
-                accept=".xlsx,.xls"
+                accept=".xlsx,.xls,.csv"
                 onChange={handleFileChange}
                 required
               />

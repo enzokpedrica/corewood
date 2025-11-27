@@ -2,6 +2,9 @@
 	> Adicionar token de segurança estático 
 		> serve em 2 computadores diferentes?	
 
+> Cadastro de Borda na peça
+	> Definir no editorMPR para amarrar junto com Furação		
+
 > Evitar sobreposição de cotas
 	> Cota da vista principal que sai pra esquerda e topo
 	> Cota de furos na vista principal
