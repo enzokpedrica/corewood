@@ -26,17 +26,41 @@ async def importar_pecas(
     db: Session = Depends(get_db)
 ):
     """
-    Importa peças do Excel do CargaMaquina
+    Importa peças do Excel ou CSV do CargaMaquina
     """
     
     # Validar arquivo
-    if not file.filename.endswith(('.xlsx', '.xls')):
-        raise HTTPException(status_code=400, detail="Arquivo deve ser Excel (.xlsx ou .xls)")
+    extensoes_validas = ('.xlsx', '.xls', '.csv')
+    if not file.filename.lower().endswith(extensoes_validas):
+        raise HTTPException(status_code=400, detail="Arquivo deve ser Excel (.xlsx, .xls) ou CSV (.csv)")
     
     try:
-        # Ler Excel
+        # Ler arquivo
         contents = await file.read()
-        df = pd.read_excel(io.BytesIO(contents))
+        
+        # Detectar tipo e ler adequadamente
+        if file.filename.lower().endswith('.csv'):
+            # Tentar diferentes encodings para CSV
+            for encoding in ['utf-8', 'latin-1', 'cp1252']:
+                try:
+                    df = pd.read_csv(io.BytesIO(contents), encoding=encoding, sep=None, engine='python')
+                    break
+                except:
+                    continue
+            else:
+                raise HTTPException(status_code=400, detail="Não foi possível ler o CSV. Verifique o encoding.")
+        else:
+            # Excel - tentar diferentes engines
+            try:
+                df = pd.read_excel(io.BytesIO(contents), engine='openpyxl')
+            except:
+                try:
+                    df = pd.read_excel(io.BytesIO(contents), engine='xlrd')
+                except:
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="Arquivo Excel corrompido. Abra no Excel, salve como novo arquivo e tente novamente."
+                    )
 
         # Remove última linha (informações desnecessárias)
         df = df[:-1]
@@ -48,7 +72,7 @@ async def importar_pecas(
         if colunas_faltando:
             raise HTTPException(
                 status_code=400, 
-                detail=f"Colunas faltando no Excel: {', '.join(colunas_faltando)}"
+                detail=f"Colunas faltando no arquivo: {', '.join(colunas_faltando)}"
             )
         
         # Pegar família (nome do produto) da primeira linha
@@ -122,6 +146,8 @@ async def importar_pecas(
             "codigo_produto": produto.codigo
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Erro ao importar: {str(e)}")
