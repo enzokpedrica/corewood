@@ -13,6 +13,7 @@ import './App.css';
 import EditorMPR from './components/EditorMPR/EditorMPR';
 import ImportarPecas from './components/ImportarPecas/ImportarPecas';
 import ListarPecas from './components/ListarPecas/ListarPecas';
+import StepConverter from './components/StepConverter';
 
 function MainApp() {
   const [modoLote, setModoLote] = useState('individual');
@@ -214,6 +215,21 @@ function MainApp() {
                 >
                   🗂️ Listar
                 </button>
+                <button
+                  onClick={() => setModoLote('step')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: modoLote === 'step' ? '#667eea' : 'white',
+                    color: modoLote === 'step' ? 'white' : '#667eea',
+                    border: '2px solid #667eea',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  🔄 STEP→MPR
+                </button>
               </div>
               
               <div style={{ textAlign: 'right' }}>
@@ -338,6 +354,7 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/step-converter" element={<StepConverter />} />
       <Route 
         path="/" 
         element={
