@@ -216,7 +216,7 @@ function MainApp() {
                   🗂️ Listar
                 </button>
                 <button
-                  onClick={() => setModoLote('step')}
+                  onClick={() => window.location.href = '/step-converter'}
                   style={{
                     padding: '0.75rem 1.5rem',
                     background: modoLote === 'step' ? '#667eea' : 'white',
