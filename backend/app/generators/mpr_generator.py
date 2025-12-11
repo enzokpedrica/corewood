@@ -146,6 +146,90 @@ class GeradorMPR:
         
         return '\n'.join(mpr)  # ← JÁ TEM \n entre linhas!
     
+    def gerar_mpr_from_step(self, dados_step: Dict) -> str:
+        """
+        Gera MPR a partir dos dados do STEP parser.
+        
+        Args:
+            dados_step: Dicionário no formato {'part': {...}, 'drilling': [...]}
+            
+        Returns:
+            String com conteúdo MPR
+        """
+        peca = dados_step['part']
+        furos = dados_step.get('drilling', [])
+        
+        # Converter para formato interno
+        furos_convertidos = []
+        for furo in furos:
+            tipo = self._determinar_tipo_furo(furo, peca)
+            
+            furo_convertido = {
+                'tipo': tipo,
+                'x': furo['x'],
+                'y': furo['y'],
+                'diametro': furo['diameter'],
+                'profundidade': furo['depth']
+            }
+            
+            if tipo == 'horizontal':
+                furo_convertido['lado'] = self._determinar_lado(furo, peca)
+                furo_convertido['z'] = furo.get('z', peca['thickness'] / 2)
+            
+            furos_convertidos.append(furo_convertido)
+        
+        # Montar dados no formato esperado
+        peca_data = {
+            'largura': peca['height'],
+            'comprimento': peca['width'],
+            'espessura': peca['thickness'],
+            'furos': furos_convertidos
+        }
+        
+        return self.gerar_mpr(peca_data)
+    
+    def _determinar_tipo_furo(self, furo: Dict, peca: Dict) -> str:
+        """Determina se o furo é vertical ou horizontal."""
+        z = furo.get('z', 0)
+        espessura = peca['thickness']
+        tolerancia = 2.0
+        
+        # Se Z está no topo ou fundo, é vertical
+        if z <= tolerancia or z >= espessura - tolerancia:
+            return 'vertical'
+        
+        # Verifica se está na borda (horizontal)
+        x = furo['x']
+        y = furo['y']
+        largura = peca['width']
+        altura = peca['height']
+        
+        if x <= tolerancia or x >= largura - tolerancia:
+            return 'horizontal'
+        if y <= tolerancia or y >= altura - tolerancia:
+            return 'horizontal'
+        
+        return 'vertical'
+    
+    def _determinar_lado(self, furo: Dict, peca: Dict) -> str:
+        """Determina o lado do furo horizontal (XP, XM, YP, YM)."""
+        x = furo['x']
+        y = furo['y']
+        largura = peca['width']
+        altura = peca['height']
+        tolerancia = 1.0
+        
+        if x <= tolerancia:
+            return "XP"
+        elif x >= largura - tolerancia:
+            return "XM"
+        elif y <= tolerancia:
+            return "YP"
+        elif y >= altura - tolerancia:
+            return "YM"
+        
+        return "XP"
+    
     def _gerar_furo_vertical(self, furo: Dict) -> List[str]:
         x = float(furo['x'])
         y = float(furo['y'])
@@ -218,7 +302,7 @@ class GeradorMPR:
         
         lado = furo.get('lado', 'XP')
         y = float(furo['y'])
-        z = float(furo['x'])  # X vira Z em horizontal
+        z = float(furo.get('z', furo['x']))  # X vira Z em horizontal
         diametro = float(furo['diametro'])
         profundidade = float(furo.get('profundidade', 11.5))
         
@@ -278,3 +362,14 @@ if __name__ == "__main__":
     
     mpr_content = gerador.gerar_mpr(peca_teste)
     print(mpr_content)
+    
+    # Teste com dados STEP
+    print("\n\n=== TESTE STEP ===\n")
+    dados_step = {
+        'part': {'width': 1200, 'height': 500, 'thickness': 15},
+        'drilling': [
+            {'id': 1, 'x': 400, 'y': 200, 'z': 15, 'diameter': 8, 'depth': 5}
+        ]
+    }
+    mpr_step = gerador.gerar_mpr_from_step(dados_step)
+    print(mpr_step)

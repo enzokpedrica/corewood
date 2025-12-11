@@ -19,6 +19,9 @@ from .models.user import User
 import json
 import tempfile
 from app.routes import editor, pecas
+from .parser.step_parser import parse_step
+from .generators.mpr_generator import GeradorMPR
+
 
 # Criar tabelas no banco
 Base.metadata.create_all(bind=engine)
@@ -325,3 +328,126 @@ async def generate_pdf(
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro ao gerar PDF: {str(e)}")
+    
+@app.post("/parse-step")
+async def parse_step_file(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Parse arquivo STEP e retorna dados estruturados (igual parse-mpr)
+    
+    Args:
+        file: Arquivo STEP (upload)
+        
+    Returns:
+        JSON com dados da peça (dimensões, furos, etc)
+    """
+    try:
+        content = await file.read()
+        content_str = content.decode('utf-8', errors='ignore')
+        
+        nome_peca = file.filename.replace('.step', '').replace('.STEP', '').replace('.stp', '').replace('.STP', '')
+        
+        # Parse STEP
+        dados = parse_step(content_str)
+        
+        return {
+            "status": "success",
+            "data": {
+                "nome": nome_peca,
+                "dimensoes": {
+                    "largura": dados['part']['width'],
+                    "comprimento": dados['part']['height'],
+                    "espessura": dados['part']['thickness']
+                },
+                "furos": dados['drilling'],
+                "total_furos": len(dados['drilling'])
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao processar STEP: {str(e)}")
+
+
+@app.post("/step-to-mpr")
+async def convert_step_to_mpr(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Converte arquivo STEP para MPR (Homag/Weeke)
+    
+    Args:
+        file: Arquivo STEP (upload)
+        
+    Returns:
+        Arquivo MPR para download
+    """
+    try:
+        content = await file.read()
+        content_str = content.decode('utf-8', errors='ignore')
+        
+        nome_peca = file.filename.replace('.step', '').replace('.STEP', '').replace('.stp', '').replace('.STP', '')
+        
+        # Parse STEP
+        dados = parse_step(content_str)
+        
+        # Converter para MPR
+        gerador = GeradorMPR()
+        mpr_content = gerador.gerar_mpr_from_step(dados)
+        
+        # Retornar como arquivo
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.mpr', mode='w', encoding='utf-8') as tmp_file:
+            tmp_file.write(mpr_content)
+            tmp_path = tmp_file.name
+        
+        return FileResponse(
+            tmp_path,
+            media_type='application/octet-stream',
+            filename=f"{nome_peca}.mpr"
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao converter STEP para MPR: {str(e)}")
+
+
+@app.post("/step-to-json")
+async def convert_step_to_json(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Converte arquivo STEP para JSON CoreWood
+    
+    Args:
+        file: Arquivo STEP (upload)
+        
+    Returns:
+        Arquivo JSON para download
+    """
+    try:
+        content = await file.read()
+        content_str = content.decode('utf-8', errors='ignore')
+        
+        nome_peca = file.filename.replace('.step', '').replace('.STEP', '').replace('.stp', '').replace('.STP', '')
+        
+        # Parse STEP
+        dados = parse_step(content_str)
+        dados['nome'] = nome_peca
+        
+        # Retornar como arquivo JSON
+        json_content = json.dumps(dados, indent=2, ensure_ascii=False)
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.json', mode='w', encoding='utf-8') as tmp_file:
+            tmp_file.write(json_content)
+            tmp_path = tmp_file.name
+        
+        return FileResponse(
+            tmp_path,
+            media_type='application/json',
+            filename=f"{nome_peca}_corewood.json"
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao converter STEP para JSON: {str(e)}")
