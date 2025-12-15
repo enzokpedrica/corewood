@@ -15,6 +15,7 @@ from ..core.security import (
     create_access_token,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
+from ..core.auth import get_current_active_user
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 
@@ -91,8 +92,8 @@ def login(
 
 
 @router.get("/me", response_model=UserResponse)
-def get_me(db: Session = Depends(get_db), token: str = Depends(OAuth2PasswordRequestForm)):
+def get_me(
+    current_user: User = Depends(get_current_active_user),
+):
     """Pegar dados do usuário logado"""
-    from ..core.auth import get_current_active_user
-    user = get_current_active_user(token, db)
-    return user
+    return current_user
