@@ -122,7 +122,6 @@ class GeradorMPR:
         mpr.append('KM=""')
         
         # ===== DEFINIÇÃO DA PEÇA =====
-        mpr.append(' ')
         mpr.append('<100 \\WerkStck\\')
         mpr.append('LA="x"')
         mpr.append('BR="y"')
@@ -131,7 +130,6 @@ class GeradorMPR:
         mpr.append('FNY="0"')
         mpr.append('AX="0"')
         mpr.append('AY="0"')
-        mpr.append(' ')
 
         # Agrupar furos sequenciais
         furos_agrupados = self._agrupar_furos_sequenciais(furos_verticais)
@@ -144,7 +142,13 @@ class GeradorMPR:
         for furo in furos_horizontais:
             mpr.extend(self._gerar_furo_horizontal(furo))
         
-        return '\n'.join(mpr)  # ← JÁ TEM \n entre linhas!
+        # Adicionar terminador
+        mpr.append('!')
+
+        # Remover linhas com apenas espaço
+        mpr_limpo = [linha if linha.strip() else '' for linha in mpr]
+
+        return '\r\n'.join(mpr_limpo)
     
     def gerar_mpr_from_step(self, dados_step: Dict) -> str:
         """

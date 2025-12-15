@@ -80,7 +80,7 @@ async def export_mpr(
         filename = f"{peca.nome}.mpr"
         
         return Response(
-            content=mpr_content.encode('utf-8'),
+            content=mpr_content.encode('cp1252', errors='replace'),
             media_type='application/octet-stream',
             headers={
                 'Content-Disposition': f'attachment; filename="{filename}"'
