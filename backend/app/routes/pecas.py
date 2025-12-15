@@ -5,6 +5,8 @@ from app.models.produto import Produto
 from app.models.peca_db import PecaDB
 from app.schemas.peca import PecaResponse
 from typing import List
+from app.core.auth import get_current_active_user
+from app.models.user import User
 import pandas as pd
 import io
 import re
@@ -31,6 +33,7 @@ async def importar_pecas(
     codigo_produto: str = Form(...),
     nome_produto: str = Form(None),
     file: UploadFile = File(...),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -167,6 +170,7 @@ async def salvar_peca(
     comprimento: float = Form(...),
     espessura: float = Form(...),
     furos: str = Form("{}"),  # JSON string
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Salva alterações da peça (dimensões + furos)"""
@@ -192,7 +196,10 @@ async def salvar_peca(
     
 
 @router.get("/produto/{codigo_produto}", response_model=List[PecaResponse])
-def listar_pecas_produto(codigo_produto: str, db: Session = Depends(get_db)):
+def listar_pecas_produto(
+    codigo_produto: str, 
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)):
     """Lista todas as peças de um produto"""
     
     produto = db.query(Produto).filter(Produto.codigo == codigo_produto).first()
