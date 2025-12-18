@@ -1,11 +1,19 @@
-> Segurança
-	> Adicionar token de segurança estático 
-		> serve em 2 computadores diferentes?	
-
 > Quando importo uma peça no editorMPR não esta puxando profundidade dos furos		
 
-> Cadastro de Borda na peça
-	> Definir no editorMPR para amarrar junto com Furação		
+> Lógica para Furação
+	> Furação
+		> Mandril aparecer no texto da cota
+		> Múltiplos no mandril
+		> Distância entre furos horizontais > 100
+		> Distância entre furos verticais multiplos de 32
+		> Furação superior
+		> Furação inferior
+		> Como calcular mais de 1 furação?
+			Identificar furos -> analisar -> gerar documentos
+		> Calcular deslocamento
+			> Identificar quais furos precisam de deslocamento
+		> Qual batente a ser utilizado
+			> Texto do batente precisa aparecer na tabela horizontal
 
 > Evitar sobreposição de cotas
 	> Cota da vista principal que sai pra esquerda e topo
@@ -13,43 +21,40 @@
 	> Deixar o texto um pouco afastado da linha da cota 
 
 > Melhorar o layout das vistas
-	> Redimensionar conforme tamanho
-	> Fontes são sempre mesmo tamanho e tipo
-	> Vista principal precisa deslocar um pouco mais abaixo, cotas pegando no título
+	> Diminuir o tamanho da vista		
 
 > Tabela Horizontal
-	> Puxar descrição automática
 		> Revisão precisa verificar qual a última versão e alterar
 		> Aumentar tamanho da fonte de Status
 		> O Responsável puxa de acordo com o login do usuário
 			> Aumentar tamanho da fonte
 		> Como vai saber o tanto de páginas?
 		> Nome do conferente
-	> Ponto de Atenção
+	> Ponto de Atenção		
 
-> Deixar algo mais interativo?
+> Tela de pré visualização antes de gerar documentação
+	> Deixar algo mais interativo?
 	> Ajustar as cotas antes de gerar o pdf?
 	> Ajustar as vistas antes de gerar pdf?
 
+> Módulo de definição de peça
+	> Cadastro de Produto
+		> Importar csv CM
+		> Listar peças
+		> Modelagem .step
+		> Documentação
+		> BHX
+	> Peça individual
+		> Modelagem .step
+		> Documentação
+		> BHX
+> Cadastro de Borda na peça
+	> Definir no editorMPR para amarrar junto com Furação		
+
+-------------------------------------------------------			
 > Salvar arquivos BHX
 	> Salvamento automático
 		> Tanto PDF gerado quanto arquivo .mpr
-
-## -- Essa parte será um pouco complexa, o ideal seria testar peças que furam somente a superfície primeiramente e realizar os ajustes.
-
-> Lógica para Furação
-	> Furação
-		> Múltiplos no mandril
-		> Distância entre furos horizontais
-		> Furação superior
-		> Furação inferior
-	> Mandril
-		> Qual mandril selecionado
-			> Cota do furo precisa ter qual mandril vai ser
-		> Calcular deslocamento
-			> Identificar quais furos precisam de deslocamento
-		> Qual batente a ser utilizado
-			> Texto do batente precisa aparecer na tabela horizontal
 
 > Adicionar operação de usinagem	
 > Suporte
@@ -89,7 +94,6 @@
 ----------------------------------------------------
 
 ------------------------ WEBSCRAPING ------------------------
-
 > Coletor de imagens para ideias em produtos
 	> Puxadores
 	> Tendências de Design
