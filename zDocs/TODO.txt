@@ -1,4 +1,5 @@
-> Quando importo uma peça no editorMPR não esta puxando profundidade dos furos		
+> Quando importo uma peça no editorMPR não esta puxando profundidade dos furos	
+> Testar o .step de 2 peças	
 
 > Lógica para Furação
 	> Furação
