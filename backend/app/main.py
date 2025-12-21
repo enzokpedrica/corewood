@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from typing import List
 import tempfile
 import os
+import zipfile, io
 from pathlib import Path
 from .parser.mpr_parser import parse_furacao
 from .generators.pdf_generator import GeradorDesenhoTecnico
@@ -21,6 +22,8 @@ import tempfile
 from app.routes import editor, pecas
 from .parser.step_parser import parse_step
 from .generators.mpr_generator import GeradorMPR
+from .parser.step_parser import parse_step_multipart, generate_mpr_files, generate_report_txt
+
 
 
 # Criar tabelas no banco
@@ -410,6 +413,27 @@ async def convert_step_to_mpr(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao converter STEP para MPR: {str(e)}")
+    
+@app.post("/step-multipart/parse")
+async def parse_multipart(file: UploadFile = File(...)):
+    content = (await file.read()).decode('utf-8', errors='ignore')
+    return parse_step_multipart(content)
+
+@app.post("/step-multipart/convert")
+async def convert_multipart(file: UploadFile = File(...)):
+    content = (await file.read()).decode('utf-8', errors='ignore')
+    mpr_files = generate_mpr_files(content)
+    txt = generate_report_txt(content, file.filename.rsplit('.', 1)[0])
+    
+    # Retorna ZIP
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w') as zf:
+        for nome, conteudo in mpr_files.items():
+            zf.writestr(nome, conteudo)
+        zf.writestr("lista_corte.txt", txt)
+    zip_buffer.seek(0)
+    
+    return StreamingResponse(zip_buffer, media_type="application/zip")    
 
 
 @app.post("/step-to-json")

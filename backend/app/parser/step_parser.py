@@ -1,90 +1,132 @@
 """
-STEP Hole Parser para CoreWood
-==============================
-Extrai informações de furações de arquivos STEP.
+Parser STEP Multi-Peças para CoreWood v2
+- Separa peças de acessórios (parafusos, bordas, ferragens)
+- Gera 1 MPR por peça
+- Gera TXT com lista de corte + acessórios
+- Integração com FastAPI
 """
 
 import re
 from dataclasses import dataclass, field
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from pathlib import Path
+import io
 
 
 @dataclass
-class Hole:
-    """Representa um furo extraído do arquivo STEP."""
-    diameter: float
-    radius: float
-    center_x: float
-    center_y: float
-    center_z: float
-    depth: float
-    axis: tuple = (0, 0, 1)
-    is_through: bool = False
-
-
-class StepParser:
-    """Parser de arquivos STEP focado em extração de furações."""
+class Furo:
+    """Representa um furo detectado"""
+    id: int
+    x: float
+    y: float
+    z: float
+    diametro: float
+    profundidade: float = 15.0
+    face: str = "superior"
     
-    def __init__(self, content: str):
-        self.content = content
-        self.entities: dict = {}
+    def to_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'x': self.x,
+            'y': self.y,
+            'z': self.z,
+            'diametro': self.diametro,
+            'profundidade': self.profundidade,
+            'face': self.face
+        }
+
+
+@dataclass
+class Peca:
+    """Representa uma peça do STEP"""
+    nome: str
+    entity_id: int
+    x_min: float = 0
+    x_max: float = 0
+    y_min: float = 0
+    y_max: float = 0
+    z_min: float = 0
+    z_max: float = 0
+    furos: List[Furo] = field(default_factory=list)
+    
+    @property
+    def largura(self) -> float:
+        return round(abs(self.x_max - self.x_min), 2)
+    
+    @property
+    def comprimento(self) -> float:
+        return round(abs(self.y_max - self.y_min), 2)
+    
+    @property
+    def espessura(self) -> float:
+        return round(abs(self.z_max - self.z_min), 2)
+    
+    @property
+    def dimensoes_ordenadas(self) -> tuple:
+        """Retorna (largura, comprimento, espessura) - maior dim = comprimento"""
+        dims = sorted([self.largura, self.comprimento, self.espessura], reverse=True)
+        return (dims[1], dims[0], dims[2])  # L x C x E
+    
+    def to_dict(self) -> dict:
+        dims = self.dimensoes_ordenadas
+        return {
+            'nome': self.nome,
+            'largura': dims[0],
+            'comprimento': dims[1],
+            'espessura': dims[2],
+            'furos': [f.to_dict() for f in self.furos]
+        }
+
+
+@dataclass 
+class Acessorio:
+    """Representa um acessório (parafuso, borda, etc)"""
+    nome: str
+    quantidade: int = 1
+    
+    def to_dict(self) -> dict:
+        return {'nome': self.nome, 'quantidade': self.quantidade}
+
+
+class StepMultiPartParser:
+    """Parser que separa múltiplas peças de um arquivo STEP"""
+    
+    ACESSORIOS_KEYWORDS = [
+        'parafuso', 'screw', 'bolt', 
+        'borda', 'edge', 'fita',
+        'ferragem', 'hardware',
+        'dobradica', 'hinge',
+        'puxador', 'handle',
+        'corrediça', 'slide',
+        'cavilha', 'dowel',
+        'prego', 'nail'
+    ]
+    
+    def __init__(self, step_content: str):
+        self.content = step_content
+        self.entities: Dict[int, dict] = {}
+        self.pecas: List[Peca] = []
+        self.acessorios: List[Acessorio] = []
         self._parse_entities()
     
     def _parse_entities(self):
-        """Extrai todas as entidades do arquivo STEP."""
-        data_section = re.search(r'DATA;(.+?)ENDSEC;', self.content, re.DOTALL)
-        if not data_section:
-            raise ValueError("Seção DATA não encontrada no arquivo STEP")
-        
-        data = data_section.group(1)
-        data = data.replace('\n', ' ').replace('\r', '')
-        
-        pattern = r'#(\d+)\s*=\s*'
-        starts = [(m.start(), m.end(), int(m.group(1))) for m in re.finditer(pattern, data)]
-        
-        for i, (start, content_start, entity_id) in enumerate(starts):
-            paren_depth = 0
-            end_pos = content_start
-            
-            while end_pos < len(data):
-                char = data[end_pos]
-                if char == '(':
-                    paren_depth += 1
-                elif char == ')':
-                    paren_depth -= 1
-                elif char == ';' and paren_depth == 0:
-                    break
-                end_pos += 1
-            
-            entity_body = data[content_start:end_pos].strip()
-            
-            if entity_body.startswith('('):
-                self.entities[entity_id] = {
-                    'type': 'COMPLEX',
-                    'raw': entity_body
-                }
-            else:
-                type_match = re.match(r'(\w+)\s*\((.*)$', entity_body)
-                if type_match:
-                    entity_type = type_match.group(1)
-                    params_str = type_match.group(2).rstrip(')')
-                    self.entities[entity_id] = {
-                        'type': entity_type,
-                        'params': params_str,
-                        'raw': entity_body
-                    }
+        """Extrai todas as entidades do STEP"""
+        pattern = r'#(\d+)\s*=\s*([A-Z_]+)\s*\((.*?)\);'
+        for match in re.finditer(pattern, self.content, re.DOTALL):
+            entity_id = int(match.group(1))
+            entity_type = match.group(2)
+            entity_data = match.group(3).strip()
+            self.entities[entity_id] = {'type': entity_type, 'data': entity_data}
     
     def _get_entity(self, entity_id: int) -> Optional[dict]:
         return self.entities.get(entity_id)
     
     def _parse_cartesian_point(self, entity_id: int) -> Optional[tuple]:
+        """Extrai coordenadas de um CARTESIAN_POINT"""
         entity = self._get_entity(entity_id)
         if not entity or entity['type'] != 'CARTESIAN_POINT':
             return None
-        
-        raw = entity.get('raw', entity.get('params', ''))
-        coords_match = re.search(r'\(\s*([-\d.E]+)\s*,\s*([-\d.E]+)\s*,\s*([-\d.E]+)\s*\)', raw)
+        coords_match = re.search(r'\(\s*([-\d.E+]+)\s*,\s*([-\d.E+]+)\s*,\s*([-\d.E+]+)\s*\)', entity['data'])
         if coords_match:
             return (
                 float(coords_match.group(1)),
@@ -93,171 +135,357 @@ class StepParser:
             )
         return None
     
-    def _parse_direction(self, entity_id: int) -> Optional[tuple]:
-        entity = self._get_entity(entity_id)
-        if not entity or entity['type'] != 'DIRECTION':
-            return None
-        
-        raw = entity.get('raw', entity.get('params', ''))
-        dir_match = re.search(r'\(\s*([-\d.E]+)\s*,\s*([-\d.E]+)\s*,\s*([-\d.E]+)\s*\)', raw)
-        if dir_match:
-            return (
-                float(dir_match.group(1)),
-                float(dir_match.group(2)),
-                float(dir_match.group(3))
-            )
-        return None
+    def _is_acessorio(self, nome: str) -> bool:
+        """Verifica se o nome indica um acessório"""
+        nome_lower = nome.lower()
+        return any(keyword in nome_lower for keyword in self.ACESSORIOS_KEYWORDS)
     
-    def _parse_axis2_placement_3d(self, entity_id: int) -> Optional[dict]:
-        entity = self._get_entity(entity_id)
-        if not entity or entity['type'] != 'AXIS2_PLACEMENT_3D':
-            return None
-        
-        raw = entity.get('raw', entity.get('params', ''))
-        refs = re.findall(r'#(\d+)', raw)
-        if len(refs) >= 1:
-            point = self._parse_cartesian_point(int(refs[0]))
-            direction = self._parse_direction(int(refs[1])) if len(refs) > 1 else (0, 0, 1)
-            return {
-                'location': point,
-                'axis': direction
-            }
-        return None
-    
-    def _find_hole_depth(self, cylinder: dict) -> float:
-        circles_z = []
+    def _extract_manifold_solids(self) -> Dict[int, str]:
+        """Extrai todos os MANIFOLD_SOLID_BREP e seus nomes"""
+        solids = {}
         
         for entity_id, entity in self.entities.items():
-            if entity.get('type') == 'CIRCLE':
-                match = re.search(r"'[^']*'\s*,\s*#(\d+)\s*,\s*([-\d.E]+)", entity.get('raw', ''))
-                if match:
-                    radius = float(match.group(2))
-                    if abs(radius - cylinder['radius']) < 0.001:
-                        axis_id = int(match.group(1))
-                        placement = self._parse_axis2_placement_3d(axis_id)
-                        if placement and placement['location']:
-                            circles_z.append(placement['location'][2])
-        
-        if len(circles_z) >= 2:
-            return abs(max(circles_z) - min(circles_z))
-        
-        return 0.0
-    
-    def get_bounding_box(self) -> dict:
-        all_points = []
-        
-        for entity_id, entity in self.entities.items():
-            if entity.get('type') == 'CARTESIAN_POINT':
-                point = self._parse_cartesian_point(entity_id)
-                if point:
-                    all_points.append(point)
-        
-        if not all_points:
-            return {}
-        
-        x_coords = [p[0] for p in all_points]
-        y_coords = [p[1] for p in all_points]
-        z_coords = [p[2] for p in all_points]
-        
-        return {
-            'x_min': min(x_coords),
-            'x_max': max(x_coords),
-            'y_min': min(y_coords),
-            'y_max': max(y_coords),
-            'z_min': min(z_coords),
-            'z_max': max(z_coords),
-            'width': max(x_coords) - min(x_coords),
-            'height': max(y_coords) - min(y_coords),
-            'thickness': max(z_coords) - min(z_coords)
-        }
-    
-    def extract_holes(self) -> List[Hole]:
-        holes = []
-        bbox = self.get_bounding_box()
-        x_offset = bbox.get('x_min', 0)
-        y_offset = bbox.get('y_min', 0)
-        
-        for entity_id, entity in self.entities.items():
-            if entity.get('type') == 'CYLINDRICAL_SURFACE':
-                params = entity.get('raw', '')
-                match = re.search(r"'[^']*'\s*,\s*#(\d+)\s*,\s*([-\d.E]+)", params)
-                if match:
-                    axis_id = int(match.group(1))
-                    radius = float(match.group(2))
-                    
-                    placement = self._parse_axis2_placement_3d(axis_id)
-                    if placement and placement['location']:
-                        cylinder = {'radius': radius, 'location': placement['location']}
-                        depth = self._find_hole_depth(cylinder)
+            if entity['type'] == 'ADVANCED_BREP_SHAPE_REPRESENTATION':
+                # Extrai nome da representação
+                match = re.match(r"'([^']*)'", entity['data'])
+                nome_repr = match.group(1) if match else f"Peça_{entity_id}"
+                
+                # Encontra referências aos sólidos
+                refs = re.findall(r'#(\d+)', entity['data'])
+                for ref_id in refs:
+                    ref_entity = self._get_entity(int(ref_id))
+                    if ref_entity and ref_entity['type'] == 'MANIFOLD_SOLID_BREP':
+                        # Extrai nome do sólido
+                        solid_match = re.match(r"'([^']*)'", ref_entity['data'])
+                        solid_nome = solid_match.group(1) if solid_match else nome_repr
                         
-                        hole = Hole(
-                            diameter=radius * 2,
-                            radius=radius,
-                            center_x=placement['location'][0] - x_offset,
-                            center_y=placement['location'][1] - y_offset,
-                            center_z=placement['location'][2],
-                            depth=depth,
-                            axis=placement['axis'] or (0, 0, 1),
-                            is_through=(depth == 0)
-                        )
-                        holes.append(hole)
+                        if solid_nome and solid_nome.strip():
+                            solids[int(ref_id)] = solid_nome
+                        else:
+                            solids[int(ref_id)] = nome_repr
         
-        return holes
+        return solids
     
-    def to_corewood_format(self) -> dict:
-        """Retorna dados no formato CoreWood."""
-        holes = self.extract_holes()
-        bbox = self.get_bounding_box()
+    def _find_cylinders_for_solid(self, solid_id: int) -> List[dict]:
+        """Encontra cilindros (furos) associados a um sólido"""
+        cilindros = []
         
-        drilling_data = []
-        for i, hole in enumerate(holes, 1):
-            drilling_data.append({
-                'id': i,
-                'x': round(hole.center_x, 2),
-                'y': round(hole.center_y, 2),
-                'z': round(hole.center_z, 2),
-                'diameter': round(hole.diameter, 2),
-                'depth': round(hole.depth, 2),
-                'face': self._determine_face(hole, bbox)
-            })
+        solid = self._get_entity(solid_id)
+        if not solid:
+            return cilindros
         
-        return {
-            'part': {
-                'width': round(bbox.get('width', 0), 2),
-                'height': round(bbox.get('height', 0), 2),
-                'thickness': round(bbox.get('thickness', 0), 2)
-            },
-            'drilling': drilling_data
+        # Pega referência ao CLOSED_SHELL
+        shell_match = re.search(r'#(\d+)', solid['data'])
+        if not shell_match:
+            return cilindros
+        
+        shell = self._get_entity(int(shell_match.group(1)))
+        if not shell:
+            return cilindros
+        
+        # Extrai todas as faces do shell
+        face_refs = re.findall(r'#(\d+)', shell['data'])
+        
+        for face_ref in face_refs:
+            face = self._get_entity(int(face_ref))
+            if not face or face['type'] != 'ADVANCED_FACE':
+                continue
+            
+            # Procura referência a CYLINDRICAL_SURFACE
+            surface_refs = re.findall(r'#(\d+)', face['data'])
+            for surf_ref in surface_refs:
+                surf = self._get_entity(int(surf_ref))
+                if surf and surf['type'] == 'CYLINDRICAL_SURFACE':
+                    cyl_match = re.match(r"'[^']*'\s*,\s*#(\d+)\s*,\s*([\d.E+-]+)", surf['data'])
+                    if cyl_match:
+                        axis_id = int(cyl_match.group(1))
+                        raio = float(cyl_match.group(2))
+                        
+                        axis = self._get_entity(axis_id)
+                        if axis and axis['type'] == 'AXIS2_PLACEMENT_3D':
+                            point_match = re.search(r'#(\d+)', axis['data'])
+                            if point_match:
+                                coords = self._parse_cartesian_point(int(point_match.group(1)))
+                                if coords:
+                                    cilindros.append({
+                                        'x': coords[0],
+                                        'y': coords[1],
+                                        'z': coords[2],
+                                        'raio': raio
+                                    })
+        
+        return cilindros
+    
+    def _calculate_bounding_box(self, solid_id: int) -> tuple:
+        """Calcula bounding box de um sólido"""
+        solid = self._get_entity(solid_id)
+        if not solid:
+            return (0, 0, 0, 0, 0, 0)
+        
+        shell_match = re.search(r'#(\d+)', solid['data'])
+        if not shell_match:
+            return (0, 0, 0, 0, 0, 0)
+        
+        shell = self._get_entity(int(shell_match.group(1)))
+        if not shell:
+            return (0, 0, 0, 0, 0, 0)
+        
+        points = []
+        face_refs = re.findall(r'#(\d+)', shell['data'])
+        visited = set()
+        to_visit = [int(ref) for ref in face_refs]
+        
+        # BFS para encontrar todos os pontos
+        while to_visit:
+            current_id = to_visit.pop()
+            if current_id in visited:
+                continue
+            visited.add(current_id)
+            
+            entity = self._get_entity(current_id)
+            if not entity:
+                continue
+            
+            if entity['type'] == 'CARTESIAN_POINT':
+                coords = self._parse_cartesian_point(current_id)
+                if coords:
+                    points.append(coords)
+            else:
+                refs = re.findall(r'#(\d+)', entity['data'])
+                for ref in refs:
+                    ref_id = int(ref)
+                    if ref_id not in visited:
+                        to_visit.append(ref_id)
+        
+        if not points:
+            return (0, 0, 0, 0, 0, 0)
+        
+        x_coords = [p[0] for p in points]
+        y_coords = [p[1] for p in points]
+        z_coords = [p[2] for p in points]
+        
+        return (
+            min(x_coords), max(x_coords),
+            min(y_coords), max(y_coords),
+            min(z_coords), max(z_coords)
+        )
+    
+    def parse(self) -> tuple:
+        """Processa o STEP e retorna (peças, acessórios)"""
+        solids = self._extract_manifold_solids()
+        acessorios_count = {}
+        
+        for solid_id, nome in solids.items():
+            # Verifica se é acessório
+            if self._is_acessorio(nome):
+                if nome not in acessorios_count:
+                    acessorios_count[nome] = 0
+                acessorios_count[nome] += 1
+                continue
+            
+            # É uma peça - calcula bounding box
+            bbox = self._calculate_bounding_box(solid_id)
+            
+            peca = Peca(
+                nome=nome,
+                entity_id=solid_id,
+                x_min=bbox[0], x_max=bbox[1],
+                y_min=bbox[2], y_max=bbox[3],
+                z_min=bbox[4], z_max=bbox[5]
+            )
+            
+            # Encontra cilindros (furos)
+            cilindros = self._find_cylinders_for_solid(solid_id)
+            
+            furo_id = 1
+            for cil in cilindros:
+                # Normaliza coordenadas para origem da peça
+                x_rel = round(cil['x'] - peca.x_min, 2)
+                y_rel = round(cil['y'] - peca.y_min, 2)
+                z_rel = round(cil['z'] - peca.z_min, 2)
+                
+                furo = Furo(
+                    id=furo_id,
+                    x=x_rel,
+                    y=y_rel,
+                    z=z_rel,
+                    diametro=round(cil['raio'] * 2, 2),
+                    profundidade=peca.espessura
+                )
+                peca.furos.append(furo)
+                furo_id += 1
+            
+            self.pecas.append(peca)
+        
+        # Converte contagem de acessórios
+        for nome, qtd in acessorios_count.items():
+            self.acessorios.append(Acessorio(nome=nome, quantidade=qtd))
+        
+        return self.pecas, self.acessorios
+
+
+class MPRGenerator:
+    """Gera arquivo MPR a partir de uma Peca"""
+    
+    def generate(self, peca: Peca) -> str:
+        """Gera conteúdo MPR para uma peça"""
+        dims = peca.dimensoes_ordenadas
+        largura, comprimento, espessura = dims
+        
+        lines = [
+            "[H",
+            f"  LA={largura}",
+            f"  BR={comprimento}",
+            f"  DI={espessura}",
+            f"  FNX=0",
+            f"  FNY=0",
+            f"  AX=0",
+            f"  AY=0",
+            "]",
+            ""
+        ]
+        
+        for furo in peca.furos:
+            lines.extend([
+                "<105 \\BO\\",
+                f"  XA={furo.x}",
+                f"  YA={furo.y}",
+                f"  BM={furo.diametro}",
+                f"  TI={furo.profundidade}",
+                f"  DU=0",
+                f"  KO=''",
+                f"  MI=1",
+                ">",
+                ""
+            ])
+        
+        return "\r\n".join(lines)
+
+
+class TXTReportGenerator:
+    """Gera relatório TXT com lista de corte e acessórios"""
+    
+    def generate(self, pecas: List[Peca], acessorios: List[Acessorio], nome_projeto: str = "Projeto") -> str:
+        lines = [
+            "=" * 60,
+            f"LISTA DE CORTE E ACESSÓRIOS - {nome_projeto.upper()}",
+            "=" * 60,
+            "",
+            "-" * 60,
+            "PEÇAS PARA USINAGEM",
+            "-" * 60,
+            ""
+        ]
+        
+        for i, peca in enumerate(pecas, 1):
+            dims = peca.dimensoes_ordenadas
+            lines.extend([
+                f"{i}. {peca.nome}",
+                f"   Dimensões: {dims[0]} x {dims[1]} x {dims[2]} mm (L x C x E)",
+                f"   Furos: {len(peca.furos)}",
+            ])
+            
+            if peca.furos:
+                for furo in peca.furos:
+                    lines.append(f"      - Furo Ø{furo.diametro}mm em X={furo.x}, Y={furo.y}")
+            
+            lines.append("")
+        
+        if acessorios:
+            lines.extend([
+                "-" * 60,
+                "ACESSÓRIOS E FERRAGENS",
+                "-" * 60,
+                ""
+            ])
+            for acessorio in acessorios:
+                lines.append(f"• {acessorio.nome}: {acessorio.quantidade} un")
+            lines.append("")
+        
+        total_furos = sum(len(p.furos) for p in pecas)
+        lines.extend([
+            "-" * 60,
+            "RESUMO",
+            "-" * 60,
+            f"Total de peças: {len(pecas)}",
+            f"Total de furos: {total_furos}",
+            f"Total de acessórios: {sum(a.quantidade for a in acessorios)}",
+            "=" * 60
+        ])
+        
+        return "\n".join(lines)
+
+
+def parse_step_multipart(content: str) -> Dict[str, Any]:
+    """
+    Função principal para integração com FastAPI
+    Retorna JSON com peças, acessórios e estatísticas
+    """
+    parser = StepMultiPartParser(content)
+    pecas, acessorios = parser.parse()
+    
+    return {
+        'pecas': [p.to_dict() for p in pecas],
+        'acessorios': [a.to_dict() for a in acessorios],
+        'resumo': {
+            'total_pecas': len(pecas),
+            'total_acessorios': sum(a.quantidade for a in acessorios),
+            'total_furos': sum(len(p.furos) for p in pecas)
         }
-    
-    def _determine_face(self, hole: Hole, bbox: dict) -> str:
-        thickness = bbox.get('thickness', 0)
-        z_max = bbox.get('z_max', 0)
-        z_min = bbox.get('z_min', 0)
-        
-        if abs(hole.axis[2]) > 0.9:
-            if hole.center_z >= z_max - 0.1:
-                return 'TOP'
-            elif hole.center_z <= z_min + 0.1:
-                return 'BOTTOM'
-        
-        if abs(hole.axis[0]) > 0.9:
-            return 'SIDE_X'
-        if abs(hole.axis[1]) > 0.9:
-            return 'SIDE_Y'
-        
-        return 'UNKNOWN'
+    }
 
 
-def parse_step(content: str) -> dict:
+def generate_mpr_files(content: str) -> Dict[str, str]:
     """
-    Função principal para parse de arquivo STEP.
+    Gera conteúdo MPR para cada peça
+    Retorna dict {nome_arquivo: conteudo_mpr}
+    """
+    parser = StepMultiPartParser(content)
+    pecas, _ = parser.parse()
     
-    Args:
-        content: Conteúdo do arquivo STEP como string
-        
-    Returns:
-        Dicionário no formato CoreWood
+    mpr_gen = MPRGenerator()
+    arquivos = {}
+    
+    for peca in pecas:
+        nome_arquivo = re.sub(r'[^\w\s-]', '', peca.nome).strip().replace(' ', '_')
+        arquivos[f"{nome_arquivo}.mpr"] = mpr_gen.generate(peca)
+    
+    return arquivos
+
+
+def generate_report_txt(content: str, nome_projeto: str = "Projeto") -> str:
     """
-    parser = StepParser(content)
-    return parser.to_corewood_format()
+    Gera relatório TXT com lista de corte
+    """
+    parser = StepMultiPartParser(content)
+    pecas, acessorios = parser.parse()
+    
+    txt_gen = TXTReportGenerator()
+    return txt_gen.generate(pecas, acessorios, nome_projeto)
+
+
+# Para teste direto
+if __name__ == "__main__":
+    import sys
+    
+    if len(sys.argv) > 1:
+        with open(sys.argv[1], 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+        
+        result = parse_step_multipart(content)
+        
+        print(f"\n✅ Processamento concluído!")
+        print(f"   Peças: {result['resumo']['total_pecas']}")
+        print(f"   Acessórios: {result['resumo']['total_acessorios']}")
+        print(f"   Furos: {result['resumo']['total_furos']}")
+        
+        print("\n📦 Detalhes das peças:")
+        for p in result['pecas']:
+            print(f"   - {p['nome']}: {p['largura']}x{p['comprimento']}x{p['espessura']}mm ({len(p['furos'])} furos)")
+        
+        if result['acessorios']:
+            print("\n🔩 Acessórios:")
+            for a in result['acessorios']:
+                print(f"   - {a['nome']}: {a['quantidade']} un")
+    else:
+        print("Uso: python step_parser_v2.py <arquivo.step>")
