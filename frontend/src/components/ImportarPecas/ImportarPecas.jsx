@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './ImportarPecas.css';
+import api from '../../services/api';  // Adiciona no topo do arquivo
 
 function ImportarPecas() {
   const [codigoProduto, setCodigoProduto] = useState('');
@@ -35,14 +36,13 @@ function ImportarPecas() {
       formData.append('nome_produto', nomeProduto || `Produto ${codigoProduto}`);
       formData.append('file', arquivo);
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/pecas/importar`, {
-        method: 'POST',
-        body: formData,
+      const response = await api.post('/pecas/importar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (response.ok) {
+      if (data.success) {
         setResultado(data);
         setCodigoProduto('');
         setNomeProduto('');
@@ -52,7 +52,7 @@ function ImportarPecas() {
         setErro(data.detail || 'Erro ao importar peças');
       }
     } catch (error) {
-      setErro('Erro de conexão com o servidor');
+      setErro(error.response?.data?.detail || 'Erro de conexão com o servidor');
       console.error(error);
     } finally {
       setLoading(false);
