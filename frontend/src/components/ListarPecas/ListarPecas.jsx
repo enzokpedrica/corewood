@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './ListarPecas.css';
+import api from '../../services/api';
 
 function ListarPecas({ onSelecionarPeca }) {
   const [codigoProduto, setCodigoProduto] = useState('');
@@ -17,23 +18,20 @@ function ListarPecas({ onSelecionarPeca }) {
     setErro(null);
 
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/pecas/produto/${codigoProduto}`
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setPecas(data);
-        
-        if (data.length === 0) {
-          setErro('Nenhuma peça encontrada para este produto');
-        }
-      } else {
-        setErro('Produto não encontrado');
-        setPecas([]);
+      const response = await api.get(`/pecas/produto/${codigoProduto}`);
+      const data = response.data;
+      setPecas(data);
+      
+      if (data.length === 0) {
+        setErro('Nenhuma peça encontrada para este produto');
       }
     } catch (error) {
-      setErro('Erro ao buscar peças');
+      if (error.response?.status === 404) {
+        setErro('Produto não encontrado');
+      } else {
+        setErro(error.response?.data?.detail || 'Erro ao buscar peças');
+      }
+      setPecas([]);
       console.error(error);
     } finally {
       setLoading(false);
