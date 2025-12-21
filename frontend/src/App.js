@@ -13,7 +13,7 @@ import './App.css';
 import EditorMPR from './components/EditorMPR/EditorMPR';
 import ImportarPecas from './components/ImportarPecas/ImportarPecas';
 import ListarPecas from './components/ListarPecas/ListarPecas';
-import StepConverter from './components/StepConverter/StepConverter';
+import StepConverter from './components/StepConverter';
 
 function MainApp() {
   const [modoLote, setModoLote] = useState('individual');
