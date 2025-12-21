@@ -352,7 +352,7 @@ async def parse_step_file(
         nome_peca = file.filename.replace('.step', '').replace('.STEP', '').replace('.stp', '').replace('.STP', '')
         
         # Parse STEP
-        dados = parse_step(content_str)
+        dados = parse_step_multipart(content_str)
         
         return {
             "status": "success",
