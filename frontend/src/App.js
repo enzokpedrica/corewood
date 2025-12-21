@@ -13,7 +13,7 @@ import './App.css';
 import EditorMPR from './components/EditorMPR/EditorMPR';
 import ImportarPecas from './components/ImportarPecas/ImportarPecas';
 import ListarPecas from './components/ListarPecas/ListarPecas';
-import StepConverter from './components/StepConverter';
+import StepConverter from './components/StepConverter/StepConverter';
 
 function MainApp() {
   const [modoLote, setModoLote] = useState('individual');
@@ -216,7 +216,7 @@ function MainApp() {
                   🗂️ Listar
                 </button>
                 <button
-                  onClick={() => window.location.href = '/step-converter'}
+                  onClick={() => setModoLote('step')}
                   style={{
                     padding: '0.75rem 1.5rem',
                     background: modoLote === 'step' ? '#667eea' : 'white',
@@ -259,17 +259,15 @@ function MainApp() {
       <main className="app-main">
         <div className="container">
           {modoLote === 'listar' ? (
-            // MODO LISTAR
             <ListarPecas onSelecionarPeca={handleSelecionarPeca} />
           ) : modoLote === 'lote' ? (
-            // MODO LOTE
             <LoteUpload />
           ) : modoLote === 'editor' ? (
-            // MODO EDITOR
             <EditorMPR pecaInicial={pecaSelecionada} />
           ) : modoLote === 'importar' ? (
-            // MODO IMPORTAR
             <ImportarPecas />
+          ) : modoLote === 'step' ? (
+            <StepConverter />
           ) : (
             // MODO INDIVIDUAL
             <div className="content-grid">
@@ -354,7 +352,6 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/step-converter" element={<StepConverter />} />
       <Route 
         path="/" 
         element={
