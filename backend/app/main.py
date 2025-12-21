@@ -20,7 +20,6 @@ from .models.user import User
 import json
 import tempfile
 from app.routes import editor, pecas
-from .parser.step_parser import parse_step
 from .generators.mpr_generator import GeradorMPR
 from .parser.step_parser import parse_step_multipart, generate_mpr_files, generate_report_txt
 
