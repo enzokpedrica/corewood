@@ -463,6 +463,8 @@ def generate_report_txt(content: str, nome_projeto: str = "Projeto") -> str:
     txt_gen = TXTReportGenerator()
     return txt_gen.generate(pecas, acessorios, nome_projeto)
 
+# Compatibilidade com endpoints antigos
+parse_step = parse_step_multipart        
 
 # Para teste direto
 if __name__ == "__main__":
@@ -489,3 +491,4 @@ if __name__ == "__main__":
                 print(f"   - {a['nome']}: {a['quantidade']} un")
     else:
         print("Uso: python step_parser_v2.py <arquivo.step>")
+
