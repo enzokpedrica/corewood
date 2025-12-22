@@ -407,3 +407,34 @@ if __name__ == "__main__":
         print("\n".join(mpr["content"].splitlines()[:5]))
         print("-" * 40)
 
+if __name__ == "__main__":
+    gerador = GeradorMPR()
+
+    print("\n=== TESTE NOVO FORMATO (furos dentro da peça) ===\n")
+
+    peca_com_furo = {
+        "nome": "PECA_FURO",
+        "largura": 500,
+        "comprimento": 1200,
+        "espessura": 18,
+        "furos": [
+            {
+                "tipo": "vertical",
+                "x": 100,
+                "y": 50,
+                "diametro": 8,
+                "profundidade": 12
+            },
+            {
+                "tipo": "vertical",
+                "x": 300,
+                "y": 50,
+                "diametro": 8,
+                "profundidade": 12
+            }
+        ]
+    }
+
+    mpr = gerador.gerar_mpr(peca_com_furo)
+
+    print(mpr)
