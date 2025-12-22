@@ -337,39 +337,49 @@ async def parse_step_file(
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Parse arquivo STEP e retorna dados estruturados (igual parse-mpr)
-    
-    Args:
-        file: Arquivo STEP (upload)
-        
-    Returns:
-        JSON com dados da peça (dimensões, furos, etc)
+    Parse arquivo STEP e retorna dados estruturados
     """
     try:
         content = await file.read()
-        content_str = content.decode('utf-8', errors='ignore')
-        
-        nome_peca = file.filename.replace('.step', '').replace('.STEP', '').replace('.stp', '').replace('.STP', '')
-        
-        # Parse STEP
-        dados = parse_step(content_str)
-        
+        content_str = content.decode("utf-8", errors="ignore")
+
+        nome_base = file.filename.rsplit(".", 1)[0]
+
+        dados = parse_step_multipart(content_str)
+        print(type(dados))
+        print(dados)
+
+        pecas = dados.get("pecas", [])
+
+        if not pecas:
+            raise ValueError("Nenhuma peça encontrada no arquivo STEP")
+
+        resultado = []
+
+        for peca in pecas:
+            resultado.append({
+                "nome": peca.get("nome", nome_base),
+                "dimensoes": {
+                    "largura": peca.get("largura"),
+                    "comprimento": peca.get("comprimento"),
+                    "espessura": peca.get("espessura")
+                },
+                "furos": peca.get("furos", []),
+                "total_furos": len(peca.get("furos", []))
+            })
+
         return {
             "status": "success",
-            "data": {
-                "nome": nome_peca,
-                "dimensoes": {
-                    "largura": dados['part']['width'],
-                    "comprimento": dados['part']['height'],
-                    "espessura": dados['part']['thickness']
-                },
-                "furos": dados['drilling'],
-                "total_furos": len(dados['drilling'])
-            }
+            "resumo": dados.get("resumo"),
+            "pecas": resultado
         }
-        
+
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Erro ao processar STEP: {str(e)}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Erro ao processar STEP: {str(e)}"
+        )
+
 
 
 @app.post("/step-to-mpr")
@@ -377,41 +387,44 @@ async def convert_step_to_mpr(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    Converte arquivo STEP para MPR (Homag/Weeke)
-    
-    Args:
-        file: Arquivo STEP (upload)
-        
-    Returns:
-        Arquivo MPR para download
-    """
     try:
-        content = await file.read()
-        content_str = content.decode('utf-8', errors='ignore')
-        
-        nome_peca = file.filename.replace('.step', '').replace('.STEP', '').replace('.stp', '').replace('.STP', '')
-        
-        # Parse STEP
-        dados = parse_step(content_str)
-        
-        # Converter para MPR
+        content = (await file.read()).decode("utf-8", errors="ignore")
+
+        dados = parse_step_multipart(content)
+
         gerador = GeradorMPR()
-        mpr_content = gerador.gerar_mpr_from_step(dados)
-        
-        # Retornar como arquivo
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.mpr', mode='w', encoding='utf-8') as tmp_file:
-            tmp_file.write(mpr_content)
-            tmp_path = tmp_file.name
-        
-        return FileResponse(
-            tmp_path,
-            media_type='application/octet-stream',
-            filename=f"{nome_peca}.mpr"
+
+        zip_buffer = io.BytesIO()
+
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for idx, peca in enumerate(dados["pecas"], start=1):
+                nome = peca.get("nome") or f"peca_{idx}"
+
+                mpr_content = gerador.gerar_mpr({
+                    "largura": peca["largura"],
+                    "comprimento": peca["comprimento"],
+                    "espessura": peca["espessura"],
+                    "furos": peca.get("furos", [])
+                })
+
+                zipf.writestr(f"{nome}.mpr", mpr_content)
+
+        zip_buffer.seek(0)
+
+        return StreamingResponse(
+            zip_buffer,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": "attachment; filename=pecas_mpr.zip"
+            }
         )
-        
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao converter STEP para MPR: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao converter STEP para MPR: {str(e)}"
+        )
+
     
 @app.post("/step-multipart/parse")
 async def parse_multipart(file: UploadFile = File(...)):
@@ -456,7 +469,9 @@ async def convert_step_to_json(
         nome_peca = file.filename.replace('.step', '').replace('.STEP', '').replace('.stp', '').replace('.STP', '')
         
         # Parse STEP
-        dados = parse_step(content_str)
+        dados = parse_step_multipart(content_str)
+        print(type(dados))
+        print(dados)
         dados['nome'] = nome_peca
         
         # Retornar como arquivo JSON

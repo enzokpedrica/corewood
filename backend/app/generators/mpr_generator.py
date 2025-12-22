@@ -152,45 +152,37 @@ class GeradorMPR:
     
     def gerar_mpr_from_step(self, dados_step: Dict) -> str:
         """
-        Gera MPR a partir dos dados do STEP parser.
+        Gera MPR a partir dos dados do parse_step_multipart.
         
-        Args:
-            dados_step: Dicionário no formato {'part': {...}, 'drilling': [...]}
-            
-        Returns:
-            String com conteúdo MPR
-        """
-        peca = dados_step['part']
-        furos = dados_step.get('drilling', [])
-        
-        # Converter para formato interno
-        furos_convertidos = []
-        for furo in furos:
-            tipo = self._determinar_tipo_furo(furo, peca)
-            
-            furo_convertido = {
-                'tipo': tipo,
-                'x': furo['x'],
-                'y': furo['y'],
-                'diametro': furo['diameter'],
-                'profundidade': furo['depth']
-            }
-            
-            if tipo == 'horizontal':
-                furo_convertido['lado'] = self._determinar_lado(furo, peca)
-                furo_convertido['z'] = furo.get('z', peca['thickness'] / 2)
-            
-            furos_convertidos.append(furo_convertido)
-        
-        # Montar dados no formato esperado
-        peca_data = {
-            'largura': peca['height'],
-            'comprimento': peca['width'],
-            'espessura': peca['thickness'],
-            'furos': furos_convertidos
+        Espera:
+        {
+            "pecas": [ { peca_data } ],
+            "acessorios": [...],
+            "resumo": {...}
         }
-        
-        return self.gerar_mpr(peca_data)
+        """
+        pecas = dados_step.get("pecas", [])
+
+        if not pecas:
+            raise ValueError("Nenhuma peça encontrada para gerar MPR")
+
+        mpr_total = []
+
+        for peca in pecas:
+            # Garantir estrutura mínima
+            peca_data = {
+                "nome": peca.get("nome", "SEM_NOME"),
+                "largura": peca["largura"],
+                "comprimento": peca["comprimento"],
+                "espessura": peca["espessura"],
+                "furos": peca.get("furos", [])
+            }
+
+            mpr_total.append(self.gerar_mpr(peca_data))
+
+        # Se houver múltiplas peças, concatena
+        return "\r\n".join(mpr_total)
+
     
     def _determinar_tipo_furo(self, furo: Dict, peca: Dict) -> str:
         """Determina se o furo é vertical ou horizontal."""
@@ -347,33 +339,71 @@ class GeradorMPR:
         ]
         
         return linhas_furo
+    
+    def gerar_multiplos_mprs(self, dados_parser: dict):
+        arquivos = []
+
+        for idx, peca in enumerate(dados_parser["pecas"], start=1):
+            nome = peca.get("nome", f"peca_{idx}")
+
+            conteudo = self.gerar_mpr({
+                "largura": peca["largura"],
+                "comprimento": peca["comprimento"],
+                "espessura": peca["espessura"],
+                "furos": peca.get("furos", [])
+            })
+
+            arquivos.append({
+                "filename": f"{nome}.mpr",
+                "content": conteudo
+            })
+
+        return arquivos
 
 
-# Teste
 if __name__ == "__main__":
     gerador = GeradorMPR()
-    
+
+    print("\n=== TESTE PEÇA ÚNICA ===\n")
     peca_teste = {
         'nome': 'TESTE_01',
         'largura': 300,
         'comprimento': 800,
         'espessura': 15,
-        'furos': [
-            {'tipo': 'vertical', 'x': 50, 'y': 100, 'diametro': 5, 'profundidade': 0},
-            {'tipo': 'vertical', 'x': 250, 'y': 100, 'diametro': 8, 'profundidade': 12},
-        ]
+        'furos': []
     }
-    
+
     mpr_content = gerador.gerar_mpr(peca_teste)
-    print(mpr_content)
-    
-    # Teste com dados STEP
-    print("\n\n=== TESTE STEP ===\n")
-    dados_step = {
-        'part': {'width': 1200, 'height': 500, 'thickness': 15},
-        'drilling': [
-            {'id': 1, 'x': 400, 'y': 200, 'z': 15, 'diameter': 8, 'depth': 5}
+    print(mpr_content[:300])  # só um trecho
+
+    print("\n=== TESTE MÚLTIPLAS PEÇAS ===\n")
+
+    dados_parser = {
+        "pecas": [
+            {
+                "nome": "BASE",
+                "largura": 499.99,
+                "comprimento": 1199.98,
+                "espessura": 30.0,
+                "furos": []
+            },
+            {
+                "nome": "LATERAL_DIREITA",
+                "largura": 497.99,
+                "comprimento": 885.0,
+                "espessura": 30.0,
+                "furos": []
+            }
         ]
     }
-    mpr_step = gerador.gerar_mpr_from_step(dados_step)
-    print(mpr_step)
+
+    mprs = gerador.gerar_multiplos_mprs(dados_parser)
+
+    print(f"Total de arquivos gerados: {len(mprs)}\n")
+
+    for mpr in mprs:
+        print("Arquivo:", mpr["filename"])
+        print("Conteúdo (primeiras linhas):")
+        print("\n".join(mpr["content"].splitlines()[:5]))
+        print("-" * 40)
+
