@@ -109,9 +109,7 @@ def parse_furacao(conteudo: str, nome_peca: str = "Peça") -> Peca:
                 x_base_val = furo_data.get('XA', '0')
                 x_base = x_base_val if x_base_val == 'x' else float(x_base_val)
                 
-                y_base_arquivo = float(furo_data.get('YA', 0))
-                altura_peca = dimensoes.comprimento if dimensoes else 304
-                y_base = altura_peca - y_base_arquivo
+                y_base = float(furo_data.get('YA', 0))  # ← SEM inversão
                 
                 z_base = float(furo_data.get('ZA', 0))
                 diametro = float(furo_data.get('DU', 0))
@@ -125,10 +123,10 @@ def parse_furacao(conteudo: str, nome_peca: str = "Peça") -> Peca:
                 for n in range(quantidade):
                     if isinstance(x_base, str) and x_base == 'x':
                         x_atual = 'x'
-                        y_atual = y_base - (n * distancia) if angulo == 90 else y_base
+                        y_atual = y_base + (n * distancia) if angulo == 90 else y_base  # ← Somando
                     elif angulo == 90:
                         x_atual = x_base if isinstance(x_base, float) else float(x_base)
-                        y_atual = y_base - (n * distancia)
+                        y_atual = y_base + (n * distancia)  # ← Somando
                     else:
                         x_atual = x_base + (n * distancia) if isinstance(x_base, float) else x_base
                         y_atual = y_base

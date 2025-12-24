@@ -13,6 +13,260 @@ class GeradorDesenhoTecnico:
         self.margem = 20 * mm
         self.escala = 1.0  # Será calculada dinamicamente
 
+    def calcular_batente(self, peca: Peca) -> float:
+        """
+        Calcula o Y do batente baseado no primeiro furo (vertical ou horizontal).
+        Leitura: de cima para baixo (menor Y primeiro), da esquerda para direita (menor X primeiro)
+        
+        Args:
+            peca: objeto Peca com furos verticais e horizontais
+            
+        Returns:
+            Y do batente (primeiro furo encontrado)
+        """
+        todos_furos = []
+        
+        # Adicionar furos verticais
+        for furo in peca.furos_verticais:
+            todos_furos.append({'x': float(furo.x), 'y': float(furo.y)})
+        
+        # Adicionar furos horizontais
+        for furo in peca.furos_horizontais:
+            x = 0 if furo.x == 'x' else float(furo.x)
+            todos_furos.append({'x': x, 'y': float(furo.y)})
+        
+        if not todos_furos:
+            return 0
+        
+        # Ordenar: menor Y primeiro (topo), depois menor X (esquerda)
+        furos_ordenados = sorted(todos_furos, key=lambda f: (f['y'], f['x']))
+        return furos_ordenados[0]['y']
+
+    def calcular_mandril(self, y_furo: float, y_batente: float) -> int:
+        """
+        Calcula o número do mandril baseado na posição Y do furo.
+        Mandris espaçados de 32mm.
+        
+        Args:
+            y_furo: posição Y do furo
+            y_batente: posição Y do batente (primeiro furo)
+            
+        Returns:
+            Número do mandril (1-20)
+        """
+        diferenca = abs(float(y_furo) - float(y_batente))
+        mandril = int(diferenca / 32) + 1
+        return max(1, min(20, mandril))  # Limita entre 1 e 20   
+
+    def detectar_conflitos_100mm(self, furos_verticais: list) -> dict:
+        """
+        Detecta furos com menos de 100mm de distância no eixo X.
+        
+        Args:
+            furos_verticais: lista de FuroVertical
+            
+        Returns:
+            dict com análise dos conflitos
+        """
+        if not furos_verticais:
+            return {'tem_conflito': False, 'grupos': []}
+        
+        # Ordenar por X
+        furos_ordenados = sorted(furos_verticais, key=lambda f: float(f.x))
+        
+        # Encontrar grupos de furos próximos (<100mm)
+        grupos_conflito = []
+        grupo_atual = [furos_ordenados[0]]
+        
+        for i in range(1, len(furos_ordenados)):
+            furo_atual = furos_ordenados[i]
+            furo_anterior = furos_ordenados[i - 1]
+            
+            distancia_x = abs(float(furo_atual.x) - float(furo_anterior.x))
+            
+            if distancia_x < 100:
+                # Está próximo, adiciona ao grupo atual
+                grupo_atual.append(furo_atual)
+            else:
+                # Distante, salva grupo anterior se tem conflito
+                if len(grupo_atual) > 1:
+                    grupos_conflito.append(grupo_atual)
+                grupo_atual = [furo_atual]
+        
+        # Verificar último grupo
+        if len(grupo_atual) > 1:
+            grupos_conflito.append(grupo_atual)
+        
+        return {
+            'tem_conflito': len(grupos_conflito) > 0,
+            'grupos': grupos_conflito,
+            'total_conflitos': len(grupos_conflito)
+        }
+
+    def agrupar_por_linha_furacao(self, furos_verticais: list) -> dict:
+        """
+        Agrupa furos por linha de furação (mesmo X).
+        
+        Args:
+            furos_verticais: lista de FuroVertical
+            
+        Returns:
+            dict: {x_posicao: [lista de furos]}
+        """
+        linhas = {}
+        for furo in furos_verticais:
+            x_key = round(float(furo.x), 1)
+            if x_key not in linhas:
+                linhas[x_key] = []
+            linhas[x_key].append(furo)
+        return linhas
+
+
+    def verificar_conflito_100mm(self, linhas_x: list) -> bool:
+        """
+        Verifica se existe conflito de 100mm entre as linhas de furação.
+        
+        Args:
+            linhas_x: lista de posições X das linhas
+            
+        Returns:
+            True se tem conflito, False se não tem
+        """
+        linhas_ordenadas = sorted(linhas_x)
+        
+        for i in range(len(linhas_ordenadas) - 1):
+            distancia = linhas_ordenadas[i + 1] - linhas_ordenadas[i]
+            if distancia < 100:
+                return True
+        
+        return False
+
+
+    def distribuir_furos_superior_inferior(self, furos_verticais: list) -> dict:
+        """
+        Distribui furos entre INFERIOR e SUPERIOR respeitando regra dos 100mm.
+        
+        Lógica:
+        1. Agrupar furos por características (diâmetro + profundidade)
+        2. Para cada grupo, verificar se cabe sozinho (sem conflito interno)
+        3. Distribuir grupos entre INFERIOR e SUPERIOR
+        4. Se não couber, criar 2ª PASSADA
+        
+        Args:
+            furos_verticais: lista de FuroVertical
+            
+        Returns:
+            dict com distribuição dos furos
+        """
+        if not furos_verticais:
+            return {
+                'inferior': [],
+                'superior': [],
+                'segunda_furacao': [],
+                'precisa_segunda_furacao': False
+            }
+        
+        # Verificar se tem conflito geral
+        linhas_todas = self.agrupar_por_linha_furacao(furos_verticais)
+        if not self.verificar_conflito_100mm(list(linhas_todas.keys())):
+            # Sem conflito - tudo vai para inferior
+            return {
+                'inferior': furos_verticais,
+                'superior': [],
+                'segunda_furacao': [],
+                'precisa_segunda_furacao': False
+            }
+        
+        # TEM CONFLITO - Agrupar por características (diâmetro + profundidade)
+        grupos = {}
+        for furo in furos_verticais:
+            chave = (round(float(furo.diametro), 1), round(float(furo.profundidade), 1))
+            if chave not in grupos:
+                grupos[chave] = []
+            grupos[chave].append(furo)
+        
+        # Para cada grupo, pegar as linhas X
+        grupos_com_linhas = []
+        for chave, furos_grupo in grupos.items():
+            linhas_grupo = self.agrupar_por_linha_furacao(furos_grupo)
+            linhas_x = sorted(linhas_grupo.keys())
+            tem_conflito_interno = self.verificar_conflito_100mm(linhas_x)
+            
+            grupos_com_linhas.append({
+                'chave': chave,
+                'furos': furos_grupo,
+                'linhas_x': linhas_x,
+                'tem_conflito_interno': tem_conflito_interno
+            })
+        
+        # Ordenar grupos: primeiro os sem conflito interno, depois por quantidade de furos (maior primeiro)
+        grupos_com_linhas.sort(key=lambda g: (g['tem_conflito_interno'], -len(g['furos'])))
+        
+        # Distribuir grupos entre INFERIOR e SUPERIOR
+        linhas_inferior = []
+        linhas_superior = []
+        linhas_segunda = []
+        
+        furos_inferior = []
+        furos_superior = []
+        furos_segunda = []
+        
+        for grupo in grupos_com_linhas:
+            linhas_x = grupo['linhas_x']
+            furos_grupo = grupo['furos']
+            
+            # Tentar colocar o grupo inteiro em INFERIOR
+            pode_inferior = self._grupo_cabe_no_lado(linhas_x, linhas_inferior, max_linhas=6)
+            
+            if pode_inferior:
+                linhas_inferior.extend(linhas_x)
+                furos_inferior.extend(furos_grupo)
+                continue
+            
+            # Tentar colocar o grupo inteiro em SUPERIOR
+            pode_superior = self._grupo_cabe_no_lado(linhas_x, linhas_superior, max_linhas=4)
+            
+            if pode_superior:
+                linhas_superior.extend(linhas_x)
+                furos_superior.extend(furos_grupo)
+                continue
+            
+            # Não coube inteiro - vai para 2ª PASSADA
+            linhas_segunda.extend(linhas_x)
+            furos_segunda.extend(furos_grupo)
+        
+        return {
+            'inferior': furos_inferior,
+            'superior': furos_superior,
+            'segunda_furacao': furos_segunda,
+            'precisa_segunda_furacao': len(furos_segunda) > 0
+        }
+
+
+    def _grupo_cabe_no_lado(self, linhas_novas: list, linhas_existentes: list, max_linhas: int) -> bool:
+        """
+        Verifica se um grupo de linhas cabe em um lado (inferior/superior).
+        
+        Args:
+            linhas_novas: linhas X do grupo a adicionar
+            linhas_existentes: linhas X já no lado
+            max_linhas: máximo de linhas permitidas (6 inferior, 4 superior)
+            
+        Returns:
+            True se cabe, False se não cabe
+        """
+        # Verificar limite de linhas
+        if len(linhas_existentes) + len(linhas_novas) > max_linhas:
+            return False
+        
+        # Verificar conflito de 100mm com linhas existentes
+        for x_nova in linhas_novas:
+            for x_existente in linhas_existentes:
+                if abs(x_nova - x_existente) < 100:
+                    return False
+        
+        return True
+
     def formatar_cota(self, valor):
         """
         Formata valor da cota:
@@ -266,7 +520,8 @@ class GeradorDesenhoTecnico:
         c.setFillColor(colors.black)  # Restaura cor
     
     def desenhar_furo_vertical(self, c: canvas.Canvas, x_origem: float, y_origem: float,
-                           furo: FuroVertical, escala: float, altura_peca: float):
+                       furo: FuroVertical, escala: float, altura_peca: float,
+                       mandril: int = None):
         """
         Desenha marcação de furo vertical (vista de topo)
         
@@ -291,12 +546,15 @@ class GeradorDesenhoTecnico:
         # c.line(x_furo, y_furo - raio * 1.5, x_furo, y_furo + raio * 1.5)
         
         # Adicionar texto com especificações
+        c.setFont("Helvetica", 12)
         if furo.profundidade == 0:
-            c.setFont("Helvetica", 12)
             texto = f"Ø{self.formatar_cota(furo.diametro)}"
         else:
-            c.setFont("Helvetica", 12)
             texto = f"Ø{self.formatar_cota(furo.diametro)}X{self.formatar_cota(furo.profundidade)}"
+
+        # Adicionar mandril se disponível
+        if mandril:
+            texto = f"{texto},M{mandril}"
         
         # Posicionar texto ao lado do furo
         offset_x = raio * 8.5
@@ -370,10 +628,11 @@ class GeradorDesenhoTecnico:
     
     def desenhar_vista_lateral(self, c: canvas.Canvas, x_origem: float, y_origem: float,
                         peca: Peca, lado: str, largura_disponivel: float, 
-                        altura_disponivel: float, espelhado: bool = False):
+                        altura_disponivel: float, espelhado: bool = False,
+                        batente: float = None):
         """
         Desenha vista lateral da peça mostrando furos horizontais
-        AGORA COM ESCALA DINÂMICA!
+        AGORA COM ESCALA DINÂMICA E MANDRIL!
         
         Args:
             x_origem, y_origem: posição base da vista
@@ -382,30 +641,32 @@ class GeradorDesenhoTecnico:
             largura_disponivel: espaço horizontal disponível
             altura_disponivel: espaço vertical disponível
             espelhado: se a peça foi espelhada
+            batente: valor Y do batente para cálculo do mandril
         """
 
         espessura_peca = float(peca.dimensoes.espessura)
         altura_peca = float(peca.dimensoes.comprimento)
         
+        # Calcular batente se não foi passado
+        if batente is None:
+            batente = self.calcular_batente(peca)
+        
         # ===== ESCALA DINÂMICA =====
-        # Calcular escala baseado no espaço disponível
         escala = self.calcular_escala(
             largura_peca=espessura_peca,
             comprimento_peca=altura_peca,
             largura_disponivel=largura_disponivel,
             altura_disponivel=altura_disponivel,
-            margem_seguranca=0.8  # 80% do espaço disponível
+            margem_seguranca=0.8
         )
         
         largura_vista = espessura_peca * mm * escala
         altura_vista = altura_peca * mm * escala
         
         # ===== CENTRALIZAR VISTA =====
-        # Centralizar horizontalmente no espaço disponível
         offset_x = (largura_disponivel - largura_vista) / 2
         x_origem_centralizado = x_origem + offset_x
         
-        # Centralizar verticalmente
         offset_y = (altura_disponivel - altura_vista) / 2
         y_origem_centralizado = y_origem + offset_y
                 
@@ -523,11 +784,14 @@ class GeradorDesenhoTecnico:
                 c.drawCentredString(0, 0, self.formatar_cota(z_furo_real))
                 c.restoreState()
             
-            # Especificação do furo
+            # ===== CALCULAR MANDRIL =====
+            mandril = self.calcular_mandril(y_furo_real, batente)
+            
+            # Especificação do furo COM MANDRIL
             if furo.profundidade == 0:
-                texto_spec = f"Ø{self.formatar_cota(furo.diametro)}"
+                texto_spec = f"Ø{self.formatar_cota(furo.diametro)} M{mandril}"
             else:
-                texto_spec = f"Ø{self.formatar_cota(furo.diametro)}X{self.formatar_cota(furo.profundidade)}"
+                texto_spec = f"Ø{self.formatar_cota(furo.diametro)}X{self.formatar_cota(furo.profundidade)} M{mandril}"
             
             offset_x = largura_vista + 10
             x_texto_inicio = x_origem_centralizado + offset_x
@@ -673,7 +937,8 @@ class GeradorDesenhoTecnico:
                 elif campo_nome == "Deslocamento":
                     valor = "---"
                 elif campo_nome == "Batente":
-                    valor = "---"
+                    batente = self.calcular_batente(peca)
+                    valor = f"{self.formatar_cota(batente)}" if batente > 0 else "---"
                 elif campo_nome == "Página":
                     valor = "2/2"
                 elif campo_nome == "Conferente":
@@ -977,7 +1242,8 @@ class GeradorDesenhoTecnico:
     
     def gerar_pdf(self, peca: Peca, arquivo_saida: str, dados_adicionais: dict = None):
         """
-        Gera PDF com desenho técnico da peça
+        Gera PDF com desenho técnico da peça.
+        Pode gerar múltiplas páginas se houver conflitos de furação.
         
         Args:
             peca: objeto Peca com os dados
@@ -986,6 +1252,7 @@ class GeradorDesenhoTecnico:
         """
         import json
         import os
+        from copy import deepcopy
         
         # Carregar configurações
         config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config.json')
@@ -999,22 +1266,103 @@ class GeradorDesenhoTecnico:
                 'campos_tabela': []
             }
         
+        if dados_adicionais is None:
+            dados_adicionais = {}
+        
         # Rotacionar peça baseado no ângulo escolhido
         angulo = dados_adicionais.get('angulo_rotacao', 0)
         if angulo != 0:
             peca = self.aplicar_rotacao(peca, angulo)
 
-        # Espelhar se necessário (E se não rotacionou, pois rotação já muda tudo)
+        # Espelhar se necessário
         if dados_adicionais.get('espelhar_peca', False) and angulo == 0:
             peca = self.espelhar_verticalmente(peca)
 
+        # ===== ANALISAR DISTRIBUIÇÃO DE FUROS =====
+        distribuicao = self.distribuir_furos_superior_inferior(peca.furos_verticais)
+        
+        furos_inferior = distribuicao['inferior']
+        furos_superior = distribuicao['superior']
+        furos_segunda = distribuicao['segunda_furacao']
+        
+        # Determinar quais páginas gerar
+        paginas = []
+        
+        if furos_inferior:
+            paginas.append({
+                'tipo': 'INFERIOR',
+                'titulo': 'PLANO DE FURAÇÃO - INFERIOR',
+                'furos': furos_inferior
+            })
+        
+        if furos_superior:
+            paginas.append({
+                'tipo': 'SUPERIOR',
+                'titulo': 'PLANO DE FURAÇÃO - SUPERIOR',
+                'furos': furos_superior
+            })
+        
+        if furos_segunda:
+            paginas.append({
+                'tipo': '2ª FURAÇÃO',
+                'titulo': 'PLANO DE FURAÇÃO - 2ª PASSADA',
+                'furos': furos_segunda
+            })
+        
+        # Se não tem conflitos, gera página única normal
+        if len(paginas) == 1 and paginas[0]['tipo'] == 'INFERIOR':
+            paginas[0]['titulo'] = 'PLANO DE FURAÇÃO'
+        
+        # Se não tem furos verticais, gera página única
+        if not paginas:
+            paginas.append({
+                'tipo': 'NORMAL',
+                'titulo': 'PLANO DE FURAÇÃO',
+                'furos': []
+            })
+        
+        # Criar canvas
         c = canvas.Canvas(arquivo_saida, pagesize=landscape(A4))
         largura_pagina, altura_pagina = landscape(A4)
         
-        # ===== CALCULAR ESPAÇOS =====
-        altura_pagina_util = altura_pagina - (2 * self.margem)  # ~550pts
+        total_paginas = len(paginas)
+        
+        # Gerar cada página
+        for idx, pagina_info in enumerate(paginas):
+            pagina_atual = idx + 1
+            
+            # Criar cópia da peça com apenas os furos desta página
+            peca_pagina = deepcopy(peca)
+            peca_pagina.furos_verticais = pagina_info['furos']
+            
+            # Dados adicionais com info da página
+            dados_pagina = deepcopy(dados_adicionais)
+            dados_pagina['pagina_atual'] = pagina_atual
+            dados_pagina['total_paginas'] = total_paginas
+            dados_pagina['tipo_furacao'] = pagina_info['tipo']
+            
+            # Desenhar a página
+            self._desenhar_pagina_furacao(
+                c, peca_pagina, pagina_info['titulo'], 
+                config, dados_pagina, largura_pagina, altura_pagina
+            )
+            
+            # Nova página se não for a última
+            if idx < len(paginas) - 1:
+                c.showPage()
+        
+        c.save()
 
-        # Distribuição:
+
+    def _desenhar_pagina_furacao(self, c: canvas.Canvas, peca: Peca, titulo: str,
+                              config: dict, dados_adicionais: dict,
+                              largura_pagina: float, altura_pagina: float):
+        """
+        Desenha uma página de furação completa.
+        """
+        # ===== CALCULAR ESPAÇOS =====
+        altura_pagina_util = altura_pagina - (2 * self.margem)
+
         altura_tabela = 80
         altura_vistas_laterais = 150
         altura_vista_principal = altura_pagina_util - altura_tabela - altura_vistas_laterais - 30
@@ -1034,246 +1382,196 @@ class GeradorDesenhoTecnico:
         largura_desenhada = peca.dimensoes.largura * mm * escala
         altura_desenhada = peca.dimensoes.comprimento * mm * escala
 
-        # Posição Y da vista principal (acima das vistas laterais)
+        # Posição Y da vista principal
         y_origem_principal = self.margem + altura_tabela + altura_vistas_laterais + 50
 
         # Centralizar horizontalmente
         x_origem = self.margem + (largura_disponivel - largura_desenhada) / 2
         y_origem = y_origem_principal
 
-        # Título da vista principal - CENTRALIZADO
+        # ===== TÍTULO =====
         c.setFont("Helvetica-Bold", 16)
         c.setFillColor(colors.black)
-        texto_titulo = "PLANO DE FURAÇÃO"
-        largura_texto = c.stringWidth(texto_titulo, "Helvetica-Bold", 16)
-        titulo_x = (largura_pagina - largura_texto) / 2
         titulo_y = altura_pagina - self.margem + 15
-        c.drawCentredString(largura_pagina / 2, titulo_y, texto_titulo)
+        c.drawCentredString(largura_pagina / 2, titulo_y, titulo)
 
         # Desenhar peça (vista de topo)
         self.desenhar_retangulo_peca(c, x_origem, y_origem, largura_desenhada, altura_desenhada)
         
-       # Desenhar bordas coloridas se configurado
+        # Desenhar bordas coloridas se configurado
         if dados_adicionais:
-            # Pegar bordas originais (novo formato)
             bordas_originais = dados_adicionais.get('bordas', {
-                'top': None,
-                'bottom': None,
-                'left': None,
-                'right': None
+                'top': None, 'bottom': None, 'left': None, 'right': None
             })
 
-            # Garantir que bordas_originais é um dict válido
             if not isinstance(bordas_originais, dict):
                 bordas_originais = {'top': None, 'bottom': None, 'left': None, 'right': None}
             
-            # Transformar bordas baseado em rotação/espelhamento
             angulo = dados_adicionais.get('angulo_rotacao', 0)
             espelhado = dados_adicionais.get('espelhar_peca', False)
             bordas_config = self.transformar_bordas(bordas_originais, angulo, espelhado)
 
-            # Desenhar se tiver pelo menos uma borda
-            if any([
-                bordas_config.get('top'),
-                bordas_config.get('bottom'),
-                bordas_config.get('left'),
-                bordas_config.get('right')
-            ]):
-                self.desenhar_bordas_batente(
-                    c,
-                    x_origem,
-                    y_origem,
-                    largura_desenhada,
-                    altura_desenhada,
-                    bordas_config
-                )
+            if any([bordas_config.get('top'), bordas_config.get('bottom'),
+                    bordas_config.get('left'), bordas_config.get('right')]):
+                self.desenhar_bordas_batente(c, x_origem, y_origem,
+                                            largura_desenhada, altura_desenhada, bordas_config)
 
-        # Desenhar cotas principais (MESMO ESTILO das cotas dos furos)
+        # Desenhar cotas principais
         offset_cota = 40
-        # Usar dimensões da peça (já rotacionadas se aplicável)
         largura_real_atual = float(peca.dimensoes.largura)
         comprimento_real_atual = float(peca.dimensoes.comprimento)
 
         self.desenhar_cota_principal(c, x_origem, y_origem, largura_desenhada, altura_desenhada,
                                     largura_real_atual, comprimento_real_atual, offset_cota)
         
-        # Desenhar furos verticais com cotas de posição
-        furos_por_y = {}
-        for furo in peca.furos_verticais:
-            y_key = round(float(furo.y), 1)
-            if y_key not in furos_por_y:
-                furos_por_y[y_key] = []
-            furos_por_y[y_key].append(furo)
+        # ===== PROCESSAR FUROS VERTICAIS =====
+        if peca.furos_verticais:
+            # Agrupar furos por Y
+            furos_por_y = {}
+            for furo in peca.furos_verticais:
+                y_key = round(float(furo.y), 1)
+                if y_key not in furos_por_y:
+                    furos_por_y[y_key] = []
+                furos_por_y[y_key].append(furo)
 
-        # Agrupar furos por posição X (mesma linha vertical)
-        furos_por_x = {}
-        for furo in peca.furos_verticais:
-            x_key = round(float(furo.x), 1)
-            if x_key not in furos_por_x:
-                furos_por_x[x_key] = []
-            furos_por_x[x_key].append(furo)
+            # Agrupar furos por X
+            furos_por_x = {}
+            for furo in peca.furos_verticais:
+                x_key = round(float(furo.x), 1)
+                if x_key not in furos_por_x:
+                    furos_por_x[x_key] = []
+                furos_por_x[x_key].append(furo)
 
-        # Para cada linha Y, pegar apenas o furo mais à esquerda (menor X)
-        furos_com_cota_y = set()
-        for y_pos, furos_na_linha in furos_por_y.items():
-            furo_mais_esquerda = min(furos_na_linha, key=lambda f: float(f.x))
-            furos_com_cota_y.add(id(furo_mais_esquerda))
+            # Furos com cota Y (mais à esquerda de cada linha)
+            furos_com_cota_y = set()
+            for y_pos, furos_na_linha in furos_por_y.items():
+                furo_mais_esquerda = min(furos_na_linha, key=lambda f: float(f.x))
+                furos_com_cota_y.add(id(furo_mais_esquerda))
 
-        # Para cada linha X, pegar apenas o furo mais próximo do topo (maior Y)
-        furos_com_cota_x = set()
-        for x_pos, furos_na_coluna in furos_por_x.items():
-            furo_mais_proximo_topo = max(furos_na_coluna, key=lambda f: float(f.y))
-            furos_com_cota_x.add(id(furo_mais_proximo_topo))
+            # Furos com cota X (mais próximo do topo de cada coluna)
+            furos_com_cota_x = set()
+            for x_pos, furos_na_coluna in furos_por_x.items():
+                furo_mais_proximo_topo = max(furos_na_coluna, key=lambda f: float(f.y))
+                furos_com_cota_x.add(id(furo_mais_proximo_topo))
 
-        # ===== DETECTAR COTAS Y PRÓXIMAS E ESCALONAR OFFSETS =====
-        # Pegar os furos que terão cota Y e ordenar por Y
-        furos_com_cota_y_lista = [f for f in peca.furos_verticais if id(f) in furos_com_cota_y]
-        furos_com_cota_y_lista = sorted(furos_com_cota_y_lista, key=lambda f: float(f.y))
+            # Escalonar offsets Y
+            furos_com_cota_y_lista = [f for f in peca.furos_verticais if id(f) in furos_com_cota_y]
+            furos_com_cota_y_lista = sorted(furos_com_cota_y_lista, key=lambda f: float(f.y))
 
-        # Calcular offset para cada furo baseado na proximidade
-        offset_cota_y = {}  # id(furo) -> offset
-        distancia_minima = 15  # mm - se dois furos estão mais próximos que isso, escalonar
+            offset_cota_y = {}
+            distancia_minima = 15
+            offset_base = 25
+            offset_incremento = 20
 
-        offset_base = 25
-        offset_incremento = 20
-
-        for i, furo in enumerate(furos_com_cota_y_lista):
-            if i == 0:
-                offset_cota_y[id(furo)] = offset_base
-            else:
-                furo_anterior = furos_com_cota_y_lista[i - 1]
-                diferenca_y = abs(float(furo.y) - float(furo_anterior.y))
-                
-                if diferenca_y < distancia_minima:
-                    # Muito próximo - aumentar offset
-                    offset_anterior = offset_cota_y[id(furo_anterior)]
-                    offset_cota_y[id(furo)] = offset_anterior + offset_incremento
-                else:
-                    # Distante o suficiente - volta ao offset base
+            for i, furo in enumerate(furos_com_cota_y_lista):
+                if i == 0:
                     offset_cota_y[id(furo)] = offset_base
-
-        # ===== DETECTAR COTAS X PRÓXIMAS E ESCALONAR OFFSETS =====
-        furos_com_cota_x_lista = [f for f in peca.furos_verticais if id(f) in furos_com_cota_x]
-        furos_com_cota_x_lista = sorted(furos_com_cota_x_lista, key=lambda f: float(f.x))
-
-        offset_cota_x = {}  # id(furo) -> offset
-
-        for i, furo in enumerate(furos_com_cota_x_lista):
-            if i == 0:
-                offset_cota_x[id(furo)] = offset_base
-            else:
-                furo_anterior = furos_com_cota_x_lista[i - 1]
-                diferenca_x = abs(float(furo.x) - float(furo_anterior.x))
-                
-                if diferenca_x < distancia_minima:
-                    offset_anterior = offset_cota_x[id(furo_anterior)]
-                    offset_cota_x[id(furo)] = offset_anterior + offset_incremento
                 else:
-                    offset_cota_x[id(furo)] = offset_base    
+                    furo_anterior = furos_com_cota_y_lista[i - 1]
+                    diferenca_y = abs(float(furo.y) - float(furo_anterior.y))
+                    
+                    if diferenca_y < distancia_minima:
+                        offset_anterior = offset_cota_y[id(furo_anterior)]
+                        offset_cota_y[id(furo)] = offset_anterior + offset_incremento
+                    else:
+                        offset_cota_y[id(furo)] = offset_base
 
-        # Desenhar furos verticais com cotas inteligentes
-        for i, furo in enumerate(peca.furos_verticais):
-            x_furo, y_furo = self.desenhar_furo_vertical(c, x_origem, y_origem, furo, escala, altura_desenhada)
+            # Calcular batente e mandris para esta página
+            batente = self.calcular_batente(peca)
             
-            # Mostrar cota X apenas se for o mais próximo do topo na coluna
-            mostrar_x = id(furo) in furos_com_cota_x
+            # Escalonar offsets X
+            furos_com_cota_x_lista = [f for f in peca.furos_verticais if id(f) in furos_com_cota_x]
+            furos_com_cota_x_lista = sorted(furos_com_cota_x_lista, key=lambda f: float(f.x))
+
+            offset_cota_x = {}
+
+            for i, furo in enumerate(furos_com_cota_x_lista):
+                if i == 0:
+                    offset_cota_x[id(furo)] = offset_base
+                else:
+                    furo_anterior = furos_com_cota_x_lista[i - 1]
+                    diferenca_x = abs(float(furo.x) - float(furo_anterior.x))
+                    
+                    if diferenca_x < distancia_minima:
+                        offset_anterior = offset_cota_x[id(furo_anterior)]
+                        offset_cota_x[id(furo)] = offset_anterior + offset_incremento
+                    else:
+                        offset_cota_x[id(furo)] = offset_base    
+
+            # Desenhar furos verticais
+            for furo in peca.furos_verticais:
+                mandril = self.calcular_mandril(furo.y, batente)
+                x_furo, y_furo = self.desenhar_furo_vertical(c, x_origem, y_origem, furo, escala, altura_desenhada, mandril)
+                
+                mostrar_x = id(furo) in furos_com_cota_x
+                mostrar_y = id(furo) in furos_com_cota_y
+                
+                offset_x = offset_cota_x.get(id(furo), 25)
+                offset_y = offset_cota_y.get(id(furo), 25)
+                
+                self.desenhar_cota_furo(c, x_origem, y_origem, x_furo, y_furo, 
+                                        furo.x, furo.y,
+                                        largura_desenhada, altura_desenhada,
+                                        escala, mostrar_x, mostrar_y,
+                                        offset_x, offset_y)
             
-            # Mostrar cota Y apenas se for o mais à esquerda da linha
-            mostrar_y = id(furo) in furos_com_cota_y
-            
-            # Pegar offsets escalonados (ou usar padrão)
-            offset_x = offset_cota_x.get(id(furo), 25)
-            offset_y = offset_cota_y.get(id(furo), 25)
-            
-            self.desenhar_cota_furo(c, x_origem, y_origem, x_furo, y_furo, 
-                                    furo.x, furo.y,
-                                    largura_desenhada, altura_desenhada,
-                                    escala, mostrar_x, mostrar_y,
-                                    offset_x, offset_y)
-            
-        # Tabela horizontal abaixo do desenho
+        # ===== TABELA =====
         largura_tabela = largura_pagina - 2 * self.margem
         altura_tabela = 80
         x_tabela = self.margem
         y_tabela = self.margem - 40
         self.desenhar_tabela_horizontal(c, x_tabela, y_tabela, largura_tabela, altura_tabela,
-                                     peca, config, dados_adicionais)
+                                    peca, config, dados_adicionais)
         
-        # ===== MARGEM EXTERNA (envolve tudo) =====
-        # Usar EXATAMENTE a mesma largura e posição X da tabela
+        # ===== MARGEM EXTERNA =====
         largura_logo = 80
         larguras_linha_1 = [250, 100, 70, 70, 80, 60, 70]
         larguras_linha_2 = [250, 65, 95, 100, 70, 120]  
         largura_total_tabela = largura_logo + max(sum(larguras_linha_1), sum(larguras_linha_2))
         x_margem = (841.89 - largura_total_tabela) / 2
 
-        # Altura: do fundo da tabela até acima do título
         y_margem_inferior = y_tabela
         y_margem_superior = titulo_y + 20
 
         c.setStrokeColor(colors.black)
         c.setLineWidth(0.5)
-        c.rect(
-            x_margem, 
-            y_margem_inferior, 
-            largura_total_tabela, 
-            y_margem_superior - y_margem_inferior, 
-            stroke=1, 
-            fill=0
-        )
+        c.rect(x_margem, y_margem_inferior, largura_total_tabela, 
+            y_margem_superior - y_margem_inferior, stroke=1, fill=0)
             
-        # Desenhar alerta de atenção (se houver)
-        texto_alerta = dados_adicionais.get('alerta', None)  # Vem do usuário
+        # Desenhar alerta de atenção
+        texto_alerta = dados_adicionais.get('alerta', None)
         if texto_alerta:
             x_alerta = x_tabela - 35
-            y_alerta = y_tabela + altura_tabela + 10  # 10 pontos acima da tabela
+            y_alerta = y_tabela + altura_tabela + 10
             self.desenhar_alerta_atencao(c, x_alerta, y_alerta, texto_alerta)    
-   
-        # Desenhar vistas laterais (se houver furos horizontais)
+
+        # ===== VISTAS LATERAIS =====
         if len(peca.furos_horizontais) > 0:
-            # ===== LAYOUT DAS VISTAS LATERAIS =====
             y_vistas = self.margem + 50
-            altura_vistas = 200  # Altura disponível para vistas laterais
+            altura_vistas = 200
             
-            # Largura para cada vista lateral (mais espaço!)
-            largura_vista_lateral = 80  # Aumentado de 20 para 100
+            largura_vista_lateral = 80
             espaco_entre_vistas = 20
             
-            # Largura disponível para vista principal (centro)
             largura_vista_principal = largura_pagina - (2 * self.margem) - (2 * largura_vista_lateral) - (2 * espaco_entre_vistas)
             
-            # Posições BASE (sem alerta)
             x_vista_esquerda = self.margem + 30
             x_vista_principal = x_vista_esquerda + largura_vista_lateral + espaco_entre_vistas
             x_vista_direita = x_vista_principal + largura_vista_principal + espaco_entre_vistas - 40
 
-            # Se tiver alerta, desloca APENAS a vista esquerda
             if dados_adicionais and dados_adicionais.get('alerta'):
                 offset_alerta = 120
-                x_vista_esquerda += offset_alerta  # Só a esquerda se move!
+                x_vista_esquerda += offset_alerta
             
-            # Verificar se foi espelhado
             foi_espelhado = dados_adicionais.get('espelhar_peca', False)
 
-            # Desenhar vista lateral ESQUERDA
-            self.desenhar_vista_lateral(
-                c, x_vista_esquerda, y_vistas, 
-                peca, 'esquerda', 
-                largura_vista_lateral, 
-                altura_vistas,  # ← ADICIONAR altura!
-                foi_espelhado
-            )
-            
-            # Desenhar vista lateral DIREITA
-            self.desenhar_vista_lateral(
-                c, x_vista_direita, y_vistas, 
-                peca, 'direita', 
-                largura_vista_lateral,
-                altura_vistas,  # ← ADICIONAR altura!
-                foi_espelhado
-            )
+            self.desenhar_vista_lateral(c, x_vista_esquerda, y_vistas, 
+                            peca, 'esquerda', largura_vista_lateral, 
+                            altura_vistas, foi_espelhado, batente)
 
-        c.save()
+            self.desenhar_vista_lateral(c, x_vista_direita, y_vistas, 
+                                        peca, 'direita', largura_vista_lateral,
+                                        altura_vistas, foi_espelhado, batente)
 
     def transformar_bordas(self, bordas: dict, angulo: int, espelhado: bool) -> dict:
         """

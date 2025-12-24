@@ -12,8 +12,14 @@ DATABASE_URL = os.getenv(
     "postgresql://neondb_owner:npg_o2KqUb4ykPZh@ep-silent-dream-ah42tefe-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require"
 )
 
-# Criar engine
-engine = create_engine(DATABASE_URL)
+# Criar engine com configurações de reconexão
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,  # Testa conexão antes de usar
+    pool_recycle=300,    # Recicla conexões a cada 5 minutos
+    pool_size=5,         # Tamanho do pool
+    max_overflow=10      # Conexões extras permitidas
+)
 
 # Session local
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
