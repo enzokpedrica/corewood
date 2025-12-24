@@ -101,3 +101,21 @@
 	> Tendências de Design
 	> Talvez seleciona 3 e pede pra gerar mais 5 alternativas
 	> Ja manda a ideia pro fornecedor solicitando orçamento
+
+
+--------------------------------------------------------------------------------------------------
+Estrutura Proposta
+Vou sugerir uma ordem de implementação:
+Fase 1 - Detecção e Análise (base de tudo)
+1.1 - Ler MPR e classificar furos (passante/não passante)
+1.2 - Calcular batente automaticamente (primeiro furo)
+1.3 - Calcular mandril de cada furo
+Fase 2 - Regra dos 100mm
+2.1 - Detectar conflitos (furos < 100mm no mesmo lado)
+2.2 - Decidir distribuição superior/inferior
+2.3 - Separar furos em grupos
+Fase 3 - Geração de PDFs
+3.1 - Gerar PDF com título correto (Superior/Inferior)
+3.2 - Mostrar mandril nas cotas
+3.3 - Preencher batente na tabela
+3.4 - Gerar múltiplos PDFs quando necessário
