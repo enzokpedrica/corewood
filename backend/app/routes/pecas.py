@@ -207,6 +207,6 @@ def listar_pecas_produto(
     if not produto:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
     
-    pecas = db.query(PecaDB).filter(PecaDB.produto_id == produto.id).all()
+    pecas = db.query(PecaDB).filter(PecaDB.produto_id == produto.id).order_by(PecaDB.codigo).all()
     
     return pecas

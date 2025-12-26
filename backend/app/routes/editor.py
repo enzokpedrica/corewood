@@ -8,17 +8,20 @@ from app.generators.mpr_generator import GeradorMPR
 from app.database import get_db
 from sqlalchemy.orm import Session
 import tempfile
+from typing import Union
 
 router = APIRouter(prefix="/editor", tags=["editor"])
 
 
 class FuroData(BaseModel):
     tipo: str  # 'vertical' ou 'horizontal'
-    x: float
+    x: Union[float, str] = 0  # Pode ser número ou "x" (lado oposto)
     y: float
+    z: Optional[float] = None  # Para furos horizontais
     diametro: float
     profundidade: float
     lado: Optional[str] = None  # Para furos horizontais: XP, XM, YP, YM
+    id: Optional[float] = None  # ID do frontend (ignorar)
 
 
 class PecaData(BaseModel):
@@ -173,13 +176,21 @@ async def generate_pdf_from_editor(
         
         for furo in furos_horiz:
             if furo.get('tipo') == 'horizontal':
+                # x pode ser número ou string 'x' (lado oposto)
+                x_val = furo.get('x', 0)
+                if x_val == 'x':
+                    x_val = 'x'
+                else:
+                    x_val = float(x_val) if x_val else 0
+                
                 furos_horizontais_obj.append(
                     FuroHorizontal(
-                        lado=furo.get('lado', 'XP'),
+                        x=x_val,
                         y=furo['y'],
-                        z=furo['x'],
+                        z=furo.get('z', 7.5),  # Z é a altura do furo na espessura
                         diametro=furo['diametro'],
-                        profundidade=furo.get('profundidade', 0)
+                        profundidade=furo.get('profundidade', 0),
+                        lado=furo.get('lado', 'XP')
                     )
                 )
         
