@@ -460,195 +460,174 @@ function EditorMPR({ pecaInicial }) {
 };
   return (
     <div className="editor-mpr">
-
+      {/* HEADER */}
       <div className="editor-header">
         <h2>✏️ Editor MPR</h2>
       </div>
-      
 
-      <div className="editor-layout">
-        {/* SIDEBAR ESQUERDA - Dimensões e Ferramentas */}
-        <div className="editor-sidebar left">
-          {/* Informações da Peça */}
-          <div className="editor-section">
-            <h3>📋 Informações</h3>
-            
+      {/* CANVAS - TOPO */}
+      <div className="editor-canvas-area">
+        <Canvas
+          peca={peca}
+          onAddFuro={handleAddFuro}
+          selectedTool={selectedTool}
+        />
+      </div>
+
+      {/* PAINEL INFERIOR - 3 COLUNAS */}
+      <div className="editor-panel">
+        {/* COLUNA 1 - Informações da Peça */}
+        <div className="panel-section">
+          <h3>📋 Informações da Peça</h3>
+          
+          <div className="form-row">
             <div className="form-group">
               <label>Código</label>
               <input
                 type="text"
                 value={codigoPeca}
                 onChange={(e) => setCodigoPeca(e.target.value)}
-                placeholder="Ex: 510536001"
+                placeholder="510536001"
               />
             </div>
-
             <div className="form-group">
-              <label>Nome da Peça</label>
-              <input
-                type="text"
-                value={nomePeca}
-                onChange={(e) => setNomePeca(e.target.value)}
-                placeholder="Ex: Lateral Direita"
-              />
-            </div>
-          </div>
-          <div className="editor-section">
-            <h3>📏 Dimensões da Peça</h3>
-            
-            <div className="form-group">
-              <label>Nome da Peça:</label>
+              <label>Nome</label>
               <input
                 type="text"
                 value={peca.nome}
                 onChange={(e) => setPeca({ ...peca, nome: e.target.value })}
-                placeholder="Ex: LATERAL_01"
+                placeholder="Lateral Direita"
               />
             </div>
+          </div>
 
+          <div className="form-row">
             <div className="form-group">
-              <label>Comprimento X (mm):</label>
+              <label>Comprimento X</label>
               <input
                 type="number"
                 value={peca.comprimento || ''}
                 onChange={(e) => handleDimensaoChange('comprimento', e.target.value)}
-                placeholder="Ex: 800"
-                min="10"
-                max="3000"
+                placeholder="800"
               />
             </div>
-
             <div className="form-group">
-              <label>Largura Y (mm):</label>
+              <label>Largura Y</label>
               <input
                 type="number"
                 value={peca.largura || ''}
                 onChange={(e) => handleDimensaoChange('largura', e.target.value)}
-                placeholder="Ex: 300"
-                min="10"
-                max="3000"
+                placeholder="300"
               />
             </div>
-
             <div className="form-group">
-              <label>Espessura (mm):</label>
+              <label>Espessura</label>
               <input
                 type="number"
                 value={peca.espessura || 15}
                 onChange={(e) => handleDimensaoChange('espessura', e.target.value)}
-                min="6"
-                max="50"
               />
             </div>
-            <div className="editor-section">
-              <h3>🔄 Transformações</h3>
-              
+          </div>
+
+          <div className="transform-section">
+            <label>🔄 Transformar</label>
+            <div className="transform-buttons">
               <button
-              className="transform-btn"
-              onClick={() => aplicarTransformacao({ 
-                ...transformacao, 
-                rotacao: (transformacao.rotacao + 90) % 360 
-              })}
-              title="Rotacionar 90° horário"
-            >
-              ↻ 90°
-            </button>
-
-            <button
-              className="transform-btn"
-              onClick={() => aplicarTransformacao({ 
-                ...transformacao, 
-                rotacao: (transformacao.rotacao + 180) % 360 
-              })}
-              title="Rotacionar 180°"
-            >
-              ↕ 180°
-            </button>
-
-            <button
-              className="transform-btn"
-              onClick={() => aplicarTransformacao({ 
-                ...transformacao, 
-                rotacao: (transformacao.rotacao + 270) % 360 
-              })}
-              title="Rotacionar 90° anti-horário"
-            >
-              ↺ 270°
-            </button>
-
-            <button
-              className="transform-btn"
-              onClick={() => aplicarTransformacao({ 
-                ...transformacao, 
-                espelhado: !transformacao.espelhado 
-              })}
-              title="Espelhar horizontalmente"
-            >
-              ⇄ Espelhar
-            </button>
-              
-              <div className="transform-info">
-                <small>Rotação: <strong>{transformacao.rotacao}°</strong></small>
-                <small>Espelhado: <strong>{transformacao.espelhado ? 'Sim' : 'Não'}</strong></small>
-              </div>
+                className="transform-btn"
+                onClick={() => aplicarTransformacao({ 
+                  ...transformacao, 
+                  rotacao: (transformacao.rotacao + 90) % 360 
+                })}
+                title="Rotacionar 90°"
+              >
+                ↻ 90°
+              </button>
+              <button
+                className="transform-btn"
+                onClick={() => aplicarTransformacao({ 
+                  ...transformacao, 
+                  rotacao: (transformacao.rotacao + 180) % 360 
+                })}
+                title="Rotacionar 180°"
+              >
+                ↕ 180°
+              </button>
+              <button
+                className="transform-btn"
+                onClick={() => aplicarTransformacao({ 
+                  ...transformacao, 
+                  espelhado: !transformacao.espelhado 
+                })}
+                title="Espelhar"
+              >
+                ⇄ Espelhar
+              </button>
             </div>
-
+            <small>Rotação: {transformacao.rotacao}° | Espelhado: {transformacao.espelhado ? 'Sim' : 'Não'}</small>
           </div>
         </div>
 
-        {/* CENTRO - Canvas Grande */}
-        <div className="editor-center">
-          <Canvas
-            peca={peca}
-            onAddFuro={handleAddFuro}
-            selectedTool={selectedTool}
-          />
-        </div>
+        {/* COLUNA 2 - Adicionar Furação */}
+        <div className="panel-section">
+          <h3>➕ Adicionar Furação</h3>
+          
+          {peca.largura && peca.comprimento ? (
+            <FuroManual 
+              onAddFuro={handleAddFuro}
+              pecaDimensoes={{
+                comprimento: peca.comprimento,
+                largura: peca.largura
+              }}
+            />
+          ) : (
+            <div className="placeholder">
+              <p>Defina as dimensões primeiro</p>
+            </div>
+          )}
 
-        {/* ÁREA INFERIOR - Adicionar Furos + Lista */}
-        <div className="editor-bottom">
-          {/* Adicionar Furo Manual */}
-          <div className="editor-section">
-            {peca.largura && peca.comprimento ? (
-              <FuroManual 
-                onAddFuro={handleAddFuro}
-                pecaDimensoes={{
-                  comprimento: peca.comprimento,
-                  largura: peca.largura
-                }}
-              />
-            ) : (
-              <div className="placeholder">
-                <p>👈 Defina as dimensões da peça primeiro</p>
-              </div>
-            )}
-          </div>
-
-          {/* Lista de Furos + Config */}
-          <div className="editor-section">
-            {showFuroConfig && selectedFuro ? (
-              <div>
-                <div className="section-header">
-                  <h3>⚙️ Configurar Furo</h3>
-                  <button 
-                    className="btn-close"
-                    onClick={() => {
-                      setShowFuroConfig(false);
-                      setSelectedFuro(null);
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <div className="furo-info">
-                  <span className={`furo-badge ${selectedFuro.tipo}`}>
-                    {selectedFuro.tipo === 'vertical' ? '🔴 Vertical' : '🔵 Horizontal'}
+          {/* Lista de Furos */}
+          <div className="furos-lista">
+            <label>Lista de Furos ({peca.furos.length + (peca.furosHorizontais?.length || 0)})</label>
+            <div className="furos-scroll">
+              {[...peca.furos, ...(peca.furosHorizontais || [])].map((furo, index) => (
+                <div
+                  key={furo.id}
+                  className={`furo-item ${selectedFuro?.id === furo.id ? 'selected' : ''}`}
+                  onClick={() => {
+                    setSelectedFuro(furo);
+                    setShowFuroConfig(true);
+                  }}
+                >
+                  <span className={`furo-icon ${furo.tipo}`}>
+                    {furo.tipo === 'vertical' ? '🔴' : '🔵'}
+                  </span>
+                  <span className="furo-info">
+                    {furo.tipo === 'vertical' ? 'V' : 'H'}#{index + 1} 
+                    {furo.tipo === 'vertical' 
+                      ? ` X:${furo.x} Y:${furo.y} Ø${furo.diametro}`
+                      : ` Y:${furo.y} Z:${furo.z} Ø${furo.diametro}`
+                    }
                   </span>
                 </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
+        {/* COLUNA 3 - Configurar Furo */}
+        <div className="panel-section">
+          <h3>⚙️ Configurar Furo</h3>
+          
+          {showFuroConfig && selectedFuro ? (
+            <div className="furo-config">
+              <div className="furo-badge">
+                {selectedFuro.tipo === 'vertical' ? '🔴 Vertical' : '🔵 Horizontal'}
+              </div>
+
+              <div className="form-row">
                 <div className="form-group">
-                  <label>Posição X (mm):</label>
+                  <label>X</label>
                   <input
                     type="number"
                     value={selectedFuro.x}
@@ -656,9 +635,8 @@ function EditorMPR({ pecaInicial }) {
                     step="0.1"
                   />
                 </div>
-
                 <div className="form-group">
-                  <label>Posição Y (mm):</label>
+                  <label>Y</label>
                   <input
                     type="number"
                     value={selectedFuro.y}
@@ -666,152 +644,113 @@ function EditorMPR({ pecaInicial }) {
                     step="0.1"
                   />
                 </div>
+              </div>
 
+              <div className="form-row">
                 <div className="form-group">
-                  <label>Diâmetro (mm):</label>
+                  <label>Diâmetro</label>
                   <input
                     type="number"
                     value={selectedFuro.diametro}
                     onChange={(e) => handleUpdateFuro('diametro', e.target.value)}
                     step="0.1"
-                    min="1"
-                    max="50"
                   />
                 </div>
-
                 <div className="form-group">
-                  <label>Profundidade (mm):</label>
+                  <label>Profundidade</label>
                   <input
                     type="number"
                     value={selectedFuro.profundidade}
                     onChange={(e) => handleUpdateFuro('profundidade', e.target.value)}
                     step="0.1"
-                    min="0"
                   />
-                  <small>0 = passante</small>
                 </div>
+              </div>
 
-                {selectedFuro.tipo === 'horizontal' && (
-                  <div className="form-group">
-                    <label>Lado:</label>
-                    <select
-                      value={selectedFuro.lado}
-                      onChange={(e) => handleUpdateFuro('lado', e.target.value)}
-                    >
-                      <option value="XP">XP (Frente)</option>
-                      <option value="XM">XM (Trás)</option>
-                      <option value="YP">YP (Direita)</option>
-                      <option value="YM">YM (Esquerda)</option>
-                    </select>
-                  </div>
-                )}
-
-                {/* Replicação */}
-                <div className="form-group" style={{ borderTop: '2px solid #eee', paddingTop: '1rem', marginTop: '1rem' }}>
-                  <label>🔁 Replicar Furo:</label>
-                  
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                    <input
-                      type="number"
-                      placeholder="Qtd"
-                      min="2"
-                      max="20"
-                      id="replicar-qtd"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Dist (mm)"
-                      step="0.1"
-                      id="replicar-dist"
-                    />
-                  </div>
-                  
-                  <select id="replicar-dir" style={{ marginTop: '0.5rem' }}>
-                    <option value="x">Horizontal (X)</option>
-                    <option value="y">Vertical (Y)</option>
-                  </select>
-                  
-                  <button
-                    className="btn-primary"
-                    style={{ marginTop: '0.5rem', width: '100%', padding: '0.5rem' }}
-                    onClick={() => {
-                      const qtd = parseInt(document.getElementById('replicar-qtd').value);
-                      const dist = parseFloat(document.getElementById('replicar-dist').value);
-                      const dir = document.getElementById('replicar-dir').value;
-                      
-                      if (!qtd || !dist) {
-                        alert('⚠️ Preencha quantidade e distância!');
-                        return;
-                      }
-                      
-                      const novosFuros = [];
-                        for (let i = 1; i < qtd; i++) {
-                          novosFuros.push({
-                            ...selectedFuro,
-                            id: Date.now() + i,
-                            x: selectedFuro.x + (dir === 'x' ? dist * i : 0),
-                            y: selectedFuro.y + (dir === 'y' ? dist * i : 0)
-                          });
-                        }
-
-                        setPeca({ ...peca, furos: [...peca.furos, ...novosFuros] });
-                        alert(`✅ ${qtd-1} furos replicados!`);
-                    }}
+              {selectedFuro.tipo === 'horizontal' && (
+                <div className="form-group">
+                  <label>Lado</label>
+                  <select
+                    value={selectedFuro.lado}
+                    onChange={(e) => handleUpdateFuro('lado', e.target.value)}
                   >
-                    🔁 Aplicar Replicação
-                  </button>
+                    <option value="XP">XP (Frente)</option>
+                    <option value="XM">XM (Trás)</option>
+                    <option value="YP">YP (Direita)</option>
+                    <option value="YM">YM (Esquerda)</option>
+                  </select>
                 </div>
+              )}
 
+              {/* Replicação */}
+              <div className="replicacao-section">
+                <label>🔁 Replicar</label>
+                <div className="form-row">
+                  <input
+                    type="number"
+                    placeholder="Qtd"
+                    min="2"
+                    max="20"
+                    id="replicar-qtd"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Dist"
+                    step="0.1"
+                    id="replicar-dist"
+                  />
+                  <select id="replicar-dir">
+                    <option value="x">X</option>
+                    <option value="y">Y</option>
+                  </select>
+                </div>
                 <button
-                  className="btn-danger"
-                  onClick={() => handleRemoveFuro(selectedFuro.id)}
+                  className="btn-replicar"
+                  onClick={() => {
+                    const qtd = parseInt(document.getElementById('replicar-qtd').value);
+                    const dist = parseFloat(document.getElementById('replicar-dist').value);
+                    const dir = document.getElementById('replicar-dir').value;
+                    
+                    if (!qtd || !dist) {
+                      alert('⚠️ Preencha quantidade e distância!');
+                      return;
+                    }
+                    
+                    const novosFuros = [];
+                    for (let i = 1; i < qtd; i++) {
+                      novosFuros.push({
+                        ...selectedFuro,
+                        id: Date.now() + i,
+                        x: selectedFuro.x + (dir === 'x' ? dist * i : 0),
+                        y: selectedFuro.y + (dir === 'y' ? dist * i : 0)
+                      });
+                    }
+
+                    setPeca({ ...peca, furos: [...peca.furos, ...novosFuros] });
+                    alert(`✅ ${qtd-1} furos replicados!`);
+                  }}
                 >
-                  🗑️ Remover Furo
+                  🔁 Aplicar
                 </button>
               </div>
-            ) : (
-              <div>
-                <h3>📋 Lista de Furos ({peca.furos.length + (peca.furosHorizontais?.length || 0)})</h3>
-                {peca.furos.length > 0 ? (
-                  <div className="furos-scroll">
-                    {[...peca.furos, ...(peca.furosHorizontais || [])].map((furo, index) => (
-                      <div
-                        key={furo.id}
-                        className={`furo-item ${selectedFuro?.id === furo.id ? 'selected' : ''}`}
-                        onClick={() => {
-                          setSelectedFuro(furo);
-                          setShowFuroConfig(true);
-                        }}
-                      >
-                        <span className={`furo-icon ${furo.tipo}`}>
-                          {furo.tipo === 'vertical' ? '🔴' : '🔵'}
-                        </span>
-                        <div className="furo-details">
-                          <strong>{furo.tipo === 'vertical' ? 'V' : 'H'} #{index + 1}</strong>
-                          <small>
-                            {furo.tipo === 'vertical' 
-                              ? `X:${furo.x} Y:${furo.y} Ø${furo.diametro}`
-                              : `Y:${furo.y} Z:${furo.z} Ø${furo.diametro} ${furo.lado}`
-                            }
-                          </small>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="placeholder">
-                    <p>Nenhum furo adicionado ainda</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+
+              <button
+                className="btn-danger"
+                onClick={() => handleRemoveFuro(selectedFuro.id)}
+              >
+                🗑️ Remover Furo
+              </button>
+            </div>
+          ) : (
+            <div className="placeholder">
+              <p>Selecione um furo na lista</p>
+            </div>
+          )}
         </div>
       </div>
 
       {/* FOOTER - Ações */}
       <div className="editor-footer">
-        {/* Botão Importar MPR */}
         <input
           type="file"
           accept=".mpr,.MPR"
@@ -833,27 +772,25 @@ function EditorMPR({ pecaInicial }) {
             onClick={handleSalvarPeca}
             disabled={loading}
           >
-            💾 Salvar Alterações
+            💾 Salvar
           </button>
         )}
 
-        <div className="footer-actions">
-          <button
-            className="btn-export"
-            onClick={handleExportarMPR}
-            disabled={!peca.nome || peca.furos.length === 0}
-          >
-            💾 Exportar MPR
-          </button>
+        <button
+          className="btn-export"
+          onClick={handleExportarMPR}
+          disabled={!peca.nome || (peca.furos.length === 0 && (!peca.furosHorizontais || peca.furosHorizontais.length === 0))}
+        >
+          📤 Exportar MPR
+        </button>
 
-          <button
-            className="btn-primary"
-            onClick={handleGerarPDF}
-            disabled={!peca.nome && !nomePeca}
-          >
-            📄 Gerar PDF
-          </button>
-        </div>
+        <button
+          className="btn-primary"
+          onClick={handleGerarPDF}
+          disabled={!peca.nome && !nomePeca}
+        >
+          📄 Gerar PDF
+        </button>
       </div>
     </div>
   );

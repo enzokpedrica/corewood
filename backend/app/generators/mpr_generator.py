@@ -64,12 +64,10 @@ class GeradorMPR:
         # Separar por tipo
         furos_verticais = [f for f in furos if f.get('tipo') == 'vertical']
         furos_horizontais = [f for f in furos if f.get('tipo') == 'horizontal']
-
+        
         print(f"🔍 DEBUG - Total furos recebidos: {len(furos)}")
         print(f"🔴 DEBUG - Furos verticais: {len(furos_verticais)}")
         print(f"🔵 DEBUG - Furos horizontais: {len(furos_horizontais)}")
-        for f in furos:
-            print(f"   Furo: {f}")
                 
         mpr = []
         
@@ -107,8 +105,8 @@ class GeradorMPR:
         mpr.append('ANZ="1"')
         mpr.append('BES="0"')
         mpr.append('ENT="0"')
-        mpr.append(f'_BSX={comprimento:.6f}')  # X = Comprimento
-        mpr.append(f'_BSY={largura:.6f}')      # Y = Largura
+        mpr.append(f'_BSX={comprimento:.6f}')
+        mpr.append(f'_BSY={largura:.6f}')
         mpr.append(f'_BSZ={espessura:.6f}')
         mpr.append('_FNX=0.000000')
         mpr.append('_FNY=0.000000')
@@ -120,9 +118,9 @@ class GeradorMPR:
         
         # ===== PROGRAMA =====
         mpr.append('[001')
-        mpr.append(f'x="{int(comprimento)}"')  # X = Comprimento
+        mpr.append(f'x="{int(comprimento)}"')
         mpr.append('KM=""')
-        mpr.append(f'y="{int(largura)}"')      # Y = Largura
+        mpr.append(f'y="{int(largura)}"')
         mpr.append('KM=""')
         mpr.append(f'z="{int(espessura)}"')
         mpr.append('KM=""')
@@ -142,19 +140,48 @@ class GeradorMPR:
         
         # ===== FUROS VERTICAIS =====
         for furo in furos_agrupados:
+            mpr.append('')  # Linha em branco
             mpr.extend(self._gerar_furo_vertical(furo))
         
         # ===== FUROS HORIZONTAIS =====
         for furo in furos_horizontais:
+            mpr.append('')  # Linha em branco
             mpr.extend(self._gerar_furo_horizontal(furo))
+        
+        # ===== COMENTÁRIOS (depois dos furos) =====
+        mpr.append('')  # Linha em branco
+        mpr.append('<101 \\Kommentar\\')
+        mpr.append('KM="PINCA : COMPRIMENTO BORDA COR"')
+        mpr.append('KM="BATENTE : LARGURA CRU"')
+        mpr.append('KAT="Kommentar"')
+        mpr.append('MNM="Comentário"')
+        mpr.append('ORI=""')
+        
+        # ===== COMPONENTE MACRO =====
+        mpr.append('')  # Linha em branco
+        mpr.append('<139 \\Komponente\\')
+        mpr.append('IN="ZP500.mpr"')
+        mpr.append('XA="0.0"')
+        mpr.append('YA="0.0"')
+        mpr.append('ZA="0.0"')
+        mpr.append('EM="0"')
+        mpr.append('VA="X1 125"')
+        mpr.append('VA="X2 _BSX-125"')
+        mpr.append('VA="Y1 70"')
+        mpr.append('VA="F1 0"')
+        mpr.append('VA="F2 0"')
+        mpr.append('VA="F21 0"')
+        mpr.append('VA="F3 100"')
+        mpr.append('VA="F4 100"')
+        mpr.append('KAT="Komponentenmakro"')
+        mpr.append('MNM="Macro Componentes"')
+        mpr.append('ORI=""')
+        mpr.append('KO="00"')
         
         # Adicionar terminador
         mpr.append('!')
 
-        # Remover linhas com apenas espaço
-        mpr_limpo = [linha if linha.strip() else '' for linha in mpr]
-
-        return '\r\n'.join(mpr_limpo)
+        return '\r\n'.join(mpr)
     
     def gerar_mpr_from_step(self, dados_step: Dict) -> str:
         """
