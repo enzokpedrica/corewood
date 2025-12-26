@@ -491,7 +491,7 @@ class GeradorDesenhoTecnico:
             c.setDash()  # Sólida
             
             # Texto VERTICAL acima
-            c.setFont("Helvetica", 14)
+            c.setFont("Helvetica", 11)
             c.setFillColor(colors.HexColor("#000000"))
             c.saveState()
             x_texto = x_furo - 3
@@ -511,7 +511,7 @@ class GeradorDesenhoTecnico:
             c.setDash()  # Sólida
             
             # Texto HORIZONTAL à esquerda
-            c.setFont("Helvetica", 14)
+            c.setFont("Helvetica", 11)
             c.setFillColor(colors.HexColor("#000000"))
             y_texto = y_furo
             x_texto = x_borda_esquerda - offset_externo_y - 10
@@ -546,7 +546,7 @@ class GeradorDesenhoTecnico:
         # c.line(x_furo, y_furo - raio * 1.5, x_furo, y_furo + raio * 1.5)
         
         # Adicionar texto com especificações
-        c.setFont("Helvetica", 12)
+        c.setFont("Helvetica", 10)
         if furo.profundidade == 0:
             texto = f"Ø{self.formatar_cota(furo.diametro)}"
         else:
@@ -592,7 +592,7 @@ class GeradorDesenhoTecnico:
         c.setStrokeColor(colors.HexColor('#A5A6A68A'))
         c.setLineWidth(0.3)
         
-        offset_externo = 25  # Distância para fora da peça (um pouco mais que os furos)
+        offset_externo = 15  # Distância para fora da peça (um pouco mais que os furos)
         
         # COTA 1: VERTICAL (297) - linha sai para CIMA do canto direito
         x_borda_direita = x_origem + largura
@@ -603,7 +603,7 @@ class GeradorDesenhoTecnico:
         c.setDash()
 
         # Texto VERTICAL (rotacionado) - COTA DE 297
-        c.setFont("Helvetica", 14)
+        c.setFont("Helvetica", 11)
         c.setFillColor(colors.HexColor("#000000"))
         c.saveState()
         c.translate(x_borda_direita, y_topo + offset_externo + 8)
@@ -620,7 +620,7 @@ class GeradorDesenhoTecnico:
         c.setDash()
         
         # Texto HORIZONTAL à esquerda - COTA DE 269
-        c.setFont("Helvetica", 14)
+        c.setFont("Helvetica", 11)
         c.setFillColor(colors.HexColor("#000000"))
         c.drawRightString(x_esquerda - offset_externo - 8, y_base - 3, f"{altura_real:.0f}")
         
@@ -657,7 +657,7 @@ class GeradorDesenhoTecnico:
             comprimento_peca=altura_peca,
             largura_disponivel=largura_disponivel,
             altura_disponivel=altura_disponivel,
-            margem_seguranca=0.8
+            margem_seguranca=0.30
         )
         
         largura_vista = espessura_peca * mm * escala
@@ -689,7 +689,7 @@ class GeradorDesenhoTecnico:
             c.line(x_inicio, y_inicio + altura_linha_vertical, x_texto_final, y_inicio + altura_linha_vertical)
             c.setDash()
             
-            c.setFont("Helvetica", 14)
+            c.setFont("Helvetica", 11)
             c.setFillColor(colors.HexColor("#000000"))
             c.saveState()
             c.translate(x_texto_final, y_inicio + altura_linha_vertical + 8)
@@ -698,9 +698,10 @@ class GeradorDesenhoTecnico:
             c.restoreState()
 
         elif lado == 'direita':
-            x_inicio = x_origem_centralizado
+            # Cota da espessura à DIREITA
+            x_inicio = x_origem_centralizado + largura_vista
             y_inicio = y_origem_centralizado + altura_vista
-            x_texto_final = x_inicio - 15
+            x_texto_final = x_inicio + 15
             altura_linha_vertical = 15
             
             c.setStrokeColor(colors.HexColor('#A5A6A68A'))
@@ -710,7 +711,7 @@ class GeradorDesenhoTecnico:
             c.line(x_inicio, y_inicio + altura_linha_vertical, x_texto_final, y_inicio + altura_linha_vertical)
             c.setDash()
             
-            c.setFont("Helvetica", 14)
+            c.setFont("Helvetica", 11)
             c.setFillColor(colors.HexColor("#000000"))
             c.saveState()
             c.translate(x_texto_final, y_inicio + altura_linha_vertical + 8)
@@ -754,29 +755,40 @@ class GeradorDesenhoTecnico:
             c.setFillColor(colors.black)
             c.circle(x_furo_desenho, y_furo_desenho, raio_furo, stroke=1, fill=0)
             
-            # Linha de cota Y
-            offset_externo = 25
+            # ===== COTA Y - DEPENDE DO LADO =====
+            offset_externo = 15
             c.setStrokeColor(colors.HexColor('#A5A6A68A'))
             c.setLineWidth(0.5)
             c.setDash()
-            c.line(x_furo_desenho - raio_furo, y_furo_desenho, x_origem_centralizado - offset_externo, y_furo_desenho)
-            c.setDash()
             
-            # Texto cota Y
-            c.setFont("Helvetica", 14)
-            c.setFillColor(colors.HexColor("#000000"))
-            c.drawRightString(x_origem_centralizado - offset_externo - 8, y_furo_desenho - 2, self.formatar_cota(y_furo_real))
+            if lado == 'esquerda':
+                # Cota Y à ESQUERDA
+                c.line(x_furo_desenho - raio_furo, y_furo_desenho, x_origem_centralizado - offset_externo, y_furo_desenho)
+                c.setDash()
+                
+                c.setFont("Helvetica", 11)
+                c.setFillColor(colors.HexColor("#000000"))
+                c.drawRightString(x_origem_centralizado - offset_externo - 8, y_furo_desenho - 2, self.formatar_cota(y_furo_real))
+            else:
+                # Cota Y à DIREITA
+                x_borda_direita = x_origem_centralizado + largura_vista
+                c.line(x_furo_desenho + raio_furo, y_furo_desenho, x_borda_direita + offset_externo, y_furo_desenho)
+                c.setDash()
+                
+                c.setFont("Helvetica", 11)
+                c.setFillColor(colors.HexColor("#000000"))
+                c.drawString(x_borda_direita + offset_externo + 8, y_furo_desenho - 2, self.formatar_cota(y_furo_real))
             
-            # Cota Z (só para furo mais próximo do topo)
+            # ===== COTA Z (só para furo mais próximo do topo) =====
             if id(furo) in furos_com_cota_z:
-                offset_topo = 23
+                offset_topo = 15
                 c.setStrokeColor(colors.HexColor('#A5A6A68A'))
                 c.setLineWidth(0.5)
                 c.setDash()
                 c.line(x_furo_desenho, y_furo_desenho + raio_furo, x_furo_desenho, y_origem_centralizado + altura_vista + offset_topo)
                 c.setDash()
                 
-                c.setFont("Helvetica", 14)
+                c.setFont("Helvetica", 11)
                 c.setFillColor(colors.HexColor("#000000"))
                 c.saveState()
                 c.translate(x_furo_desenho, y_origem_centralizado + altura_vista + offset_topo + 8)
@@ -791,25 +803,45 @@ class GeradorDesenhoTecnico:
             if furo.profundidade == 0:
                 texto_spec = f"Ø{self.formatar_cota(furo.diametro)} M{mandril}"
             else:
-                texto_spec = f"Ø{self.formatar_cota(furo.diametro)}X{self.formatar_cota(furo.profundidade)} M{mandril}"
+                texto_spec = f"Ø{self.formatar_cota(furo.diametro)}X{self.formatar_cota(furo.profundidade)},M{mandril}"
             
-            offset_x = largura_vista + 10
-            x_texto_inicio = x_origem_centralizado + offset_x
             y_texto = y_furo_desenho - 2
             
-            # Linha com seta
+            # ===== ESPECIFICAÇÕES - DIREÇÃO DEPENDE DO LADO =====
             c.setStrokeColor(colors.grey)
             c.setLineWidth(0.5)
-            c.line(x_furo_desenho + raio_furo, y_furo_desenho, x_texto_inicio - 2, y_furo_desenho)
             
-            tamanho_seta = 2
-            c.line(x_texto_inicio - 2, y_furo_desenho, x_texto_inicio - 2 - tamanho_seta, y_furo_desenho + tamanho_seta)
-            c.line(x_texto_inicio - 2, y_furo_desenho, x_texto_inicio - 2 - tamanho_seta, y_furo_desenho - tamanho_seta)
+            if lado == 'esquerda':
+                # Especificações à DIREITA da vista
+                offset_x_spec = largura_vista + 10
+                x_texto_inicio = x_origem_centralizado + offset_x_spec
+                
+                c.line(x_furo_desenho + raio_furo, y_furo_desenho, x_texto_inicio - 2, y_furo_desenho)
+                
+                tamanho_seta = 2
+                c.line(x_texto_inicio - 2, y_furo_desenho, x_texto_inicio - 2 - tamanho_seta, y_furo_desenho + tamanho_seta)
+                c.line(x_texto_inicio - 2, y_furo_desenho, x_texto_inicio - 2 - tamanho_seta, y_furo_desenho - tamanho_seta)
+                
+                c.setStrokeColor(colors.black)
+                c.setFillColor(colors.black)
+                c.setFont("Helvetica", 11)
+                c.drawString(x_texto_inicio, y_texto, texto_spec)
             
-            c.setStrokeColor(colors.black)
-            c.setFillColor(colors.black)
-            c.setFont("Helvetica", 12)
-            c.drawString(x_texto_inicio, y_texto, texto_spec)
+            else:
+                # Especificações à ESQUERDA da vista (lado == 'direita')
+                offset_x_spec = 10
+                x_texto_fim = x_origem_centralizado - offset_x_spec
+                
+                c.line(x_furo_desenho - raio_furo, y_furo_desenho, x_texto_fim + 2, y_furo_desenho)
+                
+                tamanho_seta = 2
+                c.line(x_texto_fim + 2, y_furo_desenho, x_texto_fim + 2 + tamanho_seta, y_furo_desenho + tamanho_seta)
+                c.line(x_texto_fim + 2, y_furo_desenho, x_texto_fim + 2 + tamanho_seta, y_furo_desenho - tamanho_seta)
+                
+                c.setStrokeColor(colors.black)
+                c.setFillColor(colors.black)
+                c.setFont("Helvetica", 11)
+                c.drawRightString(x_texto_fim, y_texto, texto_spec)
         
         c.setFillColor(colors.black)
         c.setStrokeColor(colors.black)
@@ -1287,31 +1319,35 @@ class GeradorDesenhoTecnico:
         
         # Determinar quais páginas gerar
         paginas = []
-        
+
         if furos_inferior:
             paginas.append({
                 'tipo': 'INFERIOR',
-                'titulo': 'PLANO DE FURAÇÃO - INFERIOR',
+                'titulo': 'FURAÇÃO INFERIOR',
                 'furos': furos_inferior
             })
-        
+
         if furos_superior:
             paginas.append({
                 'tipo': 'SUPERIOR',
-                'titulo': 'PLANO DE FURAÇÃO - SUPERIOR',
+                'titulo': 'FURAÇÃO SUPERIOR',
                 'furos': furos_superior
             })
-        
+
+        # Se tiver 2ª passada, adicionar ao alerta em vez de criar nova página
         if furos_segunda:
-            paginas.append({
-                'tipo': '2ª FURAÇÃO',
-                'titulo': 'PLANO DE FURAÇÃO - 2ª PASSADA',
-                'furos': furos_segunda
-            })
-        
-        # Se não tem conflitos, gera página única normal
-        if len(paginas) == 1 and paginas[0]['tipo'] == 'INFERIOR':
-            paginas[0]['titulo'] = 'PLANO DE FURAÇÃO'
+            # Adicionar furos da 2ª passada aos inferiores e marcar alerta
+            if dados_adicionais is None:
+                dados_adicionais = {}
+            
+            alerta_existente = dados_adicionais.get('alerta', '')
+            coords_segunda = ', '.join([f"X={int(f.x)}" for f in furos_segunda])
+            novo_alerta = f"2ª PASSADA NECESSÁRIA: {coords_segunda}"
+            
+            if alerta_existente:
+                dados_adicionais['alerta'] = f"{alerta_existente} | {novo_alerta}"
+            else:
+                dados_adicionais['alerta'] = novo_alerta
         
         # Se não tem furos verticais, gera página única
         if not paginas:
@@ -1359,169 +1395,166 @@ class GeradorDesenhoTecnico:
                               largura_pagina: float, altura_pagina: float):
         """
         Desenha uma página de furação completa.
+        Layout: [Vista Esquerda] [Vista Principal] [Vista Direita] - alinhados horizontalmente
         """
+        
+        # Verificar se tem furos horizontais para definir layout
+        tem_furos_horizontais = len(peca.furos_horizontais) > 0
+        
         # ===== CALCULAR ESPAÇOS =====
-        altura_pagina_util = altura_pagina - (2 * self.margem)
-
         altura_tabela = 80
-        altura_vistas_laterais = 150
-        altura_vista_principal = altura_pagina_util - altura_tabela - altura_vistas_laterais - 30
-
+        y_tabela = self.margem - 40
+        
+        # Área útil acima da tabela
+        altura_area_vistas = altura_pagina - self.margem - altura_tabela - 60
+        
         largura_disponivel = largura_pagina - 2 * self.margem
-
-        # Calcular escala DINÂMICA para vista principal
-        escala = self.calcular_escala(
-            peca.dimensoes.largura,
-            peca.dimensoes.comprimento,
-            largura_disponivel,
-            altura_vista_principal,
-            margem_seguranca=0.75
-        )
-
-        # Dimensões da peça em escala
-        largura_desenhada = peca.dimensoes.largura * mm * escala
-        altura_desenhada = peca.dimensoes.comprimento * mm * escala
-
-        # Posição Y da vista principal
-        y_origem_principal = self.margem + altura_tabela + altura_vistas_laterais + 50
-
-        # Centralizar horizontalmente
-        x_origem = self.margem + (largura_disponivel - largura_desenhada) / 2
-        y_origem = y_origem_principal
-
+        
         # ===== TÍTULO =====
-        c.setFont("Helvetica-Bold", 16)
+        c.setFont("Helvetica-Bold", 12)
         c.setFillColor(colors.black)
         titulo_y = altura_pagina - self.margem + 15
         c.drawCentredString(largura_pagina / 2, titulo_y, titulo)
-
-        # Desenhar peça (vista de topo)
-        self.desenhar_retangulo_peca(c, x_origem, y_origem, largura_desenhada, altura_desenhada)
         
-        # Desenhar bordas coloridas se configurado
-        if dados_adicionais:
-            bordas_originais = dados_adicionais.get('bordas', {
-                'top': None, 'bottom': None, 'left': None, 'right': None
-            })
-
-            if not isinstance(bordas_originais, dict):
-                bordas_originais = {'top': None, 'bottom': None, 'left': None, 'right': None}
-            
-            angulo = dados_adicionais.get('angulo_rotacao', 0)
-            espelhado = dados_adicionais.get('espelhar_peca', False)
-            bordas_config = self.transformar_bordas(bordas_originais, angulo, espelhado)
-
-            if any([bordas_config.get('top'), bordas_config.get('bottom'),
-                    bordas_config.get('left'), bordas_config.get('right')]):
-                self.desenhar_bordas_batente(c, x_origem, y_origem,
-                                            largura_desenhada, altura_desenhada, bordas_config)
-
-        # Desenhar cotas principais
-        offset_cota = 40
-        largura_real_atual = float(peca.dimensoes.largura)
-        comprimento_real_atual = float(peca.dimensoes.comprimento)
-
-        self.desenhar_cota_principal(c, x_origem, y_origem, largura_desenhada, altura_desenhada,
-                                    largura_real_atual, comprimento_real_atual, offset_cota)
+        # Calcular batente (precisa antes das vistas)
+        batente = self.calcular_batente(peca)
         
-        # ===== PROCESSAR FUROS VERTICAIS =====
-        if peca.furos_verticais:
-            # Agrupar furos por Y
-            furos_por_y = {}
-            for furo in peca.furos_verticais:
-                y_key = round(float(furo.y), 1)
-                if y_key not in furos_por_y:
-                    furos_por_y[y_key] = []
-                furos_por_y[y_key].append(furo)
-
-            # Agrupar furos por X
-            furos_por_x = {}
-            for furo in peca.furos_verticais:
-                x_key = round(float(furo.x), 1)
-                if x_key not in furos_por_x:
-                    furos_por_x[x_key] = []
-                furos_por_x[x_key].append(furo)
-
-            # Furos com cota Y (mais à esquerda de cada linha)
-            furos_com_cota_y = set()
-            for y_pos, furos_na_linha in furos_por_y.items():
-                furo_mais_esquerda = min(furos_na_linha, key=lambda f: float(f.x))
-                furos_com_cota_y.add(id(furo_mais_esquerda))
-
-            # Furos com cota X (mais próximo do topo de cada coluna)
-            furos_com_cota_x = set()
-            for x_pos, furos_na_coluna in furos_por_x.items():
-                furo_mais_proximo_topo = max(furos_na_coluna, key=lambda f: float(f.y))
-                furos_com_cota_x.add(id(furo_mais_proximo_topo))
-
-            # Escalonar offsets Y
-            furos_com_cota_y_lista = [f for f in peca.furos_verticais if id(f) in furos_com_cota_y]
-            furos_com_cota_y_lista = sorted(furos_com_cota_y_lista, key=lambda f: float(f.y))
-
-            offset_cota_y = {}
-            distancia_minima = 15
-            offset_base = 25
-            offset_incremento = 20
-
-            for i, furo in enumerate(furos_com_cota_y_lista):
-                if i == 0:
-                    offset_cota_y[id(furo)] = offset_base
-                else:
-                    furo_anterior = furos_com_cota_y_lista[i - 1]
-                    diferenca_y = abs(float(furo.y) - float(furo_anterior.y))
-                    
-                    if diferenca_y < distancia_minima:
-                        offset_anterior = offset_cota_y[id(furo_anterior)]
-                        offset_cota_y[id(furo)] = offset_anterior + offset_incremento
-                    else:
-                        offset_cota_y[id(furo)] = offset_base
-
-            # Calcular batente e mandris para esta página
-            batente = self.calcular_batente(peca)
+        if tem_furos_horizontais:
+            # ===== LAYOUT COM VISTAS LATERAIS (horizontal) =====
+            # Dividir espaço: laterais fixas pequenas | principal ocupa o resto
+            largura_vista_lateral = 60  # Largura fixa pequena para laterais
+            largura_vista_principal = largura_disponivel - (2 * largura_vista_lateral) - 80  # Principal maior
+            espaco_entre = 30
             
-            # Escalonar offsets X
-            furos_com_cota_x_lista = [f for f in peca.furos_verticais if id(f) in furos_com_cota_x]
-            furos_com_cota_x_lista = sorted(furos_com_cota_x_lista, key=lambda f: float(f.x))
+            # Calcular largura total das 3 vistas + espaços
+            largura_total_vistas = (2 * largura_vista_lateral) + largura_vista_principal + (2 * espaco_entre)
 
-            offset_cota_x = {}
+            # Centralizar tudo na página
+            x_inicio_centralizado = (largura_pagina - largura_total_vistas) / 2
 
-            for i, furo in enumerate(furos_com_cota_x_lista):
-                if i == 0:
-                    offset_cota_x[id(furo)] = offset_base
-                else:
-                    furo_anterior = furos_com_cota_x_lista[i - 1]
-                    diferenca_x = abs(float(furo.x) - float(furo_anterior.x))
-                    
-                    if diferenca_x < distancia_minima:
-                        offset_anterior = offset_cota_x[id(furo_anterior)]
-                        offset_cota_x[id(furo)] = offset_anterior + offset_incremento
-                    else:
-                        offset_cota_x[id(furo)] = offset_base    
-
-            # Desenhar furos verticais
-            for furo in peca.furos_verticais:
-                mandril = self.calcular_mandril(furo.y, batente)
-                x_furo, y_furo = self.desenhar_furo_vertical(c, x_origem, y_origem, furo, escala, altura_desenhada, mandril)
-                
-                mostrar_x = id(furo) in furos_com_cota_x
-                mostrar_y = id(furo) in furos_com_cota_y
-                
-                offset_x = offset_cota_x.get(id(furo), 25)
-                offset_y = offset_cota_y.get(id(furo), 25)
-                
-                self.desenhar_cota_furo(c, x_origem, y_origem, x_furo, y_furo, 
-                                        furo.x, furo.y,
-                                        largura_desenhada, altura_desenhada,
-                                        escala, mostrar_x, mostrar_y,
-                                        offset_x, offset_y)
+            # Posições X
+            x_vista_esquerda = x_inicio_centralizado
+            x_vista_principal = x_vista_esquerda + largura_vista_lateral + espaco_entre
+            x_vista_direita = x_vista_principal + largura_vista_principal + espaco_entre
             
+            # Posição Y (todas na mesma altura)
+            y_base_vistas = y_tabela + altura_tabela + 30
+            altura_vistas = altura_area_vistas - 50
+            
+            # ===== VISTA PRINCIPAL (centro) =====
+            escala = self.calcular_escala(
+                peca.dimensoes.largura,
+                peca.dimensoes.comprimento,
+                largura_vista_principal,
+                altura_vistas,
+                margem_seguranca=0.70
+            )
+            
+            largura_desenhada = peca.dimensoes.largura * mm * escala
+            altura_desenhada = peca.dimensoes.comprimento * mm * escala
+            
+            # Centralizar vista principal na sua área
+            x_origem = x_vista_principal + (largura_vista_principal - largura_desenhada) / 2
+            y_origem = y_base_vistas + (altura_vistas - altura_desenhada) / 2
+            
+            # Desenhar peça (vista de topo)
+            self.desenhar_retangulo_peca(c, x_origem, y_origem, largura_desenhada, altura_desenhada)
+            
+            # Bordas coloridas
+            if dados_adicionais:
+                bordas_originais = dados_adicionais.get('bordas', {
+                    'top': None, 'bottom': None, 'left': None, 'right': None
+                })
+                if not isinstance(bordas_originais, dict):
+                    bordas_originais = {'top': None, 'bottom': None, 'left': None, 'right': None}
+                
+                angulo = dados_adicionais.get('angulo_rotacao', 0)
+                espelhado = dados_adicionais.get('espelhar_peca', False)
+                bordas_config = self.transformar_bordas(bordas_originais, angulo, espelhado)
+                
+                if any([bordas_config.get('top'), bordas_config.get('bottom'),
+                        bordas_config.get('left'), bordas_config.get('right')]):
+                    self.desenhar_bordas_batente(c, x_origem, y_origem,
+                                                largura_desenhada, altura_desenhada, bordas_config)
+            
+            # Cotas principais
+            offset_cota = 40
+            largura_real_atual = float(peca.dimensoes.largura)
+            comprimento_real_atual = float(peca.dimensoes.comprimento)
+            self.desenhar_cota_principal(c, x_origem, y_origem, largura_desenhada, altura_desenhada,
+                                        largura_real_atual, comprimento_real_atual, offset_cota)
+            
+            # ===== FUROS VERTICAIS =====
+            if peca.furos_verticais:
+                self._desenhar_furos_verticais(c, peca, x_origem, y_origem, 
+                                            largura_desenhada, altura_desenhada, escala, batente)
+            
+            # ===== VISTAS LATERAIS =====
+            foi_espelhado = dados_adicionais.get('espelhar_peca', False) if dados_adicionais else False
+            
+            # Vista esquerda
+            self.desenhar_vista_lateral(c, x_vista_esquerda, y_base_vistas, 
+                                        peca, 'esquerda', largura_vista_lateral, 
+                                        altura_vistas, foi_espelhado, batente)
+            
+            # Vista direita
+            self.desenhar_vista_lateral(c, x_vista_direita, y_base_vistas, 
+                                        peca, 'direita', largura_vista_lateral,
+                                        altura_vistas, foi_espelhado, batente)
+        
+        else:
+            # ===== LAYOUT SEM VISTAS LATERAIS (vista principal centralizada) =====
+            escala = self.calcular_escala(
+                peca.dimensoes.largura,
+                peca.dimensoes.comprimento,
+                largura_disponivel,
+                altura_area_vistas,
+                margem_seguranca=0.65
+            )
+            
+            largura_desenhada = peca.dimensoes.largura * mm * escala
+            altura_desenhada = peca.dimensoes.comprimento * mm * escala
+            
+            x_origem = self.margem + (largura_disponivel - largura_desenhada) / 2
+            y_origem = y_tabela + altura_tabela + 30 + (altura_area_vistas - altura_desenhada) / 2
+            
+            # Desenhar peça
+            self.desenhar_retangulo_peca(c, x_origem, y_origem, largura_desenhada, altura_desenhada)
+            
+            # Bordas coloridas
+            if dados_adicionais:
+                bordas_originais = dados_adicionais.get('bordas', {
+                    'top': None, 'bottom': None, 'left': None, 'right': None
+                })
+                if not isinstance(bordas_originais, dict):
+                    bordas_originais = {'top': None, 'bottom': None, 'left': None, 'right': None}
+                
+                angulo = dados_adicionais.get('angulo_rotacao', 0)
+                espelhado = dados_adicionais.get('espelhar_peca', False)
+                bordas_config = self.transformar_bordas(bordas_originais, angulo, espelhado)
+                
+                if any([bordas_config.get('top'), bordas_config.get('bottom'),
+                        bordas_config.get('left'), bordas_config.get('right')]):
+                    self.desenhar_bordas_batente(c, x_origem, y_origem,
+                                                largura_desenhada, altura_desenhada, bordas_config)
+            
+            # Cotas principais
+            offset_cota = 40
+            largura_real_atual = float(peca.dimensoes.largura)
+            comprimento_real_atual = float(peca.dimensoes.comprimento)
+            self.desenhar_cota_principal(c, x_origem, y_origem, largura_desenhada, altura_desenhada,
+                                        largura_real_atual, comprimento_real_atual, offset_cota)
+            
+            # Furos verticais
+            if peca.furos_verticais:
+                self._desenhar_furos_verticais(c, peca, x_origem, y_origem,
+                                            largura_desenhada, altura_desenhada, escala, batente)
+        
         # ===== TABELA =====
         largura_tabela = largura_pagina - 2 * self.margem
-        altura_tabela = 80
         x_tabela = self.margem
-        y_tabela = self.margem - 40
         self.desenhar_tabela_horizontal(c, x_tabela, y_tabela, largura_tabela, altura_tabela,
-                                    peca, config, dados_adicionais)
+                                        peca, config, dados_adicionais)
         
         # ===== MARGEM EXTERNA =====
         largura_logo = 80
@@ -1537,41 +1570,108 @@ class GeradorDesenhoTecnico:
         c.setLineWidth(0.5)
         c.rect(x_margem, y_margem_inferior, largura_total_tabela, 
             y_margem_superior - y_margem_inferior, stroke=1, fill=0)
-            
-        # Desenhar alerta de atenção
-        texto_alerta = dados_adicionais.get('alerta', None)
+        
+        # ===== ALERTA =====
+        texto_alerta = dados_adicionais.get('alerta', None) if dados_adicionais else None
         if texto_alerta:
             x_alerta = x_tabela - 35
             y_alerta = y_tabela + altura_tabela + 10
-            self.desenhar_alerta_atencao(c, x_alerta, y_alerta, texto_alerta)    
+            self.desenhar_alerta_atencao(c, x_alerta, y_alerta, texto_alerta)
 
-        # ===== VISTAS LATERAIS =====
-        if len(peca.furos_horizontais) > 0:
-            y_vistas = self.margem + 50
-            altura_vistas = 200
-            
-            largura_vista_lateral = 80
-            espaco_entre_vistas = 20
-            
-            largura_vista_principal = largura_pagina - (2 * self.margem) - (2 * largura_vista_lateral) - (2 * espaco_entre_vistas)
-            
-            x_vista_esquerda = self.margem + 30
-            x_vista_principal = x_vista_esquerda + largura_vista_lateral + espaco_entre_vistas
-            x_vista_direita = x_vista_principal + largura_vista_principal + espaco_entre_vistas - 40
 
-            if dados_adicionais and dados_adicionais.get('alerta'):
-                offset_alerta = 120
-                x_vista_esquerda += offset_alerta
+    def _desenhar_furos_verticais(self, c: canvas.Canvas, peca: Peca, 
+                                x_origem: float, y_origem: float,
+                                largura_desenhada: float, altura_desenhada: float,
+                                escala: float, batente: float):
+        """
+        Desenha os furos verticais com cotas e mandris.
+        Função auxiliar para evitar duplicação de código.
+        """
+        # Agrupar furos por Y
+        furos_por_y = {}
+        for furo in peca.furos_verticais:
+            y_key = round(float(furo.y), 1)
+            if y_key not in furos_por_y:
+                furos_por_y[y_key] = []
+            furos_por_y[y_key].append(furo)
+
+        # Agrupar furos por X
+        furos_por_x = {}
+        for furo in peca.furos_verticais:
+            x_key = round(float(furo.x), 1)
+            if x_key not in furos_por_x:
+                furos_por_x[x_key] = []
+            furos_por_x[x_key].append(furo)
+
+        # Furos com cota Y (mais à esquerda de cada linha)
+        furos_com_cota_y = set()
+        for y_pos, furos_na_linha in furos_por_y.items():
+            furo_mais_esquerda = min(furos_na_linha, key=lambda f: float(f.x))
+            furos_com_cota_y.add(id(furo_mais_esquerda))
+
+        # Furos com cota X (mais próximo do topo de cada coluna)
+        furos_com_cota_x = set()
+        for x_pos, furos_na_coluna in furos_por_x.items():
+            furo_mais_proximo_topo = max(furos_na_coluna, key=lambda f: float(f.y))
+            furos_com_cota_x.add(id(furo_mais_proximo_topo))
+
+        # Escalonar offsets Y
+        furos_com_cota_y_lista = [f for f in peca.furos_verticais if id(f) in furos_com_cota_y]
+        furos_com_cota_y_lista = sorted(furos_com_cota_y_lista, key=lambda f: float(f.y))
+
+        offset_cota_y = {}
+        distancia_minima = 15
+        offset_base = 15
+        offset_incremento = 12
+
+        for i, furo in enumerate(furos_com_cota_y_lista):
+            if i == 0:
+                offset_cota_y[id(furo)] = offset_base
+            else:
+                furo_anterior = furos_com_cota_y_lista[i - 1]
+                diferenca_y = abs(float(furo.y) - float(furo_anterior.y))
+                
+                if diferenca_y < distancia_minima:
+                    offset_anterior = offset_cota_y[id(furo_anterior)]
+                    offset_cota_y[id(furo)] = offset_anterior + offset_incremento
+                else:
+                    offset_cota_y[id(furo)] = offset_base
+
+        # Escalonar offsets X
+        furos_com_cota_x_lista = [f for f in peca.furos_verticais if id(f) in furos_com_cota_x]
+        furos_com_cota_x_lista = sorted(furos_com_cota_x_lista, key=lambda f: float(f.x))
+
+        offset_cota_x = {}
+
+        for i, furo in enumerate(furos_com_cota_x_lista):
+            if i == 0:
+                offset_cota_x[id(furo)] = offset_base
+            else:
+                furo_anterior = furos_com_cota_x_lista[i - 1]
+                diferenca_x = abs(float(furo.x) - float(furo_anterior.x))
+                
+                if diferenca_x < distancia_minima:
+                    offset_anterior = offset_cota_x[id(furo_anterior)]
+                    offset_cota_x[id(furo)] = offset_anterior + offset_incremento
+                else:
+                    offset_cota_x[id(furo)] = offset_base    
+
+        # Desenhar furos verticais
+        for furo in peca.furos_verticais:
+            mandril = self.calcular_mandril(furo.y, batente)
+            x_furo, y_furo = self.desenhar_furo_vertical(c, x_origem, y_origem, furo, escala, altura_desenhada, mandril)
             
-            foi_espelhado = dados_adicionais.get('espelhar_peca', False)
-
-            self.desenhar_vista_lateral(c, x_vista_esquerda, y_vistas, 
-                            peca, 'esquerda', largura_vista_lateral, 
-                            altura_vistas, foi_espelhado, batente)
-
-            self.desenhar_vista_lateral(c, x_vista_direita, y_vistas, 
-                                        peca, 'direita', largura_vista_lateral,
-                                        altura_vistas, foi_espelhado, batente)
+            mostrar_x = id(furo) in furos_com_cota_x
+            mostrar_y = id(furo) in furos_com_cota_y
+            
+            offset_x = offset_cota_x.get(id(furo), 25)
+            offset_y = offset_cota_y.get(id(furo), 25)
+            
+            self.desenhar_cota_furo(c, x_origem, y_origem, x_furo, y_furo, 
+                                    furo.x, furo.y,
+                                    largura_desenhada, altura_desenhada,
+                                    escala, mostrar_x, mostrar_y,
+                                    offset_x, offset_y)
 
     def transformar_bordas(self, bordas: dict, angulo: int, espelhado: bool) -> dict:
         """

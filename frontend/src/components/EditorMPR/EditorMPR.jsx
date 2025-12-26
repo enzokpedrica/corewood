@@ -3,6 +3,7 @@ import Canvas from './Canvas';
 import './EditorMPR.css';
 import { exportarMPR, gerarPDFEditor } from '../../services/api';
 import FuroManual from './FuroManual';
+import api from '../../services/api';
 
 function EditorMPR({ pecaInicial }) {
   const [peca, setPeca] = useState({
@@ -189,15 +190,27 @@ function EditorMPR({ pecaInicial }) {
       return;
     }
 
-    if (peca.furos.length === 0) {
+    if (peca.furos.length === 0 && (!peca.furosHorizontais || peca.furosHorizontais.length === 0)) {
       alert('⚠️ Adicione pelo menos um furo!');
       return;
     }
 
     try {
-      console.log('📤 Exportando MPR:', peca);
+      // Juntar furos verticais e horizontais
+      const todosFuros = [
+        ...peca.furos,
+        ...(peca.furosHorizontais || [])
+      ];
+
+      const pecaExportar = {
+        ...peca,
+        furos: todosFuros
+      };
+
+      console.log('📦 Dados sendo enviados:', JSON.stringify(pecaExportar, null, 2));
+      console.log('📤 Exportando MPR:', pecaExportar);
       
-      const mprBlob = await exportarMPR(peca);
+      const mprBlob = await exportarMPR(pecaExportar);
       
       // Download automático
       const url = window.URL.createObjectURL(mprBlob);
@@ -218,7 +231,7 @@ function EditorMPR({ pecaInicial }) {
       console.error('Erro ao exportar MPR:', error);
       alert(`❌ Erro ao exportar MPR:\n${error.response?.data?.detail || error.message}`);
     }
-  };
+};
 
   // Gerar PDF direto
   const handleGerarPDF = async () => {
@@ -269,71 +282,121 @@ function EditorMPR({ pecaInicial }) {
   };
 
   const handleImportarMPR = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const file = e.target.files[0];
+  if (!file) return;
 
-    try {
-      const text = await file.text();
-      
-      // Extrair dimensões
-      const bsxMatch = text.match(/_BSX=([\d.]+)/);
-      const bsyMatch = text.match(/_BSY=([\d.]+)/);
-      const bszMatch = text.match(/_BSZ=([\d.]+)/);
-      
-      const comprimento = bsxMatch ? parseFloat(bsxMatch[1]) : 0;
-      const largura = bsyMatch ? parseFloat(bsyMatch[1]) : 0;
-      const espessura = bszMatch ? parseFloat(bszMatch[1]) : 15;
-      
-      // Extrair furos verticais (102)
-      const furosImportados = [];
-      const furoMatches = text.matchAll(/<102[^<]*XA="([\d.]+)"[^<]*YA="([\d.]+)"[^<]*DU="([\d.]+)"(?:[^<]*TI="([\d.]+)")?(?:[^<]*AN="([\d]+)")?(?:[^<]*AB="([\d.]+)")?(?:[^<]*WI="([\d]+)")?/g);
-
-      for (const match of furoMatches) {
-        const x = parseFloat(match[1]);
-        const y = parseFloat(match[2]);
-        const diametro = parseFloat(match[3]);
-        const profundidade = match[4] ? parseFloat(match[4]) : 0;
-        const quantidade = match[5] ? parseInt(match[5]) : 1;
-        const distancia = match[6] ? parseFloat(match[6]) : 0;
-        const wi = match[7] ? parseInt(match[7]) : 0;
+  try {
+    const text = await file.text();
+    
+    // Extrair dimensões
+    const bsxMatch = text.match(/_BSX=([\d.]+)/);
+    const bsyMatch = text.match(/_BSY=([\d.]+)/);
+    const bszMatch = text.match(/_BSZ=([\d.]+)/);
+    
+    const comprimento = bsxMatch ? parseFloat(bsxMatch[1]) : 0;
+    const largura = bsyMatch ? parseFloat(bsyMatch[1]) : 0;
+    const espessura = bszMatch ? parseFloat(bszMatch[1]) : 15;
+    
+    // Dividir por blocos de operação
+    const blocos = text.split(/(?=<\d{3}\s)/);
+    
+    const furosVerticais = [];
+    const furosHorizontais = [];
+    
+    for (const bloco of blocos) {
+      // ===== FURO VERTICAL (102) =====
+      if (bloco.includes('<102') && bloco.includes('BohrVert')) {
+        const xa = bloco.match(/XA="([\d.]+)"/);
+        const ya = bloco.match(/YA="([\d.]+)"/);
+        const du = bloco.match(/DU="([\d.]+)"/);
+        const ti = bloco.match(/TI="([\d.]+)"/);
+        const an = bloco.match(/AN="(\d+)"/);
+        const ab = bloco.match(/AB="([\d.]+)"/);
+        const wi = bloco.match(/WI="(\d+)"/);
+        const bm = bloco.match(/BM="([^"]+)"/);
         
-        // Se AN > 1, expandir furos
-        if (quantidade > 1 && distancia > 0) {
+        if (xa && ya && du) {
+          const x = parseFloat(xa[1]);
+          const y = parseFloat(ya[1]);
+          const diametro = parseFloat(du[1]);
+          const profundidade = ti ? parseFloat(ti[1]) : 0;
+          const quantidade = an ? parseInt(an[1]) : 1;
+          const distancia = ab ? parseFloat(ab[1]) : 0;
+          const angulo = wi ? parseInt(wi[1]) : 0;
+          const lado = bm ? bm[1] : 'LS';
+          
+          // Expandir furos replicados
           for (let i = 0; i < quantidade; i++) {
-            furosImportados.push({
+            furosVerticais.push({
               id: Date.now() + Math.random(),
               tipo: 'vertical',
-              x: wi === 0 ? x + (distancia * i) : x,
-              y: wi === 90 ? y + (distancia * i) : y,
+              x: angulo === 0 ? x + (distancia * i) : x,
+              y: angulo === 90 ? y + (distancia * i) : y,
               diametro,
-              profundidade
+              profundidade,
+              lado
             });
           }
-        } else {
-          furosImportados.push({
-            id: Date.now() + Math.random(),
-            tipo: 'vertical',
-            x,
-            y,
-            diametro,
-            profundidade
-          });
         }
       }
-      setPeca({
-        nome: file.name.replace('.mpr', '').replace('.MPR', ''),
-        largura,
-        comprimento,
-        espessura,
-        furos: furosImportados
-      });
       
-      alert(`✅ MPR importado!\n${furosImportados.length} furos carregados.`);
-      
-    } catch (error) {
-      alert('❌ Erro ao importar MPR: ' + error.message);
+      // ===== FURO HORIZONTAL (103) =====
+      if (bloco.includes('<103') && bloco.includes('BohrHoriz')) {
+        const xa = bloco.match(/XA="([^"]+)"/);
+        const ya = bloco.match(/YA="([\d.]+)"/);
+        const za = bloco.match(/ZA="([\d.]+)"/);
+        const du = bloco.match(/DU="([\d.]+)"/);
+        const ti = bloco.match(/TI="([\d.]+)"/);
+        const an = bloco.match(/AN="(\d+)"/);
+        const ab = bloco.match(/AB="([\d.]+)"/);
+        const wi = bloco.match(/WI="(\d+)"/);
+        const bm = bloco.match(/BM="([^"]+)"/);
+        
+        if (ya && za && du) {
+          const xVal = xa ? xa[1] : '0';
+          const x = xVal === 'x' ? 'x' : parseFloat(xVal);
+          const y = parseFloat(ya[1]);
+          const z = parseFloat(za[1]);
+          const diametro = parseFloat(du[1]);
+          const profundidade = ti ? parseFloat(ti[1]) : 0;
+          const quantidade = an ? parseInt(an[1]) : 1;
+          const distancia = ab ? parseFloat(ab[1]) : 0;
+          const angulo = wi ? parseInt(wi[1]) : 90;
+          const lado = bm ? bm[1] : 'XP';
+          
+          // Expandir furos replicados
+          for (let i = 0; i < quantidade; i++) {
+            furosHorizontais.push({
+              id: Date.now() + Math.random(),
+              tipo: 'horizontal',
+              x: xVal === 'x' ? 'x' : (angulo === 0 ? x + (distancia * i) : x),
+              y: angulo === 90 ? y + (distancia * i) : y,
+              z,
+              diametro,
+              profundidade,
+              lado
+            });
+          }
+        }
+      }
     }
-};
+
+    setPeca({
+      nome: file.name.replace('.mpr', '').replace('.MPR', ''),
+      largura,
+      comprimento,
+      espessura,
+      furos: furosVerticais,
+      furosHorizontais: furosHorizontais
+    });
+    
+    alert(`✅ MPR importado!\n${furosVerticais.length} furos verticais\n${furosHorizontais.length} furos horizontais`);
+    
+  } catch (error) {
+    console.error('Erro:', error);
+    alert('❌ Erro ao importar MPR: ' + error.message);
+  }
+};  
 
   // Limpar tudo
   const handleNovaPeca = () => {
@@ -356,43 +419,45 @@ function EditorMPR({ pecaInicial }) {
   };
 
   const handleSalvarPeca = async () => {
-    if (!pecaInicial?.id) {
-      alert('⚠️ Peça não identificada para salvar');
-      return;
-    }
+  if (!pecaInicial?.id) {
+    alert('⚠️ Peça não identificada para salvar');
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append('largura', peca.largura);
-      formData.append('comprimento', peca.comprimento);
-      formData.append('espessura', peca.espessura);
-      formData.append('furos', JSON.stringify({
-        verticais: peca.furos || [],
-        horizontais: peca.furosHorizontais || []
-      }));
+  try {
+    const formData = new FormData();
+    formData.append('largura', peca.largura);
+    formData.append('comprimento', peca.comprimento);
+    formData.append('espessura', peca.espessura);
+    formData.append('furos', JSON.stringify({
+      verticais: peca.furos || [],
+      horizontais: peca.furosHorizontais || []
+    }));
 
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/pecas/${pecaInicial.id}/salvar`,
-        {
-          method: 'PUT',
-          body: formData
+    const response = await api.put(
+      `/pecas/${pecaInicial.id}/salvar`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
-      );
-
-      if (response.ok) {
-        alert('✅ Peça salva com sucesso!');
-      } else {
-        alert('❌ Erro ao salvar peça');
       }
-    } catch (error) {
-      console.error(error);
-      alert('❌ Erro de conexão');
-    } finally {
-      setLoading(false);
+    );
+
+    if (response.status === 200) {
+      alert('✅ Peça salva com sucesso!');
+    } else {
+      alert('❌ Erro ao salvar peça');
     }
-  };
+  } catch (error) {
+    console.error(error);
+    alert('❌ Erro ao salvar: ' + (error.response?.data?.detail || error.message));
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="editor-mpr">
 
@@ -706,10 +771,10 @@ function EditorMPR({ pecaInicial }) {
               </div>
             ) : (
               <div>
-                <h3>📋 Lista de Furos ({peca.furos.length})</h3>
+                <h3>📋 Lista de Furos ({peca.furos.length + (peca.furosHorizontais?.length || 0)})</h3>
                 {peca.furos.length > 0 ? (
                   <div className="furos-scroll">
-                    {peca.furos.map((furo, index) => (
+                    {[...peca.furos, ...(peca.furosHorizontais || [])].map((furo, index) => (
                       <div
                         key={furo.id}
                         className={`furo-item ${selectedFuro?.id === furo.id ? 'selected' : ''}`}
@@ -722,8 +787,13 @@ function EditorMPR({ pecaInicial }) {
                           {furo.tipo === 'vertical' ? '🔴' : '🔵'}
                         </span>
                         <div className="furo-details">
-                          <strong>Furo #{index + 1}</strong>
-                          <small>X:{furo.x} Y:{furo.y} Ø{furo.diametro}</small>
+                          <strong>{furo.tipo === 'vertical' ? 'V' : 'H'} #{index + 1}</strong>
+                          <small>
+                            {furo.tipo === 'vertical' 
+                              ? `X:${furo.x} Y:${furo.y} Ø${furo.diametro}`
+                              : `Y:${furo.y} Z:${furo.z} Ø${furo.diametro} ${furo.lado}`
+                            }
+                          </small>
                         </div>
                       </div>
                     ))}

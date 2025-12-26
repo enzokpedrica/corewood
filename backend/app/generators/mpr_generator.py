@@ -62,8 +62,14 @@ class GeradorMPR:
         furos = peca_data.get('furos', [])
         
         # Separar por tipo
-        furos_verticais = [f for f in furos if f['tipo'] == 'vertical']
-        furos_horizontais = [f for f in furos if f['tipo'] == 'horizontal']
+        furos_verticais = [f for f in furos if f.get('tipo') == 'vertical']
+        furos_horizontais = [f for f in furos if f.get('tipo') == 'horizontal']
+
+        print(f"🔍 DEBUG - Total furos recebidos: {len(furos)}")
+        print(f"🔴 DEBUG - Furos verticais: {len(furos_verticais)}")
+        print(f"🔵 DEBUG - Furos horizontais: {len(furos_horizontais)}")
+        for f in furos:
+            print(f"   Furo: {f}")
                 
         mpr = []
         
@@ -239,31 +245,38 @@ class GeradorMPR:
         
         wi = "0" if direcao_replicacao == 'x' else "90"
         
+        # Formatar valores - manter decimal se necessário
+        def formatar(valor):
+            if valor == int(valor):
+                return str(int(valor))
+            else:
+                return f"{valor:.1f}"
+        
         if profundidade == 0:
             linhas = [
                 '<102 \\BohrVert\\',
-                f'XA="{int(x)}"',
-                f'YA="{int(y)}"',
+                f'XA="{formatar(x)}"',
+                f'YA="{formatar(y)}"',
                 'BM="LSL"',
-                f'DU="{diametro}"',
+                f'DU="{formatar(diametro)}"',
                 f'AN="{quantidade}"',
                 'MI="0"',
                 'S_="1"',
-                f'AB="{int(distancia)}"',
+                f'AB="{formatar(distancia)}"',
                 f'WI="{wi}"',
             ]
         else:
             linhas = [
                 '<102 \\BohrVert\\',
-                f'XA="{int(x)}"',
-                f'YA="{int(y)}"',
+                f'XA="{formatar(x)}"',
+                f'YA="{formatar(y)}"',
                 'BM="LSU"',
-                f'TI="{profundidade}"',
-                f'DU="{diametro}"',
+                f'TI="{formatar(profundidade)}"',
+                f'DU="{formatar(diametro)}"',
                 f'AN="{quantidade}"',
                 'MI="0"',
                 'S_="1"',
-                f'AB="{int(distancia)}"',
+                f'AB="{formatar(distancia)}"',
                 f'WI="{wi}"',
             ]
         
@@ -294,37 +307,56 @@ class GeradorMPR:
         return linhas
     
     def _gerar_furo_horizontal(self, furo: Dict) -> List[str]:
-        """Gera linhas para um furo horizontal"""
+        """Gera linhas para um furo horizontal (operação 103)"""
         
-        lado = furo.get('lado', 'XP')
+        x = furo.get('x', 0)
         y = float(furo['y'])
-        z = float(furo.get('z', furo['x']))  # X vira Z em horizontal
+        z = float(furo.get('z', 7.5))
         diametro = float(furo['diametro'])
-        profundidade = float(furo.get('profundidade', 11.5))
+        profundidade = float(furo.get('profundidade', 22))
+        lado = furo.get('lado', 'XP')
+        
+        # Suporte a replicação
+        quantidade = int(furo.get('quantidade', 1))
+        distancia = float(furo.get('distancia', 0))
+        
+        # Formatar valores - manter decimal se necessário
+        def formatar(valor):
+            if valor == int(valor):
+                return str(int(valor))
+            else:
+                return f"{valor:.1f}"
+        
+        # XA pode ser número ou "x" (lado oposto)
+        if x == 'x':
+            xa_valor = 'x'
+        elif x == 0:
+            xa_valor = '0'
+        else:
+            xa_valor = formatar(float(x))
         
         linhas_furo = [
-            ' ',
-            '<103 \\BohrHori\\',  # Código 103 para horizontal
-            f'SD="{lado}"',
-            f'YA="{int(y)}"',
-            f'ZA="{int(z)}"',
-            'BM="LSU"',
-            f'TI="{profundidade}"',
-            f'DU="{diametro}"',
-            'AN="1"',
+            '<103 \\BohrHoriz\\',
             'MI="0"',
-            'S_="1"',
-            'AB="0"',
-            'WI="0"',
+            f'XA="{xa_valor}"',
+            f'YA="{formatar(y)}"',
+            f'ZA="{formatar(z)}"',
+            f'DU="{formatar(diametro)}"',
+            f'TI="{formatar(profundidade)}"',
+            'ANA="20"',
+            f'BM="{lado}"',
+            f'AN="{quantidade}"',
+            f'AB="{formatar(distancia)}"',
+            'BM2="STD"',
             'ZT="0"',
             'RM="0"',
             'VW="0"',
             'HP="0"',
             'SP="0"',
             'YVE="0"',
-            'WW="60,61,62,88,90,91,92,150"',
+            'WW="50,51,52,53,93,94,95,56,153,151"',
             'ASG="2"',
-            'KAT="Bohren horizontal"',
+            'KAT="Horizontalbohren"',
             'MNM="Furo horizontal"',
             'ORI=""',
             'MX="0"',
