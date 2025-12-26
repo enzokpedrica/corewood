@@ -49,7 +49,7 @@ function FileUpload({ onFileSelect, selectedFile }) {
                 ? 'Solte o arquivo aqui...' 
                 : 'Arraste um arquivo .mpr ou clique para selecionar'}
             </p>
-            <p className="upload-hint">Apenas arquivos .mpr da HOMAG</p>
+            <p className="upload-hint">Apenas arquivos .mpr</p>
           </div>
         )}
       </div>
