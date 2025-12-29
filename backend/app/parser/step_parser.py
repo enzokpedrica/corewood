@@ -23,6 +23,8 @@ class Furo:
     diametro: float
     profundidade: float = 15.0
     face: str = "superior"
+    tipo: str = "vertical"
+    lado: str = "LS"
     
     def to_dict(self) -> dict:
         return {
@@ -32,7 +34,9 @@ class Furo:
             'z': self.z,
             'diametro': self.diametro,
             'profundidade': self.profundidade,
-            'face': self.face
+            'face': self.face,
+            'tipo': self.tipo,
+            'lado': self.lado
         }
 
 
@@ -111,7 +115,8 @@ class StepMultiPartParser:
     
     def _parse_entities(self):
         """Extrai todas as entidades do STEP"""
-        pattern = r'#(\d+)\s*=\s*([A-Z_]+)\s*\((.*?)\);'
+        pattern = r'#(\d+)\s*=\s*([A-Z][A-Z0-9_]*)\s*\((.*?)\)\s*;'
+        
         for match in re.finditer(pattern, self.content, re.DOTALL):
             entity_id = int(match.group(1))
             entity_type = match.group(2)
@@ -146,16 +151,13 @@ class StepMultiPartParser:
         
         for entity_id, entity in self.entities.items():
             if entity['type'] == 'ADVANCED_BREP_SHAPE_REPRESENTATION':
-                # Extrai nome da representação
                 match = re.match(r"'([^']*)'", entity['data'])
                 nome_repr = match.group(1) if match else f"Peça_{entity_id}"
                 
-                # Encontra referências aos sólidos
                 refs = re.findall(r'#(\d+)', entity['data'])
                 for ref_id in refs:
                     ref_entity = self._get_entity(int(ref_id))
                     if ref_entity and ref_entity['type'] == 'MANIFOLD_SOLID_BREP':
-                        # Extrai nome do sólido
                         solid_match = re.match(r"'([^']*)'", ref_entity['data'])
                         solid_nome = solid_match.group(1) if solid_match else nome_repr
                         
@@ -167,52 +169,29 @@ class StepMultiPartParser:
         return solids
     
     def _find_cylinders_for_solid(self, solid_id: int) -> List[dict]:
-        """Encontra cilindros (furos) associados a um sólido"""
+        """Encontra cilindros (furos) através de CIRCLE entities"""
         cilindros = []
         
-        solid = self._get_entity(solid_id)
-        if not solid:
-            return cilindros
-        
-        # Pega referência ao CLOSED_SHELL
-        shell_match = re.search(r'#(\d+)', solid['data'])
-        if not shell_match:
-            return cilindros
-        
-        shell = self._get_entity(int(shell_match.group(1)))
-        if not shell:
-            return cilindros
-        
-        # Extrai todas as faces do shell
-        face_refs = re.findall(r'#(\d+)', shell['data'])
-        
-        for face_ref in face_refs:
-            face = self._get_entity(int(face_ref))
-            if not face or face['type'] != 'ADVANCED_FACE':
-                continue
-            
-            # Procura referência a CYLINDRICAL_SURFACE
-            surface_refs = re.findall(r'#(\d+)', face['data'])
-            for surf_ref in surface_refs:
-                surf = self._get_entity(int(surf_ref))
-                if surf and surf['type'] == 'CYLINDRICAL_SURFACE':
-                    cyl_match = re.match(r"'[^']*'\s*,\s*#(\d+)\s*,\s*([\d.E+-]+)", surf['data'])
-                    if cyl_match:
-                        axis_id = int(cyl_match.group(1))
-                        raio = float(cyl_match.group(2))
-                        
-                        axis = self._get_entity(axis_id)
-                        if axis and axis['type'] == 'AXIS2_PLACEMENT_3D':
-                            point_match = re.search(r'#(\d+)', axis['data'])
-                            if point_match:
-                                coords = self._parse_cartesian_point(int(point_match.group(1)))
-                                if coords:
-                                    cilindros.append({
-                                        'x': coords[0],
-                                        'y': coords[1],
-                                        'z': coords[2],
-                                        'raio': raio
-                                    })
+        for entity_id, entity in self.entities.items():
+            if entity['type'] == 'CIRCLE':
+                match = re.match(r"'[^']*'\s*,\s*#(\d+)\s*,\s*([\d.E+-]+)", entity['data'])
+                if match:
+                    axis_id = int(match.group(1))
+                    raio = float(match.group(2))
+                    
+                    axis = self._get_entity(axis_id)
+                    if axis and axis['type'] == 'AXIS2_PLACEMENT_3D':
+                        point_match = re.search(r"'[^']*'\s*,\s*#(\d+)", axis['data'])
+                        if point_match:
+                            point_id = int(point_match.group(1))
+                            coords = self._parse_cartesian_point(point_id)
+                            if coords:
+                                cilindros.append({
+                                    'x': coords[0],
+                                    'y': coords[1],
+                                    'z': coords[2],
+                                    'raio': raio
+                                })
         
         return cilindros
     
@@ -235,7 +214,6 @@ class StepMultiPartParser:
         visited = set()
         to_visit = [int(ref) for ref in face_refs]
         
-        # BFS para encontrar todos os pontos
         while to_visit:
             current_id = to_visit.pop()
             if current_id in visited:
@@ -276,14 +254,12 @@ class StepMultiPartParser:
         acessorios_count = {}
         
         for solid_id, nome in solids.items():
-            # Verifica se é acessório
             if self._is_acessorio(nome):
                 if nome not in acessorios_count:
                     acessorios_count[nome] = 0
                 acessorios_count[nome] += 1
                 continue
             
-            # É uma peça - calcula bounding box
             bbox = self._calculate_bounding_box(solid_id)
             
             peca = Peca(
@@ -294,72 +270,116 @@ class StepMultiPartParser:
                 z_min=bbox[4], z_max=bbox[5]
             )
             
-            # Encontra cilindros (furos)
             cilindros = self._find_cylinders_for_solid(solid_id)
             
-            furo_id = 1
+            # Remover duplicatas (mesmo furo aparece 2x no topo e fundo)
+            cilindros_unicos = []
+            coords_vistas = set()
+
             for cil in cilindros:
-                # Normaliza coordenadas para origem da peça
+                y_round = round(cil['y'], 0)
+                z_round = round(cil['z'], 0)
+                raio_round = round(cil['raio'], 2)
+                key = (y_round, z_round, raio_round)
+                
+                if key not in coords_vistas:
+                    coords_vistas.add(key)
+                    cilindros_unicos.append(cil)
+            
+            # Dimensões brutas do bounding box
+            dim_x = abs(peca.x_max - peca.x_min)  # Espessura
+            dim_y = abs(peca.y_max - peca.y_min)  # Largura
+            dim_z = abs(peca.z_max - peca.z_min)  # Comprimento
+
+            furo_id = 1
+            for cil in cilindros_unicos:
                 x_rel = round(cil['x'] - peca.x_min, 2)
                 y_rel = round(cil['y'] - peca.y_min, 2)
                 z_rel = round(cil['z'] - peca.z_min, 2)
                 
+                diametro = round(cil['raio'] * 2, 2)
+                tolerancia = 2.0
+                
+                # Distâncias das faces
+                dist_esp_sup = x_rel
+                dist_esp_inf = dim_x - x_rel
+                dist_larg_min = y_rel
+                dist_larg_max = dim_y - y_rel
+                dist_comp_min = z_rel
+                dist_comp_max = dim_z - z_rel
+                
+                # Coordenadas MPR padrão
+                mpr_x = z_rel
+                mpr_y = y_rel
+                mpr_z = round(dim_x / 2, 1)
+                
+                if dist_esp_sup <= tolerancia or dist_esp_inf <= tolerancia:
+                    tipo = 'vertical'
+                    lado = 'LS' if dist_esp_sup <= tolerancia else 'LI'
+                    profundidade = 0 if diametro <= 6 else 11.0
+                    mpr_x = z_rel
+                    mpr_y = y_rel
+                    mpr_z = round(dim_x / 2, 1)
+                    
+                elif dist_larg_min <= tolerancia:
+                    tipo = 'horizontal'
+                    lado = 'YP'
+                    profundidade = 22.0
+                    mpr_x = z_rel
+                    mpr_y = 0
+                    mpr_z = x_rel
+                    
+                elif dist_larg_max <= tolerancia:
+                    tipo = 'horizontal'
+                    lado = 'YM'
+                    profundidade = 22.0
+                    mpr_x = z_rel
+                    mpr_y = dim_y
+                    mpr_z = x_rel
+                    
+                elif dist_comp_min <= tolerancia:
+                    tipo = 'horizontal'
+                    lado = 'XP'
+                    profundidade = 22.0
+                    mpr_x = 0
+                    mpr_y = y_rel
+                    mpr_z = x_rel
+                    
+                elif dist_comp_max <= tolerancia:
+                    tipo = 'horizontal'
+                    lado = 'XM'
+                    profundidade = 22.0
+                    mpr_x = dim_z
+                    mpr_y = y_rel
+                    mpr_z = x_rel
+                else:
+                    tipo = 'vertical'
+                    lado = 'LS'
+                    profundidade = 0
+                    mpr_x = z_rel
+                    mpr_y = y_rel
+                    mpr_z = round(dim_x / 2, 1)
+                
                 furo = Furo(
                     id=furo_id,
-                    x=x_rel,
-                    y=y_rel,
-                    z=z_rel,
-                    diametro=round(cil['raio'] * 2, 2),
-                    profundidade=peca.espessura
+                    x=mpr_x,
+                    y=mpr_y,
+                    z=mpr_z,
+                    diametro=diametro,
+                    profundidade=profundidade,
+                    face='superior' if tipo == 'vertical' else lado,
+                    tipo=tipo,
+                    lado=lado
                 )
                 peca.furos.append(furo)
                 furo_id += 1
             
             self.pecas.append(peca)
         
-        # Converte contagem de acessórios
         for nome, qtd in acessorios_count.items():
             self.acessorios.append(Acessorio(nome=nome, quantidade=qtd))
         
         return self.pecas, self.acessorios
-
-
-class MPRGenerator:
-    """Gera arquivo MPR a partir de uma Peca"""
-    
-    def generate(self, peca: Peca) -> str:
-        """Gera conteúdo MPR para uma peça"""
-        dims = peca.dimensoes_ordenadas
-        largura, comprimento, espessura = dims
-        
-        lines = [
-            "[H",
-            f"  LA={largura}",
-            f"  BR={comprimento}",
-            f"  DI={espessura}",
-            f"  FNX=0",
-            f"  FNY=0",
-            f"  AX=0",
-            f"  AY=0",
-            "]",
-            ""
-        ]
-        
-        for furo in peca.furos:
-            lines.extend([
-                "<105 \\BO\\",
-                f"  XA={furo.x}",
-                f"  YA={furo.y}",
-                f"  BM={furo.diametro}",
-                f"  TI={furo.profundidade}",
-                f"  DU=0",
-                f"  KO=''",
-                f"  MI=1",
-                ">",
-                ""
-            ])
-        
-        return "\r\n".join(lines)
 
 
 class TXTReportGenerator:
@@ -435,38 +455,19 @@ def parse_step_multipart(content: str) -> Dict[str, Any]:
     }
 
 
-def generate_mpr_files(content: str) -> Dict[str, str]:
-    """
-    Gera conteúdo MPR para cada peça
-    Retorna dict {nome_arquivo: conteudo_mpr}
-    """
-    parser = StepMultiPartParser(content)
-    pecas, _ = parser.parse()
-    
-    mpr_gen = MPRGenerator()
-    arquivos = {}
-    
-    for peca in pecas:
-        nome_arquivo = re.sub(r'[^\w\s-]', '', peca.nome).strip().replace(' ', '_')
-        arquivos[f"{nome_arquivo}.mpr"] = mpr_gen.generate(peca)
-    
-    return arquivos
-
-
 def generate_report_txt(content: str, nome_projeto: str = "Projeto") -> str:
-    """
-    Gera relatório TXT com lista de corte
-    """
+    """Gera relatório TXT com lista de corte"""
     parser = StepMultiPartParser(content)
     pecas, acessorios = parser.parse()
     
     txt_gen = TXTReportGenerator()
     return txt_gen.generate(pecas, acessorios, nome_projeto)
 
+
 # Compatibilidade com endpoints antigos
 parse_step = parse_step_multipart        
 
-# Para teste direto
+
 if __name__ == "__main__":
     import sys
     
@@ -490,5 +491,4 @@ if __name__ == "__main__":
             for a in result['acessorios']:
                 print(f"   - {a['nome']}: {a['quantidade']} un")
     else:
-        print("Uso: python step_parser_v2.py <arquivo.step>")
-
+        print("Uso: python step_parser.py <arquivo.step>")

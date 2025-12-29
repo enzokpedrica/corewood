@@ -4,10 +4,11 @@ CoreWood API - FastAPI Application
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse, Response
 from typing import List
 import tempfile
 import os
+import re
 import zipfile, io
 from pathlib import Path
 from .parser.mpr_parser import parse_furacao
@@ -21,7 +22,7 @@ import json
 import tempfile
 from app.routes import editor, pecas
 from .generators.mpr_generator import GeradorMPR
-from .parser.step_parser import parse_step_multipart, generate_mpr_files, generate_report_txt
+from .parser.step_parser import parse_step_multipart, generate_report_txt
 
 
 
@@ -394,11 +395,35 @@ async def convert_step_to_mpr(
 
         gerador = GeradorMPR()
 
+        # Se só tem uma peça, retorna o MPR direto (não ZIP)
+        if len(dados["pecas"]) == 1:
+            peca = dados["pecas"][0]
+            nome = peca.get("nome") or "peca"
+            nome_limpo = re.sub(r'[^\w\s-]', '', nome).strip().replace(' ', '_')
+            
+            mpr_content = gerador.gerar_mpr({
+                "largura": peca["largura"],
+                "comprimento": peca["comprimento"],
+                "espessura": peca["espessura"],
+                "furos": peca.get("furos", [])
+            })
+            
+            # Retornar como arquivo MPR direto
+            return Response(
+                content=mpr_content.encode('cp1252', errors='replace'),
+                media_type='application/octet-stream',
+                headers={
+                    'Content-Disposition': f'attachment; filename="{nome_limpo}.mpr"'
+                }
+            )
+        
+        # Múltiplas peças - retorna ZIP
         zip_buffer = io.BytesIO()
 
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
             for idx, peca in enumerate(dados["pecas"], start=1):
                 nome = peca.get("nome") or f"peca_{idx}"
+                nome_limpo = re.sub(r'[^\w\s-]', '', nome).strip().replace(' ', '_')
 
                 mpr_content = gerador.gerar_mpr({
                     "largura": peca["largura"],
@@ -407,7 +432,7 @@ async def convert_step_to_mpr(
                     "furos": peca.get("furos", [])
                 })
 
-                zipf.writestr(f"{nome}.mpr", mpr_content)
+                zipf.writestr(f"{nome_limpo}.mpr", mpr_content.encode('cp1252', errors='replace'))
 
         zip_buffer.seek(0)
 
@@ -420,6 +445,8 @@ async def convert_step_to_mpr(
         )
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=f"Erro ao converter STEP para MPR: {str(e)}"
@@ -432,21 +459,41 @@ async def parse_multipart(file: UploadFile = File(...)):
     return parse_step_multipart(content)
 
 @app.post("/step-multipart/convert")
-async def convert_multipart(file: UploadFile = File(...)):
+async def convert_multipart(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_active_user)
+):
     content = (await file.read()).decode('utf-8', errors='ignore')
-    mpr_files = generate_mpr_files(content)
+    
+    # Parse STEP
+    dados = parse_step_multipart(content)
+    
+    # Gerar MPRs usando o GeradorMPR
+    gerador = GeradorMPR()
+    
+    # Gerar relatório TXT
     txt = generate_report_txt(content, file.filename.rsplit('.', 1)[0])
     
     # Retorna ZIP
     zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, 'w') as zf:
-        for nome, conteudo in mpr_files.items():
-            zf.writestr(nome, conteudo)
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for idx, peca in enumerate(dados["pecas"], start=1):
+            nome = peca.get("nome") or f"peca_{idx}"
+            
+            mpr_content = gerador.gerar_mpr({
+                "largura": peca["largura"],
+                "comprimento": peca["comprimento"],
+                "espessura": peca["espessura"],
+                "furos": peca.get("furos", [])
+            })
+            
+            zf.writestr(f"{nome}.mpr", mpr_content)
+        
         zf.writestr("lista_corte.txt", txt)
+    
     zip_buffer.seek(0)
     
-    return StreamingResponse(zip_buffer, media_type="application/zip")    
-
+    return StreamingResponse(zip_buffer, media_type="application/zip")
 
 @app.post("/step-to-json")
 async def convert_step_to_json(
