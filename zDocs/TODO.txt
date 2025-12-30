@@ -1,4 +1,5 @@
 > Testar o .step de 2 peças	
+> Relatório Lei do Bem	
 
 > Lógica para Furação
 	> Furação
@@ -37,6 +38,8 @@
 		> BHX
 > Cadastro de Borda na peça
 	> Definir no editorMPR para amarrar junto com Furação		
+
+> Relatório Lei do Bem	
 
 -------------------------------------------------------			
 > Salvar arquivos BHX
