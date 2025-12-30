@@ -21,6 +21,15 @@ function EditorMPR({ pecaInicial }) {
 
   useEffect(() => {
     if (pecaInicial) {
+      console.log('🔍 pecaInicial recebida:', pecaInicial);
+      console.log('🔍 pecaInicial.furos:', pecaInicial.furos);
+      console.log('🔍 horizontais:', pecaInicial.furos?.horizontais);
+      
+      // Debug detalhado dos furos horizontais
+      if (pecaInicial.furos?.horizontais?.length > 0) {
+        console.log('🔵 Primeiro furo horizontal:', JSON.stringify(pecaInicial.furos.horizontais[0]));
+      }
+      
       setPeca(prevPeca => ({
         ...prevPeca,
         nome: pecaInicial.nome || '',
@@ -587,32 +596,44 @@ function EditorMPR({ pecaInicial }) {
           )}
 
           {/* Lista de Furos */}
-          <div className="furos-lista">
-            <label>Lista de Furos ({peca.furos.length + (peca.furosHorizontais?.length || 0)})</label>
-            <div className="furos-scroll">
-              {[...peca.furos, ...(peca.furosHorizontais || [])].map((furo, index) => (
-                <div
-                  key={furo.id}
-                  className={`furo-item ${selectedFuro?.id === furo.id ? 'selected' : ''}`}
-                  onClick={() => {
-                    setSelectedFuro(furo);
-                    setShowFuroConfig(true);
-                  }}
-                >
-                  <span className={`furo-icon ${furo.tipo}`}>
-                    {furo.tipo === 'vertical' ? '🔴' : '🔵'}
-                  </span>
-                  <span className="furo-info">
-                    {furo.tipo === 'vertical' ? 'V' : 'H'}#{index + 1} 
-                    {furo.tipo === 'vertical' 
-                      ? ` X:${furo.x} Y:${furo.y} Ø${furo.diametro}`
-                      : ` Y:${furo.y} Z:${furo.z} Ø${furo.diametro}`
-                    }
-                  </span>
-                </div>
-              ))}
+            <div className="furos-lista">
+              <label>Lista de Furos ({peca.furos.length + (peca.furosHorizontais?.length || 0)})</label>
+              <div className="furos-scroll">
+                {/* Furos Verticais */}
+                {peca.furos.map((furo, index) => (
+                  <div
+                    key={`v-${furo.id || index}`}
+                    className={`furo-item ${selectedFuro?.id === furo.id ? 'selected' : ''}`}
+                    onClick={() => {
+                      setSelectedFuro({ ...furo, tipo: 'vertical' });
+                      setShowFuroConfig(true);
+                    }}
+                  >
+                    <span className="furo-icon vertical">🔴</span>
+                    <span className="furo-info">
+                      V#{index + 1} X:{furo.x} Y:{furo.y} Ø{furo.diametro}
+                    </span>
+                  </div>
+                ))}
+                
+                {/* Furos Horizontais */}
+                {(peca.furosHorizontais || []).map((furo, index) => (
+                  <div
+                    key={`h-${furo.id || index}`}
+                    className={`furo-item ${selectedFuro?.id === furo.id ? 'selected' : ''}`}
+                    onClick={() => {
+                      setSelectedFuro({ ...furo, tipo: 'horizontal' });
+                      setShowFuroConfig(true);
+                    }}
+                  >
+                    <span className="furo-icon horizontal">🔵</span>
+                    <span className="furo-info">
+                      H#{index + 1} X:{furo.x} Y:{furo.y} Z:{furo.z} Ø{furo.diametro} ({furo.lado})
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
         </div>
 
         {/* COLUNA 3 - Configurar Furo */}
@@ -629,10 +650,11 @@ function EditorMPR({ pecaInicial }) {
                 <div className="form-group">
                   <label>X</label>
                   <input
-                    type="number"
+                    type="text"
                     value={selectedFuro.x}
-                    onChange={(e) => handleUpdateFuro('x', e.target.value)}
+                    onChange={(e) => handleUpdateFuro('x', e.target.value === 'x' ? 'x' : e.target.value)}
                     step="0.1"
+                    placeholder={selectedFuro.tipo === 'horizontal' ? '0 ou x' : ''}
                   />
                 </div>
                 <div className="form-group">
@@ -645,6 +667,21 @@ function EditorMPR({ pecaInicial }) {
                   />
                 </div>
               </div>
+
+              {/* Z - Só para furos horizontais */}
+              {selectedFuro.tipo === 'horizontal' && (
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Z (altura na espessura)</label>
+                    <input
+                      type="number"
+                      value={selectedFuro.z || peca.espessura / 2}
+                      onChange={(e) => handleUpdateFuro('z', e.target.value)}
+                      step="0.1"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="form-row">
                 <div className="form-group">
@@ -726,7 +763,11 @@ function EditorMPR({ pecaInicial }) {
                       });
                     }
 
-                    setPeca({ ...peca, furos: [...peca.furos, ...novosFuros] });
+                    if (selectedFuro.tipo === 'horizontal') {
+                      setPeca({ ...peca, furosHorizontais: [...(peca.furosHorizontais || []), ...novosFuros] });
+                    } else {
+                      setPeca({ ...peca, furos: [...peca.furos, ...novosFuros] });
+                    }
                     alert(`✅ ${qtd-1} furos replicados!`);
                   }}
                 >
@@ -736,7 +777,18 @@ function EditorMPR({ pecaInicial }) {
 
               <button
                 className="btn-danger"
-                onClick={() => handleRemoveFuro(selectedFuro.id)}
+                onClick={() => {
+                  if (selectedFuro.tipo === 'horizontal') {
+                    setPeca({
+                      ...peca,
+                      furosHorizontais: (peca.furosHorizontais || []).filter(f => f.id !== selectedFuro.id)
+                    });
+                  } else {
+                    handleRemoveFuro(selectedFuro.id);
+                  }
+                  setSelectedFuro(null);
+                  setShowFuroConfig(false);
+                }}
               >
                 🗑️ Remover Furo
               </button>

@@ -270,26 +270,52 @@ class StepMultiPartParser:
                 z_min=bbox[4], z_max=bbox[5]
             )
             
+            # Dimensões brutas do bounding box
+            dim_x = abs(peca.x_max - peca.x_min)  # Comprimento
+            dim_y = abs(peca.y_max - peca.y_min)  # Largura
+            dim_z = abs(peca.z_max - peca.z_min)  # Espessura
+            
             cilindros = self._find_cylinders_for_solid(solid_id)
             
-            # Remover duplicatas (mesmo furo aparece 2x no topo e fundo)
+            # Primeiro passo: identificar furos horizontais (nas bordas X)
+            furos_horizontais_coords = set()
+            
+            for cil in cilindros:
+                x_rel = cil['x'] - peca.x_min
+                y_round = round(cil['y'], 0)
+                raio_round = round(cil['raio'], 2)
+                
+                # Se está na borda X (entrada do furo horizontal)
+                if x_rel <= 2.0 or x_rel >= (dim_x - 2.0):
+                    furos_horizontais_coords.add((y_round, raio_round))
+            
+            # Segundo passo: filtrar cilindros
             cilindros_unicos = []
             coords_vistas = set()
-
+            
             for cil in cilindros:
+                x_rel = cil['x'] - peca.x_min
                 y_round = round(cil['y'], 0)
                 z_round = round(cil['z'], 0)
                 raio_round = round(cil['raio'], 2)
-                key = (y_round, z_round, raio_round)
                 
-                if key not in coords_vistas:
-                    coords_vistas.add(key)
-                    cilindros_unicos.append(cil)
-            
-            # Dimensões brutas do bounding box
-            dim_x = abs(peca.x_max - peca.x_min)  # Espessura
-            dim_y = abs(peca.y_max - peca.y_min)  # Largura
-            dim_z = abs(peca.z_max - peca.z_min)  # Comprimento
+                # Se está na borda X = é entrada de furo horizontal
+                if x_rel <= 2.0 or x_rel >= (dim_x - 2.0):
+                    key = ('H', y_round, raio_round, 'XP' if x_rel <= 2.0 else 'XM')
+                    if key not in coords_vistas:
+                        coords_vistas.add(key)
+                        cilindros_unicos.append(cil)
+                else:
+                    # Verificar se é fundo de furo horizontal (mesmo Y e raio)
+                    if (y_round, raio_round) in furos_horizontais_coords:
+                        # É o fundo de um furo horizontal - IGNORAR
+                        continue
+                    
+                    # Furo vertical legítimo
+                    key = ('V', y_round, raio_round)
+                    if key not in coords_vistas:
+                        coords_vistas.add(key)
+                        cilindros_unicos.append(cil)
 
             furo_id = 1
             for cil in cilindros_unicos:
@@ -298,67 +324,82 @@ class StepMultiPartParser:
                 z_rel = round(cil['z'] - peca.z_min, 2)
                 
                 diametro = round(cil['raio'] * 2, 2)
+
                 tolerancia = 2.0
                 
                 # Distâncias das faces
-                dist_esp_sup = x_rel
-                dist_esp_inf = dim_x - x_rel
+                dist_comp_min = x_rel
+                dist_comp_max = dim_x - x_rel
                 dist_larg_min = y_rel
                 dist_larg_max = dim_y - y_rel
-                dist_comp_min = z_rel
-                dist_comp_max = dim_z - z_rel
+                dist_esp_inf = z_rel
+                dist_esp_sup = dim_z - z_rel
                 
-                # Coordenadas MPR padrão
-                mpr_x = z_rel
-                mpr_y = y_rel
-                mpr_z = round(dim_x / 2, 1)
+                # Encontrar a menor distância para classificar o furo
+                min_dist = min(dist_esp_inf, dist_esp_sup, dist_larg_min, dist_larg_max, dist_comp_min, dist_comp_max)
                 
-                if dist_esp_sup <= tolerancia or dist_esp_inf <= tolerancia:
+                if min_dist > tolerancia:
+                    # Furo não está perto de nenhuma face - provavelmente é vertical no meio
+                    tipo = 'vertical'
+                    lado = 'LS'
+                    profundidade = 0 if diametro <= 6 else 11.0
+                    mpr_x = x_rel
+                    mpr_y = y_rel
+                    mpr_z = z_rel
+                    
+                elif dist_esp_inf <= tolerancia or dist_esp_sup <= tolerancia:
+                    # Furo VERTICAL - entra pela face superior ou inferior
                     tipo = 'vertical'
                     lado = 'LS' if dist_esp_sup <= tolerancia else 'LI'
                     profundidade = 0 if diametro <= 6 else 11.0
-                    mpr_x = z_rel
+                    mpr_x = x_rel
                     mpr_y = y_rel
-                    mpr_z = round(dim_x / 2, 1)
+                    mpr_z = round(dim_z / 2, 1)
                     
                 elif dist_larg_min <= tolerancia:
+                    # Furo HORIZONTAL - entra pela lateral Y=0
                     tipo = 'horizontal'
                     lado = 'YP'
                     profundidade = 22.0
-                    mpr_x = z_rel
+                    mpr_x = x_rel
                     mpr_y = 0
-                    mpr_z = x_rel
+                    mpr_z = z_rel
                     
                 elif dist_larg_max <= tolerancia:
+                    # Furo HORIZONTAL - entra pela lateral Y=max
                     tipo = 'horizontal'
                     lado = 'YM'
                     profundidade = 22.0
-                    mpr_x = z_rel
+                    mpr_x = x_rel
                     mpr_y = dim_y
-                    mpr_z = x_rel
+                    mpr_z = z_rel
                     
                 elif dist_comp_min <= tolerancia:
+                    # Furo HORIZONTAL - entra pela frente X=0
                     tipo = 'horizontal'
                     lado = 'XP'
                     profundidade = 22.0
                     mpr_x = 0
                     mpr_y = y_rel
-                    mpr_z = x_rel
+                    mpr_z = z_rel
                     
                 elif dist_comp_max <= tolerancia:
+                    # Furo HORIZONTAL - entra pela traseira X=max
                     tipo = 'horizontal'
                     lado = 'XM'
                     profundidade = 22.0
-                    mpr_x = dim_z
+                    mpr_x = dim_x
                     mpr_y = y_rel
-                    mpr_z = x_rel
+                    mpr_z = z_rel
+                
                 else:
+                    # Fallback - assumir vertical
                     tipo = 'vertical'
                     lado = 'LS'
-                    profundidade = 0
-                    mpr_x = z_rel
+                    profundidade = 0 if diametro <= 6 else 11.0
+                    mpr_x = x_rel
                     mpr_y = y_rel
-                    mpr_z = round(dim_x / 2, 1)
+                    mpr_z = z_rel
                 
                 furo = Furo(
                     id=furo_id,
