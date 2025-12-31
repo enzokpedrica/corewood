@@ -117,6 +117,7 @@ class GeradorMPR:
         mpr.append(f'_RY={largura:.6f}')
         
         # ===== PROGRAMA =====
+        mpr.append('')  # Linha em branco
         mpr.append('[001')
         mpr.append(f'x="{int(comprimento)}"')
         mpr.append('KM=""')
@@ -126,6 +127,7 @@ class GeradorMPR:
         mpr.append('KM=""')
         
         # ===== DEFINIÇÃO DA PEÇA =====
+        mpr.append('')  # Linha em branco
         mpr.append('<100 \\WerkStck\\')
         mpr.append('LA="x"')
         mpr.append('BR="y"')

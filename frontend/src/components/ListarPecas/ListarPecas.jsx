@@ -271,31 +271,47 @@ function ListarPecas({ onSelecionarPeca }) {
               </button>
             </div>
 
-            {pecas.map((peca) => (
-              <div key={peca.id} className="peca-card">
-                <div className="peca-info">
-                  <div className="peca-codigo">{peca.codigo}</div>
-                  <div className="peca-nome">{peca.nome}</div>
-                  <div className="peca-dimensoes">
-                    📐 {peca.comprimento} × {peca.largura} × {peca.espessura}mm
-                  </div>
-                  {peca.familia && (
-                    <div className="peca-familia">
-                      🏷️ {peca.familia}
+            {pecas.map((peca) => {
+              // Contar furos
+              const furosVerticais = peca.furos?.verticais?.length || 0;
+              const furosHorizontais = peca.furos?.horizontais?.length || 0;
+              const totalFuros = furosVerticais + furosHorizontais;
+              
+              return (
+                <div key={peca.id} className="peca-card">
+                  <div className="peca-info">
+                    <div className="peca-codigo">{peca.codigo}</div>
+                    <div className="peca-nome">{peca.nome}</div>
+                    <div className="peca-dimensoes">
+                      📐 {peca.comprimento} × {peca.largura} × {peca.espessura}mm
                     </div>
-                  )}
-                </div>
+                    {peca.familia && (
+                      <div className="peca-familia">
+                        🏷️ {peca.familia}
+                      </div>
+                    )}
+                    
+                    {/* Indicador de furos */}
+                    <div className={`peca-furos-status ${totalFuros > 0 ? 'com-furos' : 'sem-furos'}`}>
+                      {totalFuros > 0 ? (
+                        <>✅ {totalFuros} furo{totalFuros !== 1 ? 's' : ''}</>
+                      ) : (
+                        <>⚠️ Sem furos</>
+                      )}
+                    </div>
+                  </div>
 
-                <div className="peca-acoes">
-                  <button
-                    className="btn-editar"
-                    onClick={() => onSelecionarPeca(peca)}
-                  >
-                    ✏️ Editar no MPR
-                  </button>
+                  <div className="peca-acoes">
+                    <button
+                      className="btn-editar"
+                      onClick={() => onSelecionarPeca(peca)}
+                    >
+                      ✏️ Editar no MPR
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

@@ -458,3 +458,22 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* ===== INDICADOR DE FUROS ===== */
+.peca-furos-status {
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.peca-furos-status.com-furos {
+  background: #d4edda;
+  color: #155724;
+}
+
+.peca-furos-status.sem-furos {
+  background: #fff3cd;
+  color: #856404;
+}

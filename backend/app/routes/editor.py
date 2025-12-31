@@ -14,22 +14,32 @@ router = APIRouter(prefix="/editor", tags=["editor"])
 
 
 class FuroData(BaseModel):
-    tipo: str  # 'vertical' ou 'horizontal'
-    x: Union[float, str] = 0  # Pode ser número ou "x" (lado oposto)
+    tipo: str = "vertical"  # Padrão = vertical
+    x: Union[float, str] = 0
     y: float
-    z: Optional[float] = None  # Para furos horizontais
+    z: Optional[float] = None
     diametro: float
-    profundidade: float
-    lado: Optional[str] = None  # Para furos horizontais: XP, XM, YP, YM
-    id: Optional[float] = None  # ID do frontend (ignorar)
+    profundidade: float = 0
+    lado: Optional[str] = "LS"
+    id: Optional[float] = None
 
+
+class FuroHorizontalData(BaseModel):
+    x: Optional[float] = 0
+    y: float
+    z: float = 7.5
+    diametro: float
+    profundidade: float = 22.0
+    lado: str = "XP"
+    tipo: str = "horizontal"
 
 class PecaData(BaseModel):
     nome: str
     comprimento: float
     largura: float
     espessura: float
-    furos: List[FuroData]
+    furos: List[FuroData] = []
+    furosHorizontais: List[FuroHorizontalData] = []
     peca_id: Optional[int] = None
 
 
@@ -40,37 +50,48 @@ async def export_mpr(
 ):
     """
     Exporta peça criada no editor como arquivo MPR
-    
-    Args:
-        peca: Dados da peça com dimensões e furos
-        
-    Returns:
-        Arquivo MPR para download
     """
     try:
         print(f"\n📤 ===== EXPORTANDO MPR =====")
         print(f"👤 Usuário: {current_user.username}")
         print(f"📦 Peça: {peca.nome}")
         print(f"📐 Dimensões: {peca.largura}x{peca.comprimento}x{peca.espessura}mm")
-        print(f"🔵 Total de furos: {len(peca.furos)}")
+        print(f"🔴 Furos verticais: {len(peca.furos)}")
+        print(f"🔵 Furos horizontais: {len(peca.furosHorizontais)}")
         
-        # Converter Pydantic para dict
+        # Juntar furos verticais e horizontais
+        todos_furos = []
+        
+        # Furos verticais
+        for f in peca.furos:
+            todos_furos.append({
+                'tipo': getattr(f, 'tipo', 'vertical'),
+                'x': f.x,
+                'y': f.y,
+                'diametro': f.diametro,
+                'profundidade': f.profundidade,
+                'lado': getattr(f, 'lado', 'LS')
+            })
+        
+        # Furos horizontais
+        for f in peca.furosHorizontais:
+            todos_furos.append({
+                'tipo': 'horizontal',
+                'x': f.x,
+                'y': f.y,
+                'z': f.z,
+                'diametro': f.diametro,
+                'profundidade': f.profundidade,
+                'lado': f.lado
+            })
+        
+        # Converter para dict
         peca_dict = {
             'nome': peca.nome,
             'largura': peca.largura,
             'comprimento': peca.comprimento,
             'espessura': peca.espessura,
-            'furos': [
-                {
-                    'tipo': f.tipo,
-                    'x': f.x,
-                    'y': f.y,
-                    'diametro': f.diametro,
-                    'profundidade': f.profundidade,
-                    'lado': f.lado
-                }
-                for f in peca.furos
-            ]
+            'furos': todos_furos
         }
         
         # Gerar MPR
@@ -92,6 +113,8 @@ async def export_mpr(
         
     except Exception as e:
         print(f"❌ Erro ao exportar MPR: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro ao gerar MPR: {str(e)}")
 
 
@@ -153,6 +176,9 @@ async def generate_pdf_from_editor(
         furos_vert = json.loads(furos_verticais)
         furos_horiz = json.loads(furos_horizontais)
         
+        print(f"🔴 Furos verticais recebidos: {len(furos_vert)}")
+        print(f"🔵 Furos horizontais recebidos: {len(furos_horiz)}")
+        
         # Converter dados do editor para formato Peca
         dimensoes = Dimensoes(
             largura=comprimento,
@@ -163,36 +189,44 @@ async def generate_pdf_from_editor(
         furos_verticais_obj = []
         furos_horizontais_obj = []
         
+        # Processar furos verticais (não verificar 'tipo', assumir que são verticais)
         for furo in furos_vert:
-            if furo.get('tipo') == 'vertical':
-                furos_verticais_obj.append(
-                    FuroVertical(
-                        x=furo['x'],
-                        y=furo['y'],
-                        diametro=furo['diametro'],
-                        profundidade=furo.get('profundidade', 0)
-                    )
-                )
-        
-        for furo in furos_horiz:
-            if furo.get('tipo') == 'horizontal':
-                # x pode ser número ou string 'x' (lado oposto)
-                x_val = furo.get('x', 0)
-                if x_val == 'x':
-                    x_val = 'x'
-                else:
-                    x_val = float(x_val) if x_val else 0
+            # Pular se tiver campo 'lado' de horizontal (XP, XM, YP, YM)
+            lado = furo.get('lado', 'LS')
+            if lado in ['XP', 'XM', 'YP', 'YM']:
+                continue
                 
-                furos_horizontais_obj.append(
-                    FuroHorizontal(
-                        x=x_val,
-                        y=furo['y'],
-                        z=furo.get('z', 7.5),  # Z é a altura do furo na espessura
-                        diametro=furo['diametro'],
-                        profundidade=furo.get('profundidade', 0),
-                        lado=furo.get('lado', 'XP')
-                    )
+            furos_verticais_obj.append(
+                FuroVertical(
+                    x=furo['x'],
+                    y=furo['y'],
+                    diametro=furo['diametro'],
+                    profundidade=furo.get('profundidade', 0),
+                    lado=lado
                 )
+            )
+        
+        # Processar furos horizontais
+        for furo in furos_horiz:
+            x_val = furo.get('x', 0)
+            if x_val == 'x':
+                x_val = 'x'
+            else:
+                x_val = float(x_val) if x_val else 0
+            
+            furos_horizontais_obj.append(
+                FuroHorizontal(
+                    x=x_val,
+                    y=furo['y'],
+                    z=furo.get('z', 7.5),
+                    diametro=furo['diametro'],
+                    profundidade=furo.get('profundidade', 0),
+                    lado=furo.get('lado', 'XP')
+                )
+            )
+        
+        print(f"🔴 Furos verticais processados: {len(furos_verticais_obj)}")
+        print(f"🔵 Furos horizontais processados: {len(furos_horizontais_obj)}")
         
         peca_obj = Peca(
             nome=nome_peca,

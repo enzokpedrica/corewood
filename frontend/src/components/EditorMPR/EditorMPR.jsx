@@ -20,16 +20,7 @@ function EditorMPR({ pecaInicial }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (pecaInicial) {
-      console.log('🔍 pecaInicial recebida:', pecaInicial);
-      console.log('🔍 pecaInicial.furos:', pecaInicial.furos);
-      console.log('🔍 horizontais:', pecaInicial.furos?.horizontais);
-      
-      // Debug detalhado dos furos horizontais
-      if (pecaInicial.furos?.horizontais?.length > 0) {
-        console.log('🔵 Primeiro furo horizontal:', JSON.stringify(pecaInicial.furos.horizontais[0]));
-      }
-      
+    if (pecaInicial) {      
       setPeca(prevPeca => ({
         ...prevPeca,
         nome: pecaInicial.nome || '',
