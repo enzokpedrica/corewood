@@ -337,7 +337,7 @@ function MainApp() {
 
       <footer className="app-footer">
         <div className="container">
-          <p>CoreWood © 2024 - Desenvolvido para Linea Brasil</p>
+          <p>CoreWood © 2025 - Desenvolvido para Linea Brasil</p>
           <p className="api-status">
             API: <span className="status-dot"></span> Online
           </p>
