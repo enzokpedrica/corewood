@@ -21,6 +21,7 @@ class PecaResponse(PecaBase):
     pdf_path: Optional[str] = None
     furos: Optional[Any] = None
     bordas: Optional[Any] = None
+    transformacao: Optional[Any] = None
     created_at: datetime
     updated_at: datetime
     

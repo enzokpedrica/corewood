@@ -166,6 +166,10 @@ export const gerarPDFEditor = async (pecaData) => {
     // Bordas
     const bordasData = pecaData.bordas || { topo: 'nenhum', baixo: 'nenhum', esquerda: 'nenhum', direita: 'nenhum' };
     formData.append('bordas', JSON.stringify(bordasData));
+
+    // Transformação
+    const transformacaoData = pecaData.transformacao || { rotacao: 0, espelhado: false };
+    formData.append('transformacao', JSON.stringify(transformacaoData));
     
     const response = await axios.post(
       `${API_URL}/editor/generate-pdf`,

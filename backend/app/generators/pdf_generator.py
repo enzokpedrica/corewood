@@ -1175,17 +1175,62 @@ class GeradorDesenhoTecnico:
                 tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 5, "Helvetica")
                 c.setFont("Helvetica", tamanho_fonte)
             elif label == "Responsável":
-                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 3, "Helvetica", tamanho_base=10)
+                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 3, "Helvetica", tamanho_base=11)
                 c.setFont("Helvetica", tamanho_fonte)
             elif label == "Conferente":
                 c.setFont("Helvetica", 10)
             elif label == "Status":
-                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 3, "Helvetica", tamanho_base=10)
+                tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 3, "Helvetica", tamanho_base=11)
                 c.setFont("Helvetica", tamanho_fonte)
                 if valor == "CÓPIA CONTROLADA":
                     c.setFillColor(colors.HexColor("#0000FF"))  # Azul
                 else:
                     c.setFillColor(colors.HexColor("#FF0000"))  # Vermelho              
+            elif label == "Borda":
+                # Desenhar legenda colorida para bordas
+                c.setFont(fonte, 11)
+                
+                # Textos
+                texto_cor = "COR"
+                texto_pardo = "PARDO"
+                espaco_entre = 20
+                
+                # Calcular larguras
+                largura_cor = c.stringWidth(texto_cor, fonte, 11)
+                largura_pardo = c.stringWidth(texto_pardo, fonte, 11)
+                largura_total = largura_cor + espaco_entre + largura_pardo
+                
+                # Posição inicial centralizada
+                x_inicio = x_celula + (largura_celula - largura_total) / 2
+                y_texto = y_celula + (altura_linha / 4)
+                
+                # Desenhar "COR"
+                c.setFillColor(colors.black)
+                c.drawString(x_inicio, y_texto, texto_cor)
+                
+                # Traço verde abaixo de "COR"
+                c.setStrokeColor(colors.HexColor("#32CD32"))  # Verde limão
+                c.setLineWidth(3)
+                c.line(x_inicio, y_texto - 5, x_inicio + largura_cor, y_texto - 5)
+                
+                # Desenhar "PARDO"
+                x_pardo = x_inicio + largura_cor + espaco_entre
+                c.setFillColor(colors.black)
+                c.drawString(x_pardo, y_texto, texto_pardo)
+                
+                # Traço laranja abaixo de "PARDO"
+                c.setStrokeColor(colors.HexColor("#FF8C00"))  # Laranja
+                c.setLineWidth(3)
+                c.line(x_pardo, y_texto - 5, x_pardo + largura_pardo, y_texto - 5)
+                
+                # Resetar cores e linha
+                c.setStrokeColor(colors.black)
+                c.setLineWidth(0.5)
+                c.setFillColor(colors.black)
+                
+                # Pular o desenho normal do valor (já foi desenhado acima)
+                indice_dados += 1
+                continue
             else:
                 c.setFont(fonte, 12)
             

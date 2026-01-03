@@ -12,8 +12,6 @@
 	> Deixar o texto um pouco afastado da linha da cota 	
 
 > Tabela Horizontal
-		> Revisão precisa verificar qual a última versão e alterar
-		> Aumentar tamanho da fonte de Status
 		> O Responsável puxa de acordo com o login do usuário
 			> Aumentar tamanho da fonte
 		> Como vai saber o tanto de páginas?
@@ -36,8 +34,6 @@
 		> Modelagem .step
 		> Documentação
 		> BHX
-> Cadastro de Borda na peça
-	> Definir no editorMPR para amarrar junto com Furação		
 
 > Relatório Lei do Bem	
 

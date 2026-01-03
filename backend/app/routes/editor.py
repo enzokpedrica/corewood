@@ -127,6 +127,7 @@ async def generate_pdf_from_editor(
     furos_verticais: str = Form("[]"),
     furos_horizontais: str = Form("[]"),
     bordas: str = Form("{}"),
+    transformacao: str = Form("{}"),
     peca_id: Optional[int] = Form(None),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -195,6 +196,10 @@ async def generate_pdf_from_editor(
                 bordas_pdf[key] = None
 
         print(f"🎨 Bordas mapeadas para PDF: {bordas_pdf}")
+
+        # Converter transformação
+        transformacao_dict = json.loads(transformacao)
+        print(f"🔄 Transformação: {transformacao_dict}")
         
         print(f"🔴 Furos verticais recebidos: {len(furos_vert)}")
         print(f"🔵 Furos horizontais recebidos: {len(furos_horiz)}")
@@ -262,9 +267,9 @@ async def generate_pdf_from_editor(
         
         gerador = GeradorDesenhoTecnico()
         dados_adicionais = {
-            'angulo_rotacao': 0,
-            'espelhar_peca': False,
-            'bordas': bordas_pdf,  # ← Usar bordas_pdf aqui
+            'angulo_rotacao': transformacao_dict.get('rotacao', 0),
+            'espelhar_peca': transformacao_dict.get('espelhado', False),
+            'bordas': bordas_pdf,
             'alerta': None,
             'revisao': '00',
             'status': 'CÓPIA CONTROLADA',

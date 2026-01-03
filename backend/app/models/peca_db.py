@@ -21,6 +21,7 @@ class PecaDB(Base):
     bordas = Column(JSON)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    transformacao = Column(JSON)  # Adicione junto com o campo bordas
     
     # Relacionamento
     produto = relationship("Produto", back_populates="pecas")
