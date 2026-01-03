@@ -41,7 +41,7 @@ function EditorMPR({ pecaInicial, onVoltar }) {
       setNomePeca(pecaInicial.nome || '');
       setCodigoPeca(pecaInicial.codigo || '');
       
-      // Carregar bordas se existirem
+      // Carregar bordas
       if (pecaInicial.bordas) {
         setBordas({
           topo: pecaInicial.bordas.topo || 'nenhum',
@@ -55,6 +55,19 @@ function EditorMPR({ pecaInicial, onVoltar }) {
           baixo: 'nenhum',
           esquerda: 'nenhum',
           direita: 'nenhum'
+        });
+      }
+      
+      // Carregar transformação
+      if (pecaInicial.transformacao) {
+        setTransformacao({
+          rotacao: pecaInicial.transformacao.rotacao || 0,
+          espelhado: pecaInicial.transformacao.espelhado || false
+        });
+      } else {
+        setTransformacao({
+          rotacao: 0,
+          espelhado: false
         });
       }
     }
@@ -274,7 +287,8 @@ function EditorMPR({ pecaInicial, onVoltar }) {
       const pecaComId = {
         ...peca,
         peca_id: pecaInicial?.id || null,
-        bordas: bordas
+        bordas: bordas,
+        transformacao: transformacao
       };
     
       const pdfBlob = await gerarPDFEditor(pecaComId);
@@ -450,7 +464,8 @@ function EditorMPR({ pecaInicial, onVoltar }) {
         verticais: peca.furos || [],
         horizontais: peca.furosHorizontais || []
       }));
-      formData.append('bordas', JSON.stringify(bordas));  // ← ADICIONE ESTA LINHA
+      formData.append('bordas', JSON.stringify(bordas));
+      formData.append('transformacao', JSON.stringify(transformacao));
 
       const response = await api.put(
         `/pecas/${pecaInicial.id}/salvar`,
@@ -496,6 +511,7 @@ function EditorMPR({ pecaInicial, onVoltar }) {
           onAddFuro={handleAddFuro}
           selectedTool={selectedTool}
           bordas={bordas}
+          transformacao={transformacao}
         />
       </div>
 

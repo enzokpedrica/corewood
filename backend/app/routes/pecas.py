@@ -169,17 +169,20 @@ async def salvar_peca(
     largura: float = Form(...),
     comprimento: float = Form(...),
     espessura: float = Form(...),
-    furos: str = Form("{}"),  # JSON string
-    bordas: str = Form("{}"),  # JSON string - NOVO
+    furos: str = Form("{}"),
+    bordas: str = Form("{}"),
+    transformacao: str = Form("{}"),  # ← ADICIONE ESTA LINHA
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Salva alterações da peça (dimensões + furos + bordas)"""
+    """Salva alterações da peça (dimensões + furos + bordas + transformação)"""
     
     peca = db.query(PecaDB).filter(PecaDB.id == peca_id).first()
     
     if not peca:
         raise HTTPException(status_code=404, detail="Peça não encontrada")
+    
+    import json
     
     # Atualizar dimensões
     peca.largura = largura
@@ -187,21 +190,24 @@ async def salvar_peca(
     peca.espessura = espessura
     
     # Atualizar furos (JSON)
-    import json
     peca.furos = json.loads(furos)
     
-    # Atualizar bordas (JSON) - NOVO
+    # Atualizar bordas (JSON)
     peca.bordas = json.loads(bordas)
+    
+    # Atualizar transformação (JSON)
+    peca.transformacao = json.loads(transformacao)
     
     print(f"💾 Salvando peça {peca_id}:")
     print(f"   Dimensões: {largura}x{comprimento}x{espessura}")
     print(f"   Furos: {peca.furos}")
     print(f"   Bordas: {peca.bordas}")
+    print(f"   Transformação: {peca.transformacao}")
     
     db.commit()
     db.refresh(peca)
     
-    return peca    
+    return peca  
     
 
 @router.get("/produto/{codigo_produto}", response_model=List[PecaResponse])
