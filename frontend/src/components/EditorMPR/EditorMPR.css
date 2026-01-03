@@ -310,3 +310,65 @@
   background: #ccc;
   cursor: not-allowed;
 }
+
+/* ===== BOTÃO VOLTAR ===== */
+.btn-voltar {
+  padding: 0.5rem 1rem;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 1rem;
+  transition: all 0.2s;
+}
+
+.btn-voltar:hover {
+  background: #5a6268;
+}
+
+/* ===== BORDAS SECTION ===== */
+.bordas-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.bordas-section > label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.bordas-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.borda-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.borda-item span {
+  font-size: 0.8rem;
+  min-width: 50px;
+}
+
+.borda-item select {
+  flex: 1;
+  padding: 0.3rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.borda-item select:focus {
+  outline: none;
+  border-color: #667eea;
+}

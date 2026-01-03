@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import './Canvas.css';
 
-function Canvas({ peca, onAddFuro, selectedTool }) {
+function Canvas({ peca, onAddFuro, selectedTool, bordas }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 350 });
@@ -109,21 +109,73 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
       context.fillText('Y ↑', offsetX - 10, offsetY - 10);
     };
 
+    const drawBordas = (context) => {
+      if (!bordas) return;
+      
+      const espessuraBorda = 6;
+      
+      const cores = {
+        cor: '#32CD32',      // Verde limão
+        pardo: '#FF8C00',    // Laranja
+        nenhum: null
+      };
+      
+      // Topo (linha superior - comprimento)
+      if (bordas.topo && bordas.topo !== 'nenhum') {
+        context.fillStyle = cores[bordas.topo];
+        context.fillRect(offsetX, offsetY - espessuraBorda, larguraPecaPx, espessuraBorda);
+      }
+      
+      // Baixo (linha inferior - comprimento)
+      if (bordas.baixo && bordas.baixo !== 'nenhum') {
+        context.fillStyle = cores[bordas.baixo];
+        context.fillRect(offsetX, offsetY + alturaPecaPx, larguraPecaPx, espessuraBorda);
+      }
+      
+      // Esquerda (linha esquerda - largura)
+      if (bordas.esquerda && bordas.esquerda !== 'nenhum') {
+        context.fillStyle = cores[bordas.esquerda];
+        context.fillRect(offsetX - espessuraBorda, offsetY, espessuraBorda, alturaPecaPx);
+      }
+      
+      // Direita (linha direita - largura)
+      if (bordas.direita && bordas.direita !== 'nenhum') {
+        context.fillStyle = cores[bordas.direita];
+        context.fillRect(offsetX + larguraPecaPx, offsetY, espessuraBorda, alturaPecaPx);
+      }
+    };
+
     const drawFuros = (context) => {
       // Furos verticais
       peca.furos?.forEach((furo) => {
         const x = offsetX + (furo.x * scale);
         const y = offsetY + (furo.y * scale);
         const raio = Math.max(4, furo.diametro * scale / 2);
-
-        context.fillStyle = '#FF6B6B';
-        context.beginPath();
-        context.arc(x, y, raio, 0, Math.PI * 2);
-        context.fill();
-
-        context.strokeStyle = '#c0392b';
-        context.lineWidth = 1;
-        context.stroke();
+        
+        // Cor baseada no lado (LS = vermelho, LI = preto)
+        const isLadoInferior = furo.lado === 'LI';
+        
+        if (isLadoInferior) {
+          // Furo por baixo - preto
+          context.fillStyle = '#333333';
+          context.beginPath();
+          context.arc(x, y, raio, 0, Math.PI * 2);
+          context.fill();
+          
+          context.strokeStyle = '#000000';
+          context.lineWidth = 2;
+          context.stroke();
+        } else {
+          // Furo por cima - vermelho
+          context.fillStyle = '#FF6B6B';
+          context.beginPath();
+          context.arc(x, y, raio, 0, Math.PI * 2);
+          context.fill();
+          
+          context.strokeStyle = '#c0392b';
+          context.lineWidth = 1;
+          context.stroke();
+        }
 
         // Label
         context.font = '9px Arial';
@@ -138,12 +190,12 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
         const y = offsetY + (furo.y * scale);
         const raio = Math.max(4, furo.diametro * scale / 2);
 
-        context.fillStyle = '#4ECDC4';
+        context.fillStyle = '#1900ffff';
         context.beginPath();
         context.arc(x, y, raio, 0, Math.PI * 2);
         context.fill();
 
-        context.strokeStyle = '#16a085';
+        context.strokeStyle = '#1900ffff';
         context.lineWidth = 1;
         context.stroke();
 
@@ -164,6 +216,7 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
 
     if (peca.largura && peca.comprimento) {
       drawPeca(ctx);
+      drawBordas(ctx);
       drawFuros(ctx);
     } else {
       ctx.font = '16px Arial';
@@ -171,7 +224,7 @@ function Canvas({ peca, onAddFuro, selectedTool }) {
       ctx.textAlign = 'center';
       ctx.fillText('Defina as dimensões da peça', canvas.width / 2, canvas.height / 2);
     }
-  }, [peca, canvasSize]);
+  }, [peca, canvasSize, bordas]);
 
   const handleCanvasClick = (e) => {
     if (!selectedTool || !peca.largura || !peca.comprimento) return;

@@ -163,7 +163,9 @@ export const gerarPDFEditor = async (pecaData) => {
     console.log('🔍 DEBUG - furos horizontais:', furosHorizontais);
     formData.append('furos_horizontais', JSON.stringify(furosHorizontais));
 
-    console.log('🔍 DEBUG - FormData pronto, enviando...');
+    // Bordas
+    const bordasData = pecaData.bordas || { topo: 'nenhum', baixo: 'nenhum', esquerda: 'nenhum', direita: 'nenhum' };
+    formData.append('bordas', JSON.stringify(bordasData));
     
     const response = await axios.post(
       `${API_URL}/editor/generate-pdf`,

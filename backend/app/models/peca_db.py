@@ -18,6 +18,7 @@ class PecaDB(Base):
     mpr_path = Column(String(500))
     pdf_path = Column(String(500))
     furos = Column(JSON)
+    bordas = Column(JSON)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
