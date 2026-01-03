@@ -36,6 +36,8 @@ function MainApp() {
   const [success, setSuccess] = useState(false);
   const [pecaSelecionada, setPecaSelecionada] = useState(null);
   const { user, logout } = useAuth();
+  const [codigoProdutoBusca, setCodigoProdutoBusca] = useState('');
+  const [pecasLista, setPecasLista] = useState([]);
 
   const handleFileSelect = (selectedFile) => {
     setFile(selectedFile);
@@ -57,6 +59,12 @@ function MainApp() {
   const handleSelecionarPeca = (peca) => {
     setPecaSelecionada(peca);
     setModoLote('editor'); // Abre no editor
+  };
+
+  // Adicione esta função
+  const handleVoltarParaLista = () => {
+    setPecaSelecionada(null);
+    setModoLote('listar');
   };
 
   const handleGeneratePDF = async () => {
@@ -259,11 +267,18 @@ function MainApp() {
       <main className="app-main">
         <div className="container">
           {modoLote === 'listar' ? (
-            <ListarPecas onSelecionarPeca={handleSelecionarPeca} />
+            <ListarPecas 
+                onSelecionarPeca={handleSelecionarPeca}
+                codigoProduto={codigoProdutoBusca}
+                setCodigoProduto={setCodigoProdutoBusca}
+                pecas={pecasLista}
+                setPecas={setPecasLista} />
           ) : modoLote === 'lote' ? (
             <LoteUpload />
           ) : modoLote === 'editor' ? (
-            <EditorMPR pecaInicial={pecaSelecionada} />
+            <EditorMPR 
+            pecaInicial={pecaSelecionada}
+            onVoltar={handleVoltarParaLista} />
           ) : modoLote === 'importar' ? (
             <ImportarPecas />
           ) : modoLote === 'step' ? (

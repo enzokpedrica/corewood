@@ -5,7 +5,7 @@ import { exportarMPR, gerarPDFEditor } from '../../services/api';
 import FuroManual from './FuroManual';
 import api from '../../services/api';
 
-function EditorMPR({ pecaInicial }) {
+function EditorMPR({ pecaInicial, onVoltar }) {
   const [peca, setPeca] = useState({
     nome: '',
     largura: 0,
@@ -13,6 +13,13 @@ function EditorMPR({ pecaInicial }) {
     espessura: 15,
     furos: [],
     furosHorizontais: []
+  });
+
+  const [bordas, setBordas] = useState({
+    topo: 'nenhum',
+    baixo: 'nenhum',
+    esquerda: 'nenhum',
+    direita: 'nenhum'
   });
 
   const [nomePeca, setNomePeca] = useState('');
@@ -33,6 +40,23 @@ function EditorMPR({ pecaInicial }) {
       
       setNomePeca(pecaInicial.nome || '');
       setCodigoPeca(pecaInicial.codigo || '');
+      
+      // Carregar bordas se existirem
+      if (pecaInicial.bordas) {
+        setBordas({
+          topo: pecaInicial.bordas.topo || 'nenhum',
+          baixo: pecaInicial.bordas.baixo || 'nenhum',
+          esquerda: pecaInicial.bordas.esquerda || 'nenhum',
+          direita: pecaInicial.bordas.direita || 'nenhum'
+        });
+      } else {
+        setBordas({
+          topo: 'nenhum',
+          baixo: 'nenhum',
+          esquerda: 'nenhum',
+          direita: 'nenhum'
+        });
+      }
     }
   }, [pecaInicial]);
   
@@ -245,23 +269,14 @@ function EditorMPR({ pecaInicial }) {
       return;
     }
 
-    try {
-      // DEBUG - ADICIONA AQUI
-      console.log('🔍 DEBUG - pecaInicial:', pecaInicial);
-      console.log('🔍 DEBUG - pecaInicial?.id:', pecaInicial?.id);
-      
-      console.log('📄 Gerando PDF:', peca);
-      
-      // NOVO: Adicionar peca_id se existir
+    try {      
+      // Adicionar peca_id se existir
       const pecaComId = {
         ...peca,
-        peca_id: pecaInicial?.id || null
+        peca_id: pecaInicial?.id || null,
+        bordas: bordas
       };
-      
-      // DEBUG - ADICIONA AQUI
-      console.log('🔍 DEBUG - pecaComId:', pecaComId);
-      console.log('🔍 DEBUG - peca_id enviado:', pecaComId.peca_id);
-      
+    
       const pdfBlob = await gerarPDFEditor(pecaComId);
       
       // Download automático
@@ -419,49 +434,58 @@ function EditorMPR({ pecaInicial }) {
   };
 
   const handleSalvarPeca = async () => {
-  if (!pecaInicial?.id) {
-    alert('⚠️ Peça não identificada para salvar');
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const formData = new FormData();
-    formData.append('largura', peca.largura);
-    formData.append('comprimento', peca.comprimento);
-    formData.append('espessura', peca.espessura);
-    formData.append('furos', JSON.stringify({
-      verticais: peca.furos || [],
-      horizontais: peca.furosHorizontais || []
-    }));
-
-    const response = await api.put(
-      `/pecas/${pecaInicial.id}/salvar`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }
-    );
-
-    if (response.status === 200) {
-      alert('✅ Peça salva com sucesso!');
-    } else {
-      alert('❌ Erro ao salvar peça');
+    if (!pecaInicial?.id) {
+      alert('⚠️ Peça não identificada para salvar');
+      return;
     }
-  } catch (error) {
-    console.error(error);
-    alert('❌ Erro ao salvar: ' + (error.response?.data?.detail || error.message));
-  } finally {
-    setLoading(false);
-  }
-};
+
+    setLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('largura', peca.largura);
+      formData.append('comprimento', peca.comprimento);
+      formData.append('espessura', peca.espessura);
+      formData.append('furos', JSON.stringify({
+        verticais: peca.furos || [],
+        horizontais: peca.furosHorizontais || []
+      }));
+      formData.append('bordas', JSON.stringify(bordas));  // ← ADICIONE ESTA LINHA
+
+      const response = await api.put(
+        `/pecas/${pecaInicial.id}/salvar`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        alert('✅ Peça salva com sucesso!');
+      } else {
+        alert('❌ Erro ao salvar peça');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('❌ Erro ao salvar: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="editor-mpr">
       {/* HEADER */}
       <div className="editor-header">
+        {onVoltar && (
+          <button 
+            className="btn-voltar"
+            onClick={onVoltar}
+          >
+            ← Voltar
+          </button>
+        )}
         <h2>✏️ Editor MPR</h2>
       </div>
 
@@ -471,6 +495,7 @@ function EditorMPR({ pecaInicial }) {
           peca={peca}
           onAddFuro={handleAddFuro}
           selectedTool={selectedTool}
+          bordas={bordas}
         />
       </div>
 
@@ -527,6 +552,57 @@ function EditorMPR({ pecaInicial }) {
                 value={peca.espessura || 15}
                 onChange={(e) => handleDimensaoChange('espessura', e.target.value)}
               />
+            </div>
+          </div>
+
+          {/* BORDAS */}
+          <div className="bordas-section">
+            <label>🎨 Bordas</label>
+            <div className="bordas-grid">
+              <div className="borda-item">
+                <span>⬆️ Topo</span>
+                <select 
+                  value={bordas.topo} 
+                  onChange={(e) => setBordas({...bordas, topo: e.target.value})}
+                >
+                  <option value="nenhum">Sem borda</option>
+                  <option value="cor">Cor</option>
+                  <option value="pardo">Pardo</option>
+                </select>
+              </div>
+              <div className="borda-item">
+                <span>⬇️ Baixo</span>
+                <select 
+                  value={bordas.baixo} 
+                  onChange={(e) => setBordas({...bordas, baixo: e.target.value})}
+                >
+                  <option value="nenhum">Sem borda</option>
+                  <option value="cor">Cor</option>
+                  <option value="pardo">Pardo</option>
+                </select>
+              </div>
+              <div className="borda-item">
+                <span>⬅️ Esq</span>
+                <select 
+                  value={bordas.esquerda} 
+                  onChange={(e) => setBordas({...bordas, esquerda: e.target.value})}
+                >
+                  <option value="nenhum">Sem borda</option>
+                  <option value="cor">Cor</option>
+                  <option value="pardo">Pardo</option>
+                </select>
+              </div>
+              <div className="borda-item">
+                <span>➡️ Dir</span>
+                <select 
+                  value={bordas.direita} 
+                  onChange={(e) => setBordas({...bordas, direita: e.target.value})}
+                >
+                  <option value="nenhum">Sem borda</option>
+                  <option value="cor">Cor</option>
+                  <option value="pardo">Pardo</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -591,21 +667,26 @@ function EditorMPR({ pecaInicial }) {
               <label>Lista de Furos ({peca.furos.length + (peca.furosHorizontais?.length || 0)})</label>
               <div className="furos-scroll">
                 {/* Furos Verticais */}
-                {peca.furos.map((furo, index) => (
-                  <div
-                    key={`v-${furo.id || index}`}
-                    className={`furo-item ${selectedFuro?.id === furo.id ? 'selected' : ''}`}
-                    onClick={() => {
-                      setSelectedFuro({ ...furo, tipo: 'vertical' });
-                      setShowFuroConfig(true);
-                    }}
-                  >
-                    <span className="furo-icon vertical">🔴</span>
-                    <span className="furo-info">
-                      V#{index + 1} X:{furo.x} Y:{furo.y} Ø{furo.diametro}
-                    </span>
-                  </div>
-                ))}
+                {peca.furos.map((furo, index) => {
+                  const isLadoInferior = furo.lado === 'LI';
+                  return (
+                    <div
+                      key={`v-${furo.id || index}`}
+                      className={`furo-item ${selectedFuro?.id === furo.id ? 'selected' : ''}`}
+                      onClick={() => {
+                        setSelectedFuro({ ...furo, tipo: 'vertical' });
+                        setShowFuroConfig(true);
+                      }}
+                    >
+                      <span className={`furo-icon vertical ${isLadoInferior ? 'lado-inferior' : ''}`}>
+                        {isLadoInferior ? '⚫' : '🔴'}
+                      </span>
+                      <span className="furo-info">
+                        V#{index + 1} X:{furo.x} Y:{furo.y} Ø{furo.diametro} ({furo.lado || 'LS'})
+                      </span>
+                    </div>
+                  );
+                })}
                 
                 {/* Furos Horizontais */}
                 {(peca.furosHorizontais || []).map((furo, index) => (

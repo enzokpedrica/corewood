@@ -170,10 +170,11 @@ async def salvar_peca(
     comprimento: float = Form(...),
     espessura: float = Form(...),
     furos: str = Form("{}"),  # JSON string
+    bordas: str = Form("{}"),  # JSON string - NOVO
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Salva alterações da peça (dimensões + furos)"""
+    """Salva alterações da peça (dimensões + furos + bordas)"""
     
     peca = db.query(PecaDB).filter(PecaDB.id == peca_id).first()
     
@@ -188,6 +189,14 @@ async def salvar_peca(
     # Atualizar furos (JSON)
     import json
     peca.furos = json.loads(furos)
+    
+    # Atualizar bordas (JSON) - NOVO
+    peca.bordas = json.loads(bordas)
+    
+    print(f"💾 Salvando peça {peca_id}:")
+    print(f"   Dimensões: {largura}x{comprimento}x{espessura}")
+    print(f"   Furos: {peca.furos}")
+    print(f"   Bordas: {peca.bordas}")
     
     db.commit()
     db.refresh(peca)

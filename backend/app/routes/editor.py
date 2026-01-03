@@ -126,6 +126,7 @@ async def generate_pdf_from_editor(
     nome_peca: str = Form(...),
     furos_verticais: str = Form("[]"),
     furos_horizontais: str = Form("[]"),
+    bordas: str = Form("{}"),
     peca_id: Optional[int] = Form(None),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -175,6 +176,25 @@ async def generate_pdf_from_editor(
         # Converter JSON strings para objetos
         furos_vert = json.loads(furos_verticais)
         furos_horiz = json.loads(furos_horizontais)
+
+        # Converter bordas
+        bordas_dict = json.loads(bordas)
+        print(f"🎨 Bordas recebidas: {bordas_dict}")
+
+        # Mapear nomes do frontend para o PDF
+        bordas_pdf = {
+            'top': bordas_dict.get('topo'),
+            'bottom': bordas_dict.get('baixo'),
+            'left': bordas_dict.get('esquerda'),
+            'right': bordas_dict.get('direita')
+        }
+
+        # Converter 'nenhum' para None
+        for key in bordas_pdf:
+            if bordas_pdf[key] == 'nenhum':
+                bordas_pdf[key] = None
+
+        print(f"🎨 Bordas mapeadas para PDF: {bordas_pdf}")
         
         print(f"🔴 Furos verticais recebidos: {len(furos_vert)}")
         print(f"🔵 Furos horizontais recebidos: {len(furos_horiz)}")
@@ -244,7 +264,7 @@ async def generate_pdf_from_editor(
         dados_adicionais = {
             'angulo_rotacao': 0,
             'espelhar_peca': False,
-            'bordas': {'top': None, 'bottom': None, 'left': None, 'right': None},
+            'bordas': bordas_pdf,  # ← Usar bordas_pdf aqui
             'alerta': None,
             'revisao': '00',
             'status': 'CÓPIA CONTROLADA',

@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import './ListarPecas.css';
 import api from '../../services/api';
 
-function ListarPecas({ onSelecionarPeca }) {
-  const [codigoProduto, setCodigoProduto] = useState('');
-  const [pecas, setPecas] = useState([]);
+function ListarPecas({ 
+  onSelecionarPeca, 
+  codigoProduto, 
+  setCodigoProduto, 
+  pecas, 
+  setPecas 
+}) {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(null);
   
