@@ -192,15 +192,18 @@ class GeradorDesenhoTecnico:
             linhas_x = sorted(linhas_grupo.keys())
             tem_conflito_interno = self.verificar_conflito_100mm(linhas_x)
             
+            diametro = chave[0]  # chave = (diâmetro, profundidade)
+            
             grupos_com_linhas.append({
                 'chave': chave,
                 'furos': furos_grupo,
                 'linhas_x': linhas_x,
-                'tem_conflito_interno': tem_conflito_interno
+                'tem_conflito_interno': tem_conflito_interno,
+                'diametro': diametro
             })
-        
-        # Ordenar grupos: primeiro os sem conflito interno, depois por quantidade de furos (maior primeiro)
-        grupos_com_linhas.sort(key=lambda g: (g['tem_conflito_interno'], -len(g['furos'])))
+
+        # Ordenar grupos: primeiro os sem conflito interno, depois por DIÂMETRO (menor primeiro)
+        grupos_com_linhas.sort(key=lambda g: (g['tem_conflito_interno'], g['diametro']))
         
         # Distribuir grupos entre INFERIOR e SUPERIOR
         linhas_inferior = []
@@ -657,8 +660,15 @@ class GeradorDesenhoTecnico:
             comprimento_peca=altura_peca,
             largura_disponivel=largura_disponivel,
             altura_disponivel=altura_disponivel,
-            margem_seguranca=0.30
+            margem_seguranca=0.50
         )
+
+        print(f"🔍 DEBUG VISTA LATERAL ({lado}):")
+        print(f"   espessura_peca: {espessura_peca}")
+        print(f"   altura_peca: {altura_peca}")
+        print(f"   largura_disponivel: {largura_disponivel}")
+        print(f"   altura_disponivel: {altura_disponivel}")
+        print(f"   escala calculada: {escala}")
         
         largura_vista = espessura_peca * mm * escala
         altura_vista = altura_peca * mm * escala
@@ -972,7 +982,9 @@ class GeradorDesenhoTecnico:
                     batente = self.calcular_batente(peca)
                     valor = f"{self.formatar_cota(batente)}" if batente > 0 else "---"
                 elif campo_nome == "Página":
-                    valor = "2/2"
+                    pagina_atual = dados_adicionais.get('pagina_atual', 1)
+                    total_paginas = dados_adicionais.get('total_paginas', 1)
+                    valor = f"{pagina_atual}/{total_paginas}"
                 elif campo_nome == "Conferente":
                     valor = "TARCÍSIO"
                 elif campo_nome == "Status":
@@ -1121,7 +1133,7 @@ class GeradorDesenhoTecnico:
                 tamanho_fonte = self.calcular_tamanho_fonte_dinamico(c, valor, largura_celula - 8, "Helvetica", tamanho_base=10)
                 c.setFont("Helvetica", tamanho_fonte)
             elif label == "Página":
-                c.setFont("Helvetica", 15)    
+                c.setFont("Helvetica", 12)    
             else:
                 c.setFont(fonte, 12)
             
@@ -1443,8 +1455,9 @@ class GeradorDesenhoTecnico:
         Layout: [Vista Esquerda] [Vista Principal] [Vista Direita] - alinhados horizontalmente
         """
         
-        # Verificar se tem furos horizontais para definir layout
-        tem_furos_horizontais = len(peca.furos_horizontais) > 0
+        # Verificar se tem furos horizontais E se é a página INFERIOR para definir layout
+        tipo_furacao = dados_adicionais.get('tipo_furacao', 'NORMAL')
+        tem_furos_horizontais = len(peca.furos_horizontais) > 0 and tipo_furacao in ['INFERIOR', 'NORMAL']
         
         # ===== CALCULAR ESPAÇOS =====
         altura_tabela = 80
@@ -1466,10 +1479,24 @@ class GeradorDesenhoTecnico:
         
         if tem_furos_horizontais:
             # ===== LAYOUT COM VISTAS LATERAIS (horizontal) =====
-            # Dividir espaço: laterais fixas pequenas | principal ocupa o resto
-            largura_vista_lateral = 60  # Largura fixa pequena para laterais
-            largura_vista_principal = largura_disponivel - (2 * largura_vista_lateral) - 80  # Principal maior
+            
+            # Calcular proporção ideal baseado nas dimensões da peça
+            espessura = float(peca.dimensoes.espessura)
+            largura = float(peca.dimensoes.largura)
+            comprimento = float(peca.dimensoes.comprimento)
+            
+            # Largura mínima para vistas laterais (proporcional à espessura)
+            largura_vista_lateral = max(80, min(120, espessura * 6))
+            
             espaco_entre = 30
+            largura_vista_principal = largura_disponivel - (2 * largura_vista_lateral) - (2 * espaco_entre)
+            
+            # DEBUG
+            print(f"🔍 DEBUG VISTAS:")
+            print(f"   Peça: {comprimento}x{largura}x{espessura}")
+            print(f"   largura_disponivel: {largura_disponivel}")
+            print(f"   largura_vista_lateral: {largura_vista_lateral}")
+            print(f"   largura_vista_principal: {largura_vista_principal}")
             
             # Calcular largura total das 3 vistas + espaços
             largura_total_vistas = (2 * largura_vista_lateral) + largura_vista_principal + (2 * espaco_entre)
@@ -1492,7 +1519,7 @@ class GeradorDesenhoTecnico:
                 peca.dimensoes.comprimento,
                 largura_vista_principal,
                 altura_vistas,
-                margem_seguranca=0.70
+                margem_seguranca=0.55
             )
             
             largura_desenhada = peca.dimensoes.largura * mm * escala

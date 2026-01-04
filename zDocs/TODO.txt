@@ -1,5 +1,8 @@
 > Testar o .step de 2 peças	
 > Relatório Lei do Bem	
+> Adicionar Logo do Corewood no site
+> Triângulo de Atenção
+> Importar peça e salvar
 
 > Lógica para Furação
 	> Furação

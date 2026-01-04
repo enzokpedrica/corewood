@@ -301,7 +301,6 @@ async def generate_pdf(
             'alerta': alerta,
             'revisao': revisao,
             'status': status,
-            # NOVO: Adicionar dados do banco
             'codigo_peca': codigo_peca,
             'nome_peca': nome_peca_db,
             'codigo_produto': codigo_produto,
