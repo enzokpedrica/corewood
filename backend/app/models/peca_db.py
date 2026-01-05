@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Numeric, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, DateTime, Numeric, ForeignKey, JSON, Boolean, Text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -21,7 +21,9 @@ class PecaDB(Base):
     bordas = Column(JSON)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    transformacao = Column(JSON)  # Adicione junto com o campo bordas
+    transformacao = Column(JSON)
+    alerta = Column(Boolean, default=False)
+    observacoes = Column(Text)
     
     # Relacionamento
     produto = relationship("Produto", back_populates="pecas")

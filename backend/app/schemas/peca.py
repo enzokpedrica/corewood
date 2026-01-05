@@ -24,6 +24,8 @@ class PecaResponse(PecaBase):
     transformacao: Optional[Any] = None
     created_at: datetime
     updated_at: datetime
+    alerta: Optional[bool] = False
+    observacoes: Optional[str] = None
     
     class Config:
         from_attributes = True
