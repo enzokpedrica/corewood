@@ -64,10 +64,6 @@ class GeradorMPR:
         # Separar por tipo
         furos_verticais = [f for f in furos if f.get('tipo') == 'vertical']
         furos_horizontais = [f for f in furos if f.get('tipo') == 'horizontal']
-        
-        print(f"🔍 DEBUG - Total furos recebidos: {len(furos)}")
-        print(f"🔴 DEBUG - Furos verticais: {len(furos_verticais)}")
-        print(f"🔵 DEBUG - Furos horizontais: {len(furos_horizontais)}")
                 
         mpr = []
         
