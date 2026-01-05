@@ -258,7 +258,7 @@ class StepMultiPartParser:
         
         if espessura_bruta > 30:  # Espessura muito grande, provavelmente há cilindros fora
             from collections import Counter
-            z_rounded = [round(z, 0) for z in z_coords]
+            z_rounded = [round(z, 1) for z in z_coords]
             z_counter = Counter(z_rounded)
             z_unicos = sorted(set(z_rounded))
             
@@ -270,7 +270,7 @@ class StepMultiPartParser:
             for esp in espessuras_mdf:
                 for z_low in z_unicos:
                     z_high = z_low + esp
-                    if z_high in z_unicos or any(abs(z - z_high) < 1 for z in z_unicos):
+                    if any(abs(z - z_high) < 0.5 for z in z_unicos):
                         melhor_z_min = z_low
                         melhor_z_max = z_low + esp
                         encontrou = True
@@ -395,10 +395,6 @@ class StepMultiPartParser:
                 if (cil['y'] < peca.y_min - margem or cil['y'] > peca.y_max + margem):
                     continue  # Cilindro fora da peça no eixo Y
 
-                # DEBUG - Adicione isto:
-                print(f"🔍 Cilindro: X={cil['x']}, Y={cil['y']}, Z={cil['z']}, R={cil['raio']}")
-                print(f"   Peça bounds: X=[{peca.x_min}, {peca.x_max}], Y=[{peca.y_min}, {peca.y_max}], Z=[{peca.z_min}, {peca.z_max}]")
-                
                 x_rel = cil['x'] - peca.x_min
                 y_round = round(cil['y'], 0)
                 z_round = round(cil['z'], 0)
@@ -622,12 +618,7 @@ if __name__ == "__main__":
             content = f.read()
         
         result = parse_step_multipart(content)
-        
-        print(f"\n✅ Processamento concluído!")
-        print(f"   Peças: {result['resumo']['total_pecas']}")
-        print(f"   Acessórios: {result['resumo']['total_acessorios']}")
-        print(f"   Furos: {result['resumo']['total_furos']}")
-        
+                
         print("\n📦 Detalhes das peças:")
         for p in result['pecas']:
             print(f"   - {p['nome']}: {p['largura']}x{p['comprimento']}x{p['espessura']}mm ({len(p['furos'])} furos)")
