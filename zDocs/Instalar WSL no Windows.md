@@ -18,15 +18,15 @@ Instale: sudo apt install postgresql postgresql-contrib -y
 
 Verifique o serviço: sudo service postgresql status
 
-Acesse o usuário padrão (postgres) : sudo -i -u postgres
+Acesse o usuário padrão (postgres): sudo -i -u postgres
 
 Rode: psql
 
-Crie um banco de dados e um usuário (opcional): 
-	CREATE DATABASE corewood\_db;
-	CREATE USER kp\_user WITH ENCRYPTED PASSWORD 'kp\_pass'; 
+Crie um banco de dados e um usuário (opcional):
+CREATE DATABASE corewood\_db;
+CREATE USER kp\_user WITH ENCRYPTED PASSWORD 'kp\_pass';
 
-&nbsp;	GRANT ALL PRIVILEGES ON DATABASE corewood\_db TO kp\_user;
+ 	GRANT ALL PRIVILEGES ON DATABASE corewood\_db TO kp\_user;
 
 Com a criação do passo anterior, será necessário sair do psql: quit
 
@@ -36,11 +36,11 @@ Para acessar o psql e o banco: psql -U kp\_user -d corewood\_db
 
 ### Backend
 
-Instalar Uvicorn: sudo apt install uvicorn 
+Instalar Uvicorn: sudo apt install uvicorn
 
 Instalar Pip: sudo apt install python3-pip -y
 
-Instalar o requirements: python3 -m pip install --break-system-packages -r requirements.txt 
+Instalar o requirements: python3 -m pip install --break-system-packages -r requirements.txt
 
 Abra o VS Code: code .
 
@@ -72,7 +72,7 @@ Após rodar o Frontend, será necessário descomentar o código do Registre-se p
 
 
 
-senha core por postgree: ekp\_pass
+senha core por postgree: kp\_user
 
 senha core por kp\_user: kp\_pass
 
@@ -84,7 +84,7 @@ Pass Corewood: enzoeric
 
 
 
+User Corewood: enzo.pedrica
 
-
-
+Pass Corewood: enzoeric
 
