@@ -292,8 +292,16 @@ class StepMultiPartParser:
             # Segundo passo: filtrar cilindros
             cilindros_unicos = []
             coords_vistas = set()
-            
+
             for cil in cilindros:
+                # NOVO: Ignorar cilindros fora do bounding box da peça
+                margem = 5.0  # Tolerância de 5mm
+                if (cil['z'] < peca.z_min - margem or cil['z'] > peca.z_max + margem):
+                    continue  # Cilindro fora da peça no eixo Z
+                if (cil['x'] < peca.x_min - margem or cil['x'] > peca.x_max + margem):
+                    continue  # Cilindro fora da peça no eixo X
+                if (cil['y'] < peca.y_min - margem or cil['y'] > peca.y_max + margem):
+                    continue  # Cilindro fora da peça no eixo Y
                 x_rel = cil['x'] - peca.x_min
                 y_round = round(cil['y'], 0)
                 z_round = round(cil['z'], 0)
