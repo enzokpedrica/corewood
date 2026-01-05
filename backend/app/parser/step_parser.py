@@ -302,6 +302,11 @@ class StepMultiPartParser:
                     continue  # Cilindro fora da peça no eixo X
                 if (cil['y'] < peca.y_min - margem or cil['y'] > peca.y_max + margem):
                     continue  # Cilindro fora da peça no eixo Y
+
+                # DEBUG - Adicione isto:
+                print(f"🔍 Cilindro: X={cil['x']}, Y={cil['y']}, Z={cil['z']}, R={cil['raio']}")
+                print(f"   Peça bounds: X=[{peca.x_min}, {peca.x_max}], Y=[{peca.y_min}, {peca.y_max}], Z=[{peca.z_min}, {peca.z_max}]")
+                
                 x_rel = cil['x'] - peca.x_min
                 y_round = round(cil['y'], 0)
                 z_round = round(cil['z'], 0)
