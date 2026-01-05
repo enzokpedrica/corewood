@@ -1374,22 +1374,63 @@ class GeradorDesenhoTecnico:
         furos_superior = distribuicao['superior']
         furos_segunda = distribuicao['segunda_furacao']
         
+        # Função para determinar título baseado no lado dos furos
+        def determinar_titulo_pagina(furos_lista):
+            if not furos_lista:
+                return "INFERIOR"
+            
+            # Verificar se TODOS os furos são LS
+            todos_ls = True
+            for furo in furos_lista:
+                lado = getattr(furo, 'lado', 'LS')
+                if lado != 'LS':
+                    todos_ls = False
+                    break
+            
+            # Só é SUPERIOR se TODOS forem LS
+            # Caso contrário, força INFERIOR
+            if todos_ls:
+                return "SUPERIOR"
+            else:
+                return "INFERIOR"
+
         # Determinar quais páginas gerar
         paginas = []
 
         if furos_inferior:
             paginas.append({
                 'tipo': 'INFERIOR',
-                'titulo': 'FURAÇÃO INFERIOR',
+                'titulo_lado': determinar_titulo_pagina(furos_inferior),
                 'furos': furos_inferior
             })
 
         if furos_superior:
             paginas.append({
                 'tipo': 'SUPERIOR',
-                'titulo': 'FURAÇÃO SUPERIOR',
+                'titulo_lado': determinar_titulo_pagina(furos_superior),
                 'furos': furos_superior
             })
+
+        # Se não tem furos verticais, gera página única
+        if not paginas:
+            paginas.append({
+                'tipo': 'NORMAL',
+                'titulo_lado': 'INFERIOR',
+                'furos': []
+            })
+
+        # Agrupar por título_lado para numerar
+        contagem_titulos = {}
+        for pagina in paginas:
+            titulo_lado = pagina['titulo_lado']
+            if titulo_lado not in contagem_titulos:
+                contagem_titulos[titulo_lado] = 0
+            contagem_titulos[titulo_lado] += 1
+
+        # Atribuir títulos finais (sem numeração)
+        for pagina in paginas:
+            titulo_lado = pagina['titulo_lado']
+            pagina['titulo'] = f"FURAÇÃO {titulo_lado}"
 
         # Se tiver 2ª passada, adicionar ao alerta em vez de criar nova página
         if furos_segunda:
@@ -1455,9 +1496,16 @@ class GeradorDesenhoTecnico:
         Layout: [Vista Esquerda] [Vista Principal] [Vista Direita] - alinhados horizontalmente
         """
         
-        # Verificar se tem furos horizontais E se é a página INFERIOR para definir layout
+        # Verificar se tem furos horizontais E se é a página SUPERIOR (ou NORMAL se só tem 1 página)
         tipo_furacao = dados_adicionais.get('tipo_furacao', 'NORMAL')
-        tem_furos_horizontais = len(peca.furos_horizontais) > 0 and tipo_furacao in ['INFERIOR', 'NORMAL']
+        total_paginas = dados_adicionais.get('total_paginas', 1)
+
+        # Se tem múltiplas páginas, vistas laterais só na SUPERIOR (página 2)
+        # Se tem só 1 página, mostra normalmente
+        if total_paginas > 1:
+            tem_furos_horizontais = len(peca.furos_horizontais) > 0 and tipo_furacao == 'SUPERIOR'
+        else:
+            tem_furos_horizontais = len(peca.furos_horizontais) > 0
         
         # ===== CALCULAR ESPAÇOS =====
         altura_tabela = 80
