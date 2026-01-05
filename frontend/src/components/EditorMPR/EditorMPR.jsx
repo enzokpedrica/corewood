@@ -25,6 +25,8 @@ function EditorMPR({ pecaInicial, onVoltar }) {
   const [nomePeca, setNomePeca] = useState('');
   const [codigoPeca, setCodigoPeca] = useState('');
   const [loading, setLoading] = useState(false);
+  const [alerta, setAlerta] = useState(false);
+  const [observacoes, setObservacoes] = useState('');
 
   useEffect(() => {
     if (pecaInicial) {      
@@ -619,6 +621,29 @@ function EditorMPR({ pecaInicial, onVoltar }) {
                   <option value="pardo">Pardo</option>
                 </select>
               </div>
+            </div>
+          </div>
+
+          {/* ALERTA E OBSERVAÇÕES */}
+          <div className="alerta-section">
+            <div className="alerta-checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={alerta}
+                  onChange={(e) => setAlerta(e.target.checked)}
+                />
+                ⚠️ Triângulo de Atenção
+              </label>
+            </div>
+            
+            <div className="observacoes-group">
+              <label>📝 Observações</label>
+              <textarea
+                value={observacoes}
+                onChange={(e) => setObservacoes(e.target.value)}
+                rows={3}
+              />
             </div>
           </div>
 
