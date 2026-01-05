@@ -196,7 +196,7 @@ class StepMultiPartParser:
         return cilindros
     
     def _calculate_bounding_box(self, solid_id: int) -> tuple:
-        """Calcula bounding box de um sólido usando apenas faces PLANE"""
+        """Calcula bounding box de um sólido, corrigindo Z para espessura real"""
         solid = self._get_entity(solid_id)
         if not solid:
             return (0, 0, 0, 0, 0, 0)
@@ -209,58 +209,70 @@ class StepMultiPartParser:
         if not shell:
             return (0, 0, 0, 0, 0, 0)
         
-        # Encontrar faces PLANE (faces planas da peça, não cilindros)
-        plane_points = []
+        points = []
         face_refs = re.findall(r'#(\d+)', shell['data'])
+        visited = set()
+        to_visit = [int(ref) for ref in face_refs]
         
-        for face_ref in face_refs:
-            face = self._get_entity(int(face_ref))
-            if not face or face['type'] != 'ADVANCED_FACE':
+        while to_visit:
+            current_id = to_visit.pop()
+            if current_id in visited:
+                continue
+            visited.add(current_id)
+            
+            entity = self._get_entity(current_id)
+            if not entity:
                 continue
             
-            # Procurar a superfície da face
-            surface_match = re.search(r'#(\d+)\s*,\s*\.[TF]\.\s*\)', face['data'])
-            if surface_match:
-                surface = self._get_entity(int(surface_match.group(1)))
-                if surface and surface['type'] == 'PLANE':
-                    # É uma face plana - coletar pontos
-                    point_refs = re.findall(r'#(\d+)', face['data'])
-                    visited = set()
-                    to_visit = [int(ref) for ref in point_refs]
-                    
-                    while to_visit:
-                        current_id = to_visit.pop()
-                        if current_id in visited:
-                            continue
-                        visited.add(current_id)
-                        
-                        entity = self._get_entity(current_id)
-                        if not entity:
-                            continue
-                        
-                        if entity['type'] == 'CARTESIAN_POINT':
-                            coords = self._parse_cartesian_point(current_id)
-                            if coords:
-                                plane_points.append(coords)
-                        elif entity['type'] not in ['CYLINDRICAL_SURFACE', 'CIRCLE']:
-                            refs = re.findall(r'#(\d+)', entity['data'])
-                            for ref in refs:
-                                ref_id = int(ref)
-                                if ref_id not in visited:
-                                    to_visit.append(ref_id)
+            if entity['type'] == 'CARTESIAN_POINT':
+                coords = self._parse_cartesian_point(current_id)
+                if coords:
+                    points.append(coords)
+            else:
+                refs = re.findall(r'#(\d+)', entity['data'])
+                for ref in refs:
+                    ref_id = int(ref)
+                    if ref_id not in visited:
+                        to_visit.append(ref_id)
         
-        # Se não encontrou pontos de PLANEs, usar método antigo como fallback
-        if not plane_points:
-            return self._calculate_bounding_box_fallback(solid_id)
+        if not points:
+            return (0, 0, 0, 0, 0, 0)
         
-        x_coords = [p[0] for p in plane_points]
-        y_coords = [p[1] for p in plane_points]
-        z_coords = [p[2] for p in plane_points]
+        x_coords = [p[0] for p in points]
+        y_coords = [p[1] for p in points]
+        z_coords = [p[2] for p in points]
+        
+        x_min, x_max = min(x_coords), max(x_coords)
+        y_min, y_max = min(y_coords), max(y_coords)
+        z_min_raw, z_max_raw = min(z_coords), max(z_coords)
+        
+        # Corrigir Z para espessura típica de MDF (12-25mm)
+        # Agrupar valores Z por frequência
+        from collections import Counter
+        z_rounded = [round(z, 1) for z in z_coords]
+        z_counter = Counter(z_rounded)
+        
+        # Pegar os 2 valores Z mais frequentes (faces superior e inferior)
+        z_mais_comuns = z_counter.most_common()
+        
+        if len(z_mais_comuns) >= 2:
+            # Ordenar para pegar min e max das faces principais
+            z_faces = sorted([z[0] for z in z_mais_comuns[:4]])  # Pega até 4 mais comuns
+            
+            # Verificar se a diferença entre o maior e menor faz sentido para espessura
+            for i, z_low in enumerate(z_faces):
+                for z_high in z_faces[i+1:]:
+                    diferenca = z_high - z_low
+                    # Espessura típica de MDF: 3mm a 30mm
+                    if 3 <= diferenca <= 30:
+                        z_min_raw = z_low
+                        z_max_raw = z_high
+                        break
         
         return (
-            min(x_coords), max(x_coords),
-            min(y_coords), max(y_coords),
-            min(z_coords), max(z_coords)
+            x_min, x_max,
+            y_min, y_max,
+            z_min_raw, z_max_raw
         )
 
     def _calculate_bounding_box_fallback(self, solid_id: int) -> tuple:
