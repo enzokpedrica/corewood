@@ -2,7 +2,6 @@
 > Relatório Lei do Bem	
 > Adicionar Logo do Corewood no site
 > Triângulo de Atenção
-> Importar peça e salvar
 
 > Lógica para Furação
 	> Furação
@@ -15,10 +14,6 @@
 	> Deixar o texto um pouco afastado da linha da cota 	
 
 > Tabela Horizontal
-		> O Responsável puxa de acordo com o login do usuário
-			> Aumentar tamanho da fonte
-		> Como vai saber o tanto de páginas?
-		> Nome do conferente
 	> Ponto de Atenção		
 
 > Tela de pré visualização antes de gerar documentação
@@ -37,9 +32,6 @@
 		> Modelagem .step
 		> Documentação
 		> BHX
-
-> Relatório Lei do Bem	
-
 -------------------------------------------------------			
 > Salvar arquivos BHX
 	> Salvamento automático
