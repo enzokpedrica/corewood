@@ -244,35 +244,47 @@ class StepMultiPartParser:
         
         x_min, x_max = min(x_coords), max(x_coords)
         y_min, y_max = min(y_coords), max(y_coords)
-        z_min_raw, z_max_raw = min(z_coords), max(z_coords)
         
-        # Corrigir Z para espessura típica de MDF (12-25mm)
-        # Agrupar valores Z por frequência
-        from collections import Counter
-        z_rounded = [round(z, 1) for z in z_coords]
-        z_counter = Counter(z_rounded)
+        # Usar os valores Z absolutos min e max
+        z_min = min(z_coords)
+        z_max = max(z_coords)
         
-        # Pegar os 2 valores Z mais frequentes (faces superior e inferior)
-        z_mais_comuns = z_counter.most_common()
+        # Calcular espessura bruta
+        espessura_bruta = z_max - z_min
         
-        if len(z_mais_comuns) >= 2:
-            # Ordenar para pegar min e max das faces principais
-            z_faces = sorted([z[0] for z in z_mais_comuns[:4]])  # Pega até 4 mais comuns
+        # Se espessura parece errada (muito grande ou fora do padrão MDF),
+        # procurar valores Z que formem espessura de MDF padrão
+        espessuras_mdf = [15, 18, 12, 9, 6, 25, 3]  # Espessuras comuns de MDF em mm
+        
+        if espessura_bruta > 30:  # Espessura muito grande, provavelmente há cilindros fora
+            from collections import Counter
+            z_rounded = [round(z, 0) for z in z_coords]
+            z_counter = Counter(z_rounded)
+            z_unicos = sorted(set(z_rounded))
             
-            # Verificar se a diferença entre o maior e menor faz sentido para espessura
-            for i, z_low in enumerate(z_faces):
-                for z_high in z_faces[i+1:]:
-                    diferenca = z_high - z_low
-                    # Espessura típica de MDF: 3mm a 30mm
-                    if 3 <= diferenca <= 30:
-                        z_min_raw = z_low
-                        z_max_raw = z_high
+            # Procurar par de Z que forme espessura de MDF
+            melhor_z_min = z_min
+            melhor_z_max = z_max
+            encontrou = False
+            
+            for esp in espessuras_mdf:
+                for z_low in z_unicos:
+                    z_high = z_low + esp
+                    if z_high in z_unicos or any(abs(z - z_high) < 1 for z in z_unicos):
+                        melhor_z_min = z_low
+                        melhor_z_max = z_low + esp
+                        encontrou = True
                         break
+                if encontrou:
+                    break
+            
+            z_min = melhor_z_min
+            z_max = melhor_z_max
         
         return (
             x_min, x_max,
             y_min, y_max,
-            z_min_raw, z_max_raw
+            z_min, z_max
         )
 
     def _calculate_bounding_box_fallback(self, solid_id: int) -> tuple:
