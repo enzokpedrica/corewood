@@ -1676,9 +1676,10 @@ class GeradorDesenhoTecnico:
             y_margem_superior - y_margem_inferior, stroke=1, fill=0)
         
         # ===== ALERTA =====
-        texto_alerta = dados_adicionais.get('alerta', None) if dados_adicionais else None
-        if texto_alerta:
-            x_alerta = x_tabela - 35
+        texto_alerta = dados_adicionais.get('observacoes', '')
+        mostrar_alerta = dados_adicionais.get('alerta', False)
+        if mostrar_alerta:
+            x_alerta = x_tabela
             y_alerta = y_tabela + altura_tabela + 10
             self.desenhar_alerta_atencao(c, x_alerta, y_alerta, texto_alerta)
 

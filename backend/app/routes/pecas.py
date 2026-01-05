@@ -171,8 +171,10 @@ async def salvar_peca(
     espessura: float = Form(...),
     furos: str = Form("{}"),
     bordas: str = Form("{}"),
-    transformacao: str = Form("{}"),  # ← ADICIONE ESTA LINHA
+    transformacao: str = Form("{}"),
     current_user: User = Depends(get_current_active_user),
+    alerta: bool = Form(False),
+    observacoes: str = Form(""),
     db: Session = Depends(get_db)
 ):
     """Salva alterações da peça (dimensões + furos + bordas + transformação)"""
@@ -197,6 +199,9 @@ async def salvar_peca(
     
     # Atualizar transformação (JSON)
     peca.transformacao = json.loads(transformacao)
+
+    peca.alerta = alerta
+    peca.observacoes = observacoes      
     
     print(f"💾 Salvando peça {peca_id}:")
     print(f"   Dimensões: {largura}x{comprimento}x{espessura}")

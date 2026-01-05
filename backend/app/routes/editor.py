@@ -133,6 +133,8 @@ async def generate_pdf_from_editor(
     transformacao: str = Form("{}"),
     peca_id: Optional[int] = Form(None),
     current_user: User = Depends(get_current_active_user),
+    alerta: bool = Form(False),
+    observacoes: str = Form(""),
     db: Session = Depends(get_db)
 ):
     """
@@ -273,7 +275,8 @@ async def generate_pdf_from_editor(
             'angulo_rotacao': transformacao_dict.get('rotacao', 0),
             'espelhar_peca': transformacao_dict.get('espelhado', False),
             'bordas': bordas_pdf,
-            'alerta': None,
+            'alerta': alerta,        
+            'observacoes': observacoes,
             'revisao': '00',
             'status': 'CÓPIA CONTROLADA',
             'codigo_peca': codigo_peca,

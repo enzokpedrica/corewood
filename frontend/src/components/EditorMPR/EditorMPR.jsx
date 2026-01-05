@@ -42,6 +42,10 @@ function EditorMPR({ pecaInicial, onVoltar }) {
       
       setNomePeca(pecaInicial.nome || '');
       setCodigoPeca(pecaInicial.codigo || '');
+
+      // Carregar alerta e observações
+      setAlerta(pecaInicial.alerta || false);
+      setObservacoes(pecaInicial.observacoes || '');
       
       // Carregar bordas
       if (pecaInicial.bordas) {
@@ -290,7 +294,9 @@ function EditorMPR({ pecaInicial, onVoltar }) {
         ...peca,
         peca_id: pecaInicial?.id || null,
         bordas: bordas,
-        transformacao: transformacao
+        transformacao: transformacao,
+        alerta: alerta,         
+        observacoes: observacoes
       };
     
       const pdfBlob = await gerarPDFEditor(pecaComId);
@@ -468,6 +474,8 @@ function EditorMPR({ pecaInicial, onVoltar }) {
       }));
       formData.append('bordas', JSON.stringify(bordas));
       formData.append('transformacao', JSON.stringify(transformacao));
+      formData.append('alerta', alerta);
+      formData.append('observacoes', observacoes);
 
       const response = await api.put(
         `/pecas/${pecaInicial.id}/salvar`,
