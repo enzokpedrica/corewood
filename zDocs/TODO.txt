@@ -1,6 +1,5 @@
 > Testar o .step de 2 peças	
 > Relatório Lei do Bem	
-> Adicionar Logo do Corewood no site
 > Triângulo de Atenção
 
 > Lógica para Furação
@@ -11,10 +10,7 @@
 > Evitar sobreposição de cotas
 	> Cota da vista principal que sai pra esquerda e topo
 	> Cota de furos na vista principal
-	> Deixar o texto um pouco afastado da linha da cota 	
-
-> Tabela Horizontal
-	> Ponto de Atenção		
+	> Deixar o texto um pouco afastado da linha da cota 		
 
 > Tela de pré visualização antes de gerar documentação
 	> Deixar algo mais interativo?
