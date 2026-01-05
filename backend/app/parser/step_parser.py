@@ -196,7 +196,75 @@ class StepMultiPartParser:
         return cilindros
     
     def _calculate_bounding_box(self, solid_id: int) -> tuple:
-        """Calcula bounding box de um sólido"""
+        """Calcula bounding box de um sólido usando apenas faces PLANE"""
+        solid = self._get_entity(solid_id)
+        if not solid:
+            return (0, 0, 0, 0, 0, 0)
+        
+        shell_match = re.search(r'#(\d+)', solid['data'])
+        if not shell_match:
+            return (0, 0, 0, 0, 0, 0)
+        
+        shell = self._get_entity(int(shell_match.group(1)))
+        if not shell:
+            return (0, 0, 0, 0, 0, 0)
+        
+        # Encontrar faces PLANE (faces planas da peça, não cilindros)
+        plane_points = []
+        face_refs = re.findall(r'#(\d+)', shell['data'])
+        
+        for face_ref in face_refs:
+            face = self._get_entity(int(face_ref))
+            if not face or face['type'] != 'ADVANCED_FACE':
+                continue
+            
+            # Procurar a superfície da face
+            surface_match = re.search(r'#(\d+)\s*,\s*\.[TF]\.\s*\)', face['data'])
+            if surface_match:
+                surface = self._get_entity(int(surface_match.group(1)))
+                if surface and surface['type'] == 'PLANE':
+                    # É uma face plana - coletar pontos
+                    point_refs = re.findall(r'#(\d+)', face['data'])
+                    visited = set()
+                    to_visit = [int(ref) for ref in point_refs]
+                    
+                    while to_visit:
+                        current_id = to_visit.pop()
+                        if current_id in visited:
+                            continue
+                        visited.add(current_id)
+                        
+                        entity = self._get_entity(current_id)
+                        if not entity:
+                            continue
+                        
+                        if entity['type'] == 'CARTESIAN_POINT':
+                            coords = self._parse_cartesian_point(current_id)
+                            if coords:
+                                plane_points.append(coords)
+                        elif entity['type'] not in ['CYLINDRICAL_SURFACE', 'CIRCLE']:
+                            refs = re.findall(r'#(\d+)', entity['data'])
+                            for ref in refs:
+                                ref_id = int(ref)
+                                if ref_id not in visited:
+                                    to_visit.append(ref_id)
+        
+        # Se não encontrou pontos de PLANEs, usar método antigo como fallback
+        if not plane_points:
+            return self._calculate_bounding_box_fallback(solid_id)
+        
+        x_coords = [p[0] for p in plane_points]
+        y_coords = [p[1] for p in plane_points]
+        z_coords = [p[2] for p in plane_points]
+        
+        return (
+            min(x_coords), max(x_coords),
+            min(y_coords), max(y_coords),
+            min(z_coords), max(z_coords)
+        )
+
+    def _calculate_bounding_box_fallback(self, solid_id: int) -> tuple:
+        """Método fallback - usa todos os pontos"""
         solid = self._get_entity(solid_id)
         if not solid:
             return (0, 0, 0, 0, 0, 0)
