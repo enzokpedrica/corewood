@@ -19,6 +19,7 @@ function ListarPecas({
   const [atribuicoes, setAtribuicoes] = useState({});
   const [loadingStep, setLoadingStep] = useState(false);
   const [erroStep, setErroStep] = useState(null);
+  const [gerandoPDFs, setGerandoPDFs] = useState(false);
 
   const buscarPecas = async () => {
     if (!codigoProduto) {
@@ -120,10 +121,7 @@ function ListarPecas({
         if (!pecaId) continue;
         
         const stepPeca = stepPecas[parseInt(stepIdx)];
-        
-        // Debug: ver o que está vindo
-        console.log('stepPeca:', stepPeca);
-        
+                
         // Pegar dimensões (podem estar em diferentes formatos)
         const largura = stepPeca.largura || stepPeca.dimensoes?.largura || 0;
         const comprimento = stepPeca.comprimento || stepPeca.dimensoes?.comprimento || 0;
@@ -233,6 +231,54 @@ function ListarPecas({
     setErroStep(null);
   };
 
+  const handleGerarTodosPDFs = async () => {
+    // Filtrar peças que têm furos
+    const pecasComFuros = pecas.filter(peca => {
+      const furosVerticais = peca.furos?.verticais?.length || 0;
+      const furosHorizontais = peca.furos?.horizontais?.length || 0;
+      return (furosVerticais + furosHorizontais) > 0;
+    });
+
+    if (pecasComFuros.length === 0) {
+      alert('⚠️ Nenhuma peça com furos para gerar PDF!');
+      return;
+    }
+
+    const confirmacao = window.confirm(
+      `Gerar PDF de ${pecasComFuros.length} peça(s) com furação?\n\n` +
+      `Peças: ${pecasComFuros.map(p => p.nome).join(', ')}`
+    );
+
+    if (!confirmacao) return;
+
+    setGerandoPDFs(true);
+
+    try {
+      const response = await api.post(
+        '/editor/generate-pdfs-batch',
+        { peca_ids: pecasComFuros.map(p => p.id) },
+        { responseType: 'blob' }
+      );
+
+      // Download do ZIP
+      const url = window.URL.createObjectURL(response.data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `PDFs_${codigoProduto}_${new Date().toISOString().slice(0,10)}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      alert(`✅ ${pecasComFuros.length} PDF(s) gerado(s) com sucesso!`);
+    } catch (error) {
+      console.error('Erro ao gerar PDFs:', error);
+      alert('❌ Erro ao gerar PDFs: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setGerandoPDFs(false);
+    }
+  };
+
   return (
     <div className="listar-pecas">
       <div className="listar-container">
@@ -267,12 +313,21 @@ function ListarPecas({
           <div className="pecas-lista">
             <div className="pecas-header">
               <h3>📦 {pecas.length} peça(s) encontrada(s)</h3>
-              <button 
-                className="btn-importar-step"
-                onClick={() => setShowModalStep(true)}
-              >
-                📎 Importar STEP
-              </button>
+              <div className="pecas-header-actions">
+                <button 
+                  className="btn-importar-step"
+                  onClick={() => setShowModalStep(true)}
+                >
+                  📎 Importar STEP
+                </button>
+                <button 
+                  className="btn-gerar-pdfs"
+                  onClick={handleGerarTodosPDFs}
+                  disabled={gerandoPDFs}
+                >
+                  {gerandoPDFs ? '⏳ Gerando...' : '📄 Gerar PDFs'}
+                </button>
+              </div>
             </div>
 
             {pecas.map((peca) => {

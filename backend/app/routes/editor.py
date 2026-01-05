@@ -9,6 +9,9 @@ from app.database import get_db
 from sqlalchemy.orm import Session
 import tempfile
 from typing import Union
+import os
+from app.models.peca_db import PecaDB
+from app.models.produto import Produto
 
 router = APIRouter(prefix="/editor", tags=["editor"])
 
@@ -291,8 +294,162 @@ async def generate_pdf_from_editor(
             background=None
         )
         
+        
     except Exception as e:
         print(f"❌ Erro ao gerar PDF: {str(e)}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro ao gerar PDF: {str(e)}")
+    
+@router.post("/generate-pdfs-batch")
+async def generate_pdfs_batch(
+    request: dict,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Gera PDFs de múltiplas peças e retorna um ZIP
+    """
+    import zipfile
+    import io
+    from fastapi.responses import StreamingResponse
+    
+    peca_ids = request.get('peca_ids', [])
+    
+    if not peca_ids:
+        raise HTTPException(status_code=400, detail="Nenhuma peça selecionada")
+    
+    print(f"\n📄 ===== GERANDO PDFs EM LOTE =====")
+    print(f"👤 Usuário: {current_user.username}")
+    print(f"📦 Peças: {peca_ids}")
+    
+    # Criar ZIP em memória
+    zip_buffer = io.BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for peca_id in peca_ids:
+            try:
+                # Buscar peça
+                peca_db = db.query(PecaDB).filter(PecaDB.id == peca_id).first()
+                if not peca_db:
+                    print(f"⚠️ Peça {peca_id} não encontrada")
+                    continue
+                
+                # Buscar produto
+                produto = db.query(Produto).filter(Produto.id == peca_db.produto_id).first()
+                
+                print(f"📄 Gerando PDF: {peca_db.codigo} - {peca_db.nome}")
+                
+                # Montar dados da peça
+                from app.models.peca import Peca, Dimensoes, FuroVertical, FuroHorizontal
+                from app.generators.pdf_generator import GeradorDesenhoTecnico
+                
+                dimensoes = Dimensoes(
+                    largura=float(peca_db.comprimento or 0),
+                    comprimento=float(peca_db.largura or 0),
+                    espessura=float(peca_db.espessura or 15)
+                )
+                
+                # Processar furos
+                furos_verticais_obj = []
+                furos_horizontais_obj = []
+                
+                furos_data = peca_db.furos or {}
+                
+                for furo in furos_data.get('verticais', []):
+                    lado = furo.get('lado', 'LS')
+                    if lado not in ['XP', 'XM', 'YP', 'YM']:
+                        furos_verticais_obj.append(
+                            FuroVertical(
+                                x=furo['x'],
+                                y=furo['y'],
+                                diametro=furo['diametro'],
+                                profundidade=furo.get('profundidade', 0),
+                                lado=lado
+                            )
+                        )
+                
+                for furo in furos_data.get('horizontais', []):
+                    x_val = furo.get('x', 0)
+                    if x_val == 'x':
+                        x_val = 'x'
+                    else:
+                        x_val = float(x_val) if x_val else 0
+                    
+                    furos_horizontais_obj.append(
+                        FuroHorizontal(
+                            x=x_val,
+                            y=furo['y'],
+                            z=furo.get('z', 7.5),
+                            diametro=furo['diametro'],
+                            profundidade=furo.get('profundidade', 0),
+                            lado=furo.get('lado', 'XP')
+                        )
+                    )
+                
+                peca_obj = Peca(
+                    nome=peca_db.nome,
+                    dimensoes=dimensoes,
+                    furos_verticais=furos_verticais_obj,
+                    furos_horizontais=furos_horizontais_obj,
+                    comentarios=[]
+                )
+                
+                # Buscar transformação e bordas
+                transformacao = peca_db.transformacao or {}
+                bordas = peca_db.bordas or {}
+                
+                # Mapear bordas
+                bordas_pdf = {
+                    'top': bordas.get('topo') if bordas.get('topo') != 'nenhum' else None,
+                    'bottom': bordas.get('baixo') if bordas.get('baixo') != 'nenhum' else None,
+                    'left': bordas.get('esquerda') if bordas.get('esquerda') != 'nenhum' else None,
+                    'right': bordas.get('direita') if bordas.get('direita') != 'nenhum' else None
+                }
+                
+                # Gerar PDF temporário
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+                    pdf_path = tmp_file.name
+                
+                gerador = GeradorDesenhoTecnico()
+                dados_adicionais = {
+                    'angulo_rotacao': transformacao.get('rotacao', 0),
+                    'espelhar_peca': transformacao.get('espelhado', False),
+                    'bordas': bordas_pdf,
+                    'alerta': None,
+                    'revisao': '00',
+                    'status': 'CÓPIA CONTROLADA',
+                    'codigo_peca': peca_db.codigo,
+                    'nome_peca': peca_db.nome,
+                    'codigo_produto': produto.codigo if produto else None,
+                    'nome_produto': produto.nome if produto else None,
+                    'responsavel': current_user.username
+                }
+                
+                gerador.gerar_pdf(peca_obj, pdf_path, dados_adicionais)
+                
+                # Adicionar ao ZIP
+                nome_arquivo = f"{peca_db.codigo}_{peca_db.nome}.pdf".replace(' ', '_')
+                with open(pdf_path, 'rb') as pdf_file:
+                    zip_file.writestr(nome_arquivo, pdf_file.read())
+                
+                # Limpar arquivo temporário
+                os.remove(pdf_path)
+                
+                print(f"✅ PDF gerado: {nome_arquivo}")
+                
+            except Exception as e:
+                print(f"❌ Erro ao gerar PDF da peça {peca_id}: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                continue
+    
+    zip_buffer.seek(0)
+    
+    print(f"✅ ZIP gerado com sucesso!")
+    
+    return StreamingResponse(
+        zip_buffer,
+        media_type='application/zip',
+        headers={'Content-Disposition': 'attachment; filename=pecas_pdfs.zip'}
+    )    

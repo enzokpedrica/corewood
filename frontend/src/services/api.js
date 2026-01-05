@@ -138,7 +138,6 @@ export const exportarMPR = async (pecaData) => {
  */
 export const gerarPDFEditor = async (pecaData) => {
   try {
-    console.log('🔍 DEBUG - pecaData recebido:', pecaData);
     const formData = new FormData();
     
     // Dados da peça
@@ -150,17 +149,14 @@ export const gerarPDFEditor = async (pecaData) => {
     // NOVO: ID da peça (se existir)
     if (pecaData.peca_id) {
       formData.append('peca_id', pecaData.peca_id);
-      console.log('🔍 DEBUG - peca_id adicionado:', pecaData.peca_id);
     }
     
     // Furos verticais
     const furosVerticais = pecaData.furos || [];
-    console.log('🔍 DEBUG - furos verticais:', furosVerticais);
     formData.append('furos_verticais', JSON.stringify(furosVerticais));
     
     // Furos horizontais
     const furosHorizontais = pecaData.furosHorizontais || [];
-    console.log('🔍 DEBUG - furos horizontais:', furosHorizontais);
     formData.append('furos_horizontais', JSON.stringify(furosHorizontais));
 
     // Bordas

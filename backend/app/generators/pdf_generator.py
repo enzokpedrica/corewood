@@ -662,13 +662,6 @@ class GeradorDesenhoTecnico:
             altura_disponivel=altura_disponivel,
             margem_seguranca=0.50
         )
-
-        print(f"🔍 DEBUG VISTA LATERAL ({lado}):")
-        print(f"   espessura_peca: {espessura_peca}")
-        print(f"   altura_peca: {altura_peca}")
-        print(f"   largura_disponivel: {largura_disponivel}")
-        print(f"   altura_disponivel: {altura_disponivel}")
-        print(f"   escala calculada: {escala}")
         
         largura_vista = espessura_peca * mm * escala
         altura_vista = altura_peca * mm * escala
@@ -973,8 +966,6 @@ class GeradorDesenhoTecnico:
                     nome_prod = dados_adicionais.get('nome_produto', '')
                     valor = f"{cod_prod} - {nome_prod}" if cod_prod and nome_prod else "---"
                 elif campo_nome == "responsavel":
-                    print(f"DEBUG - campo_nome: {campo_nome}")
-                    print(f"DEBUG - dados_adicionais: {dados_adicionais.get('responsavel')}")
                     valor = dados_adicionais.get('responsavel', '---')
                 elif campo_nome == "Deslocamento":
                     valor = "---"
@@ -1538,13 +1529,6 @@ class GeradorDesenhoTecnico:
             
             espaco_entre = 30
             largura_vista_principal = largura_disponivel - (2 * largura_vista_lateral) - (2 * espaco_entre)
-            
-            # DEBUG
-            print(f"🔍 DEBUG VISTAS:")
-            print(f"   Peça: {comprimento}x{largura}x{espessura}")
-            print(f"   largura_disponivel: {largura_disponivel}")
-            print(f"   largura_vista_lateral: {largura_vista_lateral}")
-            print(f"   largura_vista_principal: {largura_vista_principal}")
             
             # Calcular largura total das 3 vistas + espaços
             largura_total_vistas = (2 * largura_vista_lateral) + largura_vista_principal + (2 * espaco_entre)
