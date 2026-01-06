@@ -9,8 +9,8 @@ import os
 # URL do banco (variável de ambiente ou local)
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://neondb_owner:npg_o2KqUb4ykPZh@ep-silent-dream-ah42tefe-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require"
-    #"postgresql://kp_user:kp_pass@localhost/corewood_db"
+    #"postgresql://neondb_owner:npg_o2KqUb4ykPZh@ep-silent-dream-ah42tefe-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require"
+    "postgresql://kp_user:kp_pass@localhost/corewood_db"
 )
 
 # Criar engine com configurações de reconexão
