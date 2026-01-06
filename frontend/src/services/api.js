@@ -145,7 +145,7 @@ export const gerarPDFEditor = async (pecaData) => {
     formData.append('comprimento', pecaData.comprimento || 0);
     formData.append('espessura', pecaData.espessura || 15);
     formData.append('nome_peca', pecaData.nome || 'Peça sem nome');
-    formData.append('alerta', pecaData.alerta || false);
+    formData.append('alerta', pecaData.alerta ? 'true' : 'false');
     formData.append('observacoes', pecaData.observacoes || '');
     
     // NOVO: ID da peça (se existir)

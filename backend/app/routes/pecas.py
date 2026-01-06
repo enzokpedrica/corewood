@@ -173,11 +173,13 @@ async def salvar_peca(
     bordas: str = Form("{}"),
     transformacao: str = Form("{}"),
     current_user: User = Depends(get_current_active_user),
-    alerta: bool = Form(False),
+    alerta: str = Form("false"),
     observacoes: str = Form(""),
     db: Session = Depends(get_db)
 ):
-    """Salva alterações da peça (dimensões + furos + bordas + transformação)"""
+    print(f"\n\n🔴🔴🔴 ROTA SALVAR CHAMADA! peca_id={peca_id} 🔴🔴🔴\n\n")
+    print(f"⚠️ ALERTA recebido: '{alerta}'")
+    print(f"📝 OBSERVAÇÕES: '{observacoes}'")
     
     peca = db.query(PecaDB).filter(PecaDB.id == peca_id).first()
     
@@ -200,7 +202,7 @@ async def salvar_peca(
     # Atualizar transformação (JSON)
     peca.transformacao = json.loads(transformacao)
 
-    peca.alerta = alerta
+    peca.alerta = alerta.lower() == 'true'
     peca.observacoes = observacoes      
     
     print(f"💾 Salvando peça {peca_id}:")
