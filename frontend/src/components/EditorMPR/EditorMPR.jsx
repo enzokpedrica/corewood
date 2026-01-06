@@ -460,6 +460,10 @@ function EditorMPR({ pecaInicial, onVoltar }) {
       alert('⚠️ Peça não identificada para salvar');
       return;
     }
+    console.log('🔍 DEBUG SALVAR:');
+    console.log('   alerta:', alerta);
+    console.log('   observacoes:', observacoes);
+    console.log('   peca_id:', pecaInicial.id);
 
     setLoading(true);
 
@@ -474,8 +478,8 @@ function EditorMPR({ pecaInicial, onVoltar }) {
       }));
       formData.append('bordas', JSON.stringify(bordas));
       formData.append('transformacao', JSON.stringify(transformacao));
-      formData.append('alerta', alerta);
-      formData.append('observacoes', observacoes);
+      formData.append('alerta', alerta ? 'true' : 'false');
+      formData.append('observacoes', observacoes || '');
 
       const response = await api.put(
         `/pecas/${pecaInicial.id}/salvar`,

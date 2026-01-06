@@ -133,15 +133,18 @@ async def generate_pdf_from_editor(
     transformacao: str = Form("{}"),
     peca_id: Optional[int] = Form(None),
     current_user: User = Depends(get_current_active_user),
-    alerta: bool = Form(False),
+    alerta: str = Form("false"),
     observacoes: str = Form(""),
     db: Session = Depends(get_db)
-):
+    ):
     """
     Gera PDF diretamente dos dados do editor (sem passar por MPR)
     """
     try:
         import json
+        
+        print(f"⚠️ ALERTA recebido: '{alerta}' -> {alerta.lower() == 'true'}")
+        print(f"📝 OBSERVAÇÕES: '{observacoes}'")
         from app.models.peca import Peca, Dimensoes, FuroVertical, FuroHorizontal
         from app.generators.pdf_generator import GeradorDesenhoTecnico
         from fastapi.responses import FileResponse
@@ -275,7 +278,7 @@ async def generate_pdf_from_editor(
             'angulo_rotacao': transformacao_dict.get('rotacao', 0),
             'espelhar_peca': transformacao_dict.get('espelhado', False),
             'bordas': bordas_pdf,
-            'alerta': alerta,        
+            'alerta': alerta.lower() == 'true',        
             'observacoes': observacoes,
             'revisao': '00',
             'status': 'CÓPIA CONTROLADA',
