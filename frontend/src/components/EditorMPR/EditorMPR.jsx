@@ -29,7 +29,11 @@ function EditorMPR({ pecaInicial, onVoltar }) {
   const [observacoes, setObservacoes] = useState('');
 
   useEffect(() => {
-    if (pecaInicial) {      
+    if (pecaInicial) {  
+          
+      console.log('🔍 DEBUG pecaInicial:', pecaInicial);
+      console.log('🔍 DEBUG alerta:', pecaInicial.alerta);
+      console.log('🔍 DEBUG observacoes:', pecaInicial.observacoes);
       setPeca(prevPeca => ({
         ...prevPeca,
         nome: pecaInicial.nome || '',
