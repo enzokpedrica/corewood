@@ -1,6 +1,5 @@
 > Testar o .step de 2 peças	
 > Relatório Lei do Bem	
-> Triângulo de Atenção
 
 > Lógica para Furação
 	> Furação

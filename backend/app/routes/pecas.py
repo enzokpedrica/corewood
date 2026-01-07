@@ -231,4 +231,8 @@ def listar_pecas_produto(
     
     pecas = db.query(PecaDB).filter(PecaDB.produto_id == produto.id).order_by(PecaDB.codigo).all()
     
+    # DEBUG
+    for p in pecas:
+        print(f"🔍 Peça {p.id} - {p.codigo}: alerta={p.alerta}, obs={p.observacoes}")
+    
     return pecas
