@@ -1,4 +1,28 @@
-> Testar o .step de 2 peças	
+-- BHX FURAÇÃO - COMPLETA
+
+> Adicionar furos de topo no formulário de criação de furos
+	> Direções de furos
+> Pinça para a peça
+> Comentários no arquivo .mpr
+> Melhora Visual da Página
+> Melhorar a disposição da peça no quadro branco
+	> Deixar mais nítido
+	> Um jeito mais real
+> Como identificar furos inferior/superior/horizontais visualmente?
+> Furação Cruzada BHX
+> Quando estou na lista de furos, clico em algum furo, não esta atualizando o editor de furos
+> Estou criando os furos e o login expira
+	> Salvamento automático?
+	> Botão de ir salvando
+	> Salvar a peça no banco de dados?
+> Restrições de Ferramentas
+> Pode ter algo para gravar no banco de dados
+	> Nome produto
+	> Salvar peça banco ou somente temporário
+	
+
+
+
 > Relatório Lei do Bem	
 
 > Lógica para Furação
