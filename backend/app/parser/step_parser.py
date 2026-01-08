@@ -252,35 +252,12 @@ class StepMultiPartParser:
         # Calcular espessura bruta
         espessura_bruta = z_max - z_min
         
-        # Se espessura parece errada (muito grande ou fora do padrão MDF),
-        # procurar valores Z que formem espessura de MDF padrão
-        espessuras_mdf = [15, 18, 12, 9, 6, 25, 3]  # Espessuras comuns de MDF em mm
-        
-        if espessura_bruta > 30:  # Espessura muito grande, provavelmente há cilindros fora
-            from collections import Counter
-            z_rounded = [round(z, 1) for z in z_coords]
-            z_counter = Counter(z_rounded)
-            z_unicos = sorted(set(z_rounded))
-            
-            # Procurar par de Z que forme espessura de MDF
-            melhor_z_min = z_min
-            melhor_z_max = z_max
-            encontrou = False
-            
-            for esp in espessuras_mdf:
-                for z_low in z_unicos:
-                    z_high = z_low + esp
-                    if any(abs(z - z_high) < 0.5 for z in z_unicos):
-                        melhor_z_min = z_low
-                        melhor_z_max = z_low + esp
-                        encontrou = True
-                        break
-                if encontrou:
-                    break
-            
-            z_min = melhor_z_min
-            z_max = melhor_z_max
-        
+        # NÃO ajustar mais o bounding box - usar valores brutos
+        # O mapeamento de eixos vai identificar qual dimensão é a espessura
+
+        print(f"   📐 BBox bruto: X({min(x_coords):.1f} a {max(x_coords):.1f}), Y({min(y_coords):.1f} a {max(y_coords):.1f}), Z({min(z_coords):.1f} a {max(z_coords):.1f})")
+        print(f"   📐 BBox ajustado: X({x_min:.1f} a {x_max:.1f}), Y({y_min:.1f} a {y_max:.1f}), Z({z_min:.1f} a {z_max:.1f})")
+
         return (
             x_min, x_max,
             y_min, y_max,
@@ -346,13 +323,22 @@ class StepMultiPartParser:
         acessorios_count = {}
         
         for solid_id, nome in solids.items():
-            if self._is_acessorio(nome):
+            # Ignorar bordas e acessórios
+            nome_lower = nome.lower().strip()
+            if self._is_acessorio(nome) or nome_lower == 'borda' or nome_lower.startswith('borda '):
+                print(f"⏭️ Ignorando acessório/borda: {nome}")
                 if nome not in acessorios_count:
                     acessorios_count[nome] = 0
                 acessorios_count[nome] += 1
                 continue
             
             bbox = self._calculate_bounding_box(solid_id)
+
+            print(f"\n📦 Processando peça: {nome}")
+            print(f"   BBox X: {bbox[0]:.1f} a {bbox[1]:.1f} (dim: {bbox[1]-bbox[0]:.1f})")
+            print(f"   BBox Y: {bbox[2]:.1f} a {bbox[3]:.1f} (dim: {bbox[3]-bbox[2]:.1f})")
+            print(f"   BBox Z: {bbox[4]:.1f} a {bbox[5]:.1f} (dim: {bbox[5]-bbox[4]:.1f})")
+
             
             peca = Peca(
                 nome=nome,
@@ -363,150 +349,181 @@ class StepMultiPartParser:
             )
             
             # Dimensões brutas do bounding box
-            dim_x = abs(peca.x_max - peca.x_min)  # Comprimento
-            dim_y = abs(peca.y_max - peca.y_min)  # Largura
-            dim_z = abs(peca.z_max - peca.z_min)  # Espessura
+            dim_x = abs(peca.x_max - peca.x_min)
+            dim_y = abs(peca.y_max - peca.y_min)
+            dim_z = abs(peca.z_max - peca.z_min)
+            
+            # NOVO: Detectar qual eixo é qual baseado nas dimensões
+            # Espessura é sempre a menor dimensão (15, 18, etc)
+            # Comprimento é a maior dimensão
+            dims = [(dim_x, 'x'), (dim_y, 'y'), (dim_z, 'z')]
+            dims_sorted = sorted(dims, key=lambda d: d[0])
+            
+            eixo_espessura = dims_sorted[0][1]  # Menor = espessura
+            eixo_largura = dims_sorted[1][1]    # Médio = largura
+            eixo_comprimento = dims_sorted[2][1] # Maior = comprimento
+            
+            print(f"🔍 Mapeamento de eixos para {nome}:")
+            print(f"   Espessura ({dims_sorted[0][0]:.1f}mm): eixo {eixo_espessura}")
+            print(f"   Largura ({dims_sorted[1][0]:.1f}mm): eixo {eixo_largura}")
+            print(f"   Comprimento ({dims_sorted[2][0]:.1f}mm): eixo {eixo_comprimento}")
+            
+            # Valores min/max para cada dimensão lógica
+            def get_dim_bounds(eixo):
+                if eixo == 'x':
+                    return peca.x_min, peca.x_max, dim_x
+                elif eixo == 'y':
+                    return peca.y_min, peca.y_max, dim_y
+                else:
+                    return peca.z_min, peca.z_max, dim_z
+            
+            esp_min, esp_max, esp_dim = get_dim_bounds(eixo_espessura)
+            larg_min, larg_max, larg_dim = get_dim_bounds(eixo_largura)
+            comp_min, comp_max, comp_dim = get_dim_bounds(eixo_comprimento)
             
             cilindros = self._find_cylinders_for_solid(solid_id)
             
-            # Primeiro passo: identificar furos horizontais (nas bordas X)
+            # Função para obter coordenadas no sistema MPR
+            def get_mpr_coords(cil):
+                """Converte coordenadas STEP para sistema MPR (X=comprimento, Y=largura, Z=espessura)"""
+                step_coords = {'x': cil['x'], 'y': cil['y'], 'z': cil['z']}
+                
+                mpr_comprimento = step_coords[eixo_comprimento] - comp_min
+                mpr_largura = step_coords[eixo_largura] - larg_min
+                mpr_espessura = step_coords[eixo_espessura] - esp_min
+                
+                return mpr_comprimento, mpr_largura, mpr_espessura
+            
+            # Primeiro passo: identificar furos horizontais (nas bordas do comprimento ou largura)
             furos_horizontais_coords = set()
             
             for cil in cilindros:
-                x_rel = cil['x'] - peca.x_min
-                y_round = round(cil['y'], 0)
-                raio_round = round(cil['raio'], 2)
+                mpr_x, mpr_y, mpr_z = get_mpr_coords(cil)
                 
-                # Se está na borda X (entrada do furo horizontal)
-                if x_rel <= 2.0 or x_rel >= (dim_x - 2.0):
-                    furos_horizontais_coords.add((y_round, raio_round))
+                # Se está na borda do comprimento (entrada do furo horizontal)
+                if mpr_x <= 2.0 or mpr_x >= (comp_dim - 2.0):
+                    furos_horizontais_coords.add((round(mpr_y, 0), round(cil['raio'], 2)))
             
-            # Segundo passo: filtrar cilindros
+            # Segundo passo: filtrar e classificar cilindros
             cilindros_unicos = []
             coords_vistas = set()
 
             for cil in cilindros:
-                # NOVO: Ignorar cilindros fora do bounding box da peça
-                margem = 5.0  # Tolerância de 5mm
-                if (cil['z'] < peca.z_min - margem or cil['z'] > peca.z_max + margem):
-                    continue  # Cilindro fora da peça no eixo Z
-                if (cil['x'] < peca.x_min - margem or cil['x'] > peca.x_max + margem):
-                    continue  # Cilindro fora da peça no eixo X
-                if (cil['y'] < peca.y_min - margem or cil['y'] > peca.y_max + margem):
-                    continue  # Cilindro fora da peça no eixo Y
+                mpr_x, mpr_y, mpr_z = get_mpr_coords(cil)
+                
+                # Ignorar cilindros fora do bounding box
+                margem = 5.0
+                if mpr_z < -margem or mpr_z > esp_dim + margem:
+                    continue
+                if mpr_x < -margem or mpr_x > comp_dim + margem:
+                    continue
+                if mpr_y < -margem or mpr_y > larg_dim + margem:
+                    continue
 
-                x_rel = cil['x'] - peca.x_min
-                y_round = round(cil['y'], 0)
-                z_round = round(cil['z'], 0)
+                y_round = round(mpr_y, 0)
+                x_round = round(mpr_x, 0)
+                z_round = round(mpr_z, 0)
                 raio_round = round(cil['raio'], 2)
                 
-                # Se está na borda X = é entrada de furo horizontal
-                if x_rel <= 2.0 or x_rel >= (dim_x - 2.0):
-                    key = ('H', y_round, raio_round, 'XP' if x_rel <= 2.0 else 'XM')
+                tolerancia_borda = 2.0
+                z_meio = esp_dim / 2  # 7.5 para espessura 15
+                tolerancia_z_meio = 3.0  # Z deve estar próximo do meio
+                
+                # Verificar se Z está no meio da espessura (indica furo horizontal)
+                z_no_meio = abs(mpr_z - z_meio) <= tolerancia_z_meio
+                
+                # Se está na borda X = é entrada de furo horizontal XP/XM
+                if mpr_x <= tolerancia_borda and z_no_meio:
+                    key = ('H', y_round, raio_round, 'XP')
                     if key not in coords_vistas:
                         coords_vistas.add(key)
-                        cilindros_unicos.append(cil)
+                        cilindros_unicos.append({**cil, 'mpr': (mpr_x, mpr_y, mpr_z), 'tipo_detectado': 'H_XP'})
+                elif mpr_x >= (comp_dim - tolerancia_borda) and z_no_meio:
+                    key = ('H', y_round, raio_round, 'XM')
+                    if key not in coords_vistas:
+                        coords_vistas.add(key)
+                        cilindros_unicos.append({**cil, 'mpr': (mpr_x, mpr_y, mpr_z), 'tipo_detectado': 'H_XM'})
+                # Se está na borda Y = é entrada de furo horizontal YP/YM
+                elif mpr_y <= tolerancia_borda and z_no_meio:
+                    key = ('H', x_round, raio_round, 'YP')
+                    if key not in coords_vistas:
+                        coords_vistas.add(key)
+                        cilindros_unicos.append({**cil, 'mpr': (mpr_x, mpr_y, mpr_z), 'tipo_detectado': 'H_YP'})
+                elif mpr_y >= (larg_dim - tolerancia_borda) and z_no_meio:
+                    key = ('H', x_round, raio_round, 'YM')
+                    if key not in coords_vistas:
+                        coords_vistas.add(key)
+                        cilindros_unicos.append({**cil, 'mpr': (mpr_x, mpr_y, mpr_z), 'tipo_detectado': 'H_YM'})
                 else:
-                    # Verificar se é fundo de furo horizontal (mesmo Y e raio)
+                    # Verificar se é fundo de furo horizontal (ignorar)
                     if (y_round, raio_round) in furos_horizontais_coords:
-                        # É o fundo de um furo horizontal - IGNORAR
+                        continue
+                    if (x_round, raio_round) in furos_horizontais_coords:
                         continue
                     
-                    # Furo vertical legítimo
-                    key = ('V', y_round, raio_round)
+                    # Furo vertical
+                    key = ('V', x_round, y_round, raio_round)
                     if key not in coords_vistas:
                         coords_vistas.add(key)
-                        cilindros_unicos.append(cil)
+                        cilindros_unicos.append({**cil, 'mpr': (mpr_x, mpr_y, mpr_z), 'tipo_detectado': 'V'})
 
             furo_id = 1
             for cil in cilindros_unicos:
-                x_rel = round(cil['x'] - peca.x_min, 2)
-                y_rel = round(cil['y'] - peca.y_min, 2)
-                z_rel = round(cil['z'] - peca.z_min, 2)
-                
+                mpr_x, mpr_y, mpr_z = cil['mpr']
                 diametro = round(cil['raio'] * 2, 2)
+                tipo_detectado = cil['tipo_detectado']
 
-                tolerancia = 2.0
+                # DEBUG - ver distâncias das bordas
+                print(f"   🔎 Cilindro Ø{diametro}: mpr_x={mpr_x:.1f}, mpr_y={mpr_y:.1f}, mpr_z={mpr_z:.1f}")
+                print(f"      Dist X: min={mpr_x:.1f}, max={comp_dim-mpr_x:.1f}")
+                print(f"      Dist Y: min={mpr_y:.1f}, max={larg_dim-mpr_y:.1f}")
+                print(f"      Dist Z: min={mpr_z:.1f}, max={esp_dim-mpr_z:.1f}")
                 
-                # Distâncias das faces
-                dist_comp_min = x_rel
-                dist_comp_max = dim_x - x_rel
-                dist_larg_min = y_rel
-                dist_larg_max = dim_y - y_rel
-                dist_esp_inf = z_rel
-                dist_esp_sup = dim_z - z_rel
-                
-                # Encontrar a menor distância para classificar o furo
-                min_dist = min(dist_esp_inf, dist_esp_sup, dist_larg_min, dist_larg_max, dist_comp_min, dist_comp_max)
-                
-                if min_dist > tolerancia:
-                    # Furo não está perto de nenhuma face - provavelmente é vertical no meio
+                if tipo_detectado == 'V':
                     tipo = 'vertical'
                     lado = 'LS'
                     profundidade = 0 if diametro <= 6 else 11.0
-                    mpr_x = x_rel
-                    mpr_y = y_rel
-                    mpr_z = z_rel
+                    final_x = round(mpr_x, 2)
+                    final_y = round(mpr_y, 2)
+                    final_z = round(mpr_z, 2)
                     
-                elif dist_esp_inf <= tolerancia or dist_esp_sup <= tolerancia:
-                    # Furo VERTICAL - entra pela face superior ou inferior
-                    tipo = 'vertical'
-                    lado = 'LS' if dist_esp_sup <= tolerancia else 'LI'
-                    profundidade = 0 if diametro <= 6 else 11.0
-                    mpr_x = x_rel
-                    mpr_y = y_rel
-                    mpr_z = round(dim_z / 2, 1)
-                    
-                elif dist_larg_min <= tolerancia:
-                    # Furo HORIZONTAL - entra pela lateral Y=0
-                    tipo = 'horizontal'
-                    lado = 'YP'
-                    profundidade = 22.0
-                    mpr_x = x_rel
-                    mpr_y = 0
-                    mpr_z = z_rel
-                    
-                elif dist_larg_max <= tolerancia:
-                    # Furo HORIZONTAL - entra pela lateral Y=max
-                    tipo = 'horizontal'
-                    lado = 'YM'
-                    profundidade = 22.0
-                    mpr_x = x_rel
-                    mpr_y = dim_y
-                    mpr_z = z_rel
-                    
-                elif dist_comp_min <= tolerancia:
-                    # Furo HORIZONTAL - entra pela frente X=0
+                elif tipo_detectado == 'H_XP':
                     tipo = 'horizontal'
                     lado = 'XP'
                     profundidade = 22.0
-                    mpr_x = 0
-                    mpr_y = y_rel
-                    mpr_z = z_rel
+                    final_x = 0
+                    final_y = round(mpr_y, 2)
+                    final_z = round(mpr_z, 2)
                     
-                elif dist_comp_max <= tolerancia:
-                    # Furo HORIZONTAL - entra pela traseira X=max
+                elif tipo_detectado == 'H_XM':
                     tipo = 'horizontal'
                     lado = 'XM'
                     profundidade = 22.0
-                    mpr_x = dim_x
-                    mpr_y = y_rel
-                    mpr_z = z_rel
-                
-                else:
-                    # Fallback - assumir vertical
-                    tipo = 'vertical'
-                    lado = 'LS'
-                    profundidade = 0 if diametro <= 6 else 11.0
-                    mpr_x = x_rel
-                    mpr_y = y_rel
-                    mpr_z = z_rel
+                    final_x = comp_dim
+                    final_y = round(mpr_y, 2)
+                    final_z = round(mpr_z, 2)
+                    
+                elif tipo_detectado == 'H_YP':
+                    tipo = 'horizontal'
+                    lado = 'YP'
+                    profundidade = 22.0
+                    final_x = round(mpr_x, 2)
+                    final_y = 0
+                    final_z = round(mpr_z, 2)
+                    
+                elif tipo_detectado == 'H_YM':
+                    tipo = 'horizontal'
+                    lado = 'YM'
+                    profundidade = 22.0
+                    final_x = round(mpr_x, 2)
+                    final_y = larg_dim
+                    final_z = round(mpr_z, 2)
                 
                 furo = Furo(
                     id=furo_id,
-                    x=mpr_x,
-                    y=mpr_y,
-                    z=mpr_z,
+                    x=final_x,
+                    y=final_y,
+                    z=final_z,
                     diametro=diametro,
                     profundidade=profundidade,
                     face='superior' if tipo == 'vertical' else lado,
@@ -515,6 +532,10 @@ class StepMultiPartParser:
                 )
                 peca.furos.append(furo)
                 furo_id += 1
+                
+                # Debug
+                tipo_emoji = "🔴V" if tipo == 'vertical' else "🔵H"
+                print(f"   {tipo_emoji}#{furo_id-1} X:{final_x} Y:{final_y} Z:{final_z} Ø{diametro} ({lado})")
             
             self.pecas.append(peca)
         

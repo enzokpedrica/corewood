@@ -111,6 +111,9 @@ async def importar_pecas(
         
         # Processar peças
         pecas_criadas = 0
+
+        print(f"📊 Total de linhas no arquivo: {len(df)}")
+        print(f"📋 Colunas encontradas: {df.columns.tolist()}")
         
         for _, row in df.iterrows():
             # Extrair dados
