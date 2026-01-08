@@ -252,12 +252,7 @@ class StepMultiPartParser:
         # Calcular espessura bruta
         espessura_bruta = z_max - z_min
         
-        # NÃO ajustar mais o bounding box - usar valores brutos
         # O mapeamento de eixos vai identificar qual dimensão é a espessura
-
-        print(f"   📐 BBox bruto: X({min(x_coords):.1f} a {max(x_coords):.1f}), Y({min(y_coords):.1f} a {max(y_coords):.1f}), Z({min(z_coords):.1f} a {max(z_coords):.1f})")
-        print(f"   📐 BBox ajustado: X({x_min:.1f} a {x_max:.1f}), Y({y_min:.1f} a {y_max:.1f}), Z({z_min:.1f} a {z_max:.1f})")
-
         return (
             x_min, x_max,
             y_min, y_max,
@@ -326,19 +321,12 @@ class StepMultiPartParser:
             # Ignorar bordas e acessórios
             nome_lower = nome.lower().strip()
             if self._is_acessorio(nome) or nome_lower == 'borda' or nome_lower.startswith('borda '):
-                print(f"⏭️ Ignorando acessório/borda: {nome}")
                 if nome not in acessorios_count:
                     acessorios_count[nome] = 0
                 acessorios_count[nome] += 1
                 continue
             
             bbox = self._calculate_bounding_box(solid_id)
-
-            print(f"\n📦 Processando peça: {nome}")
-            print(f"   BBox X: {bbox[0]:.1f} a {bbox[1]:.1f} (dim: {bbox[1]-bbox[0]:.1f})")
-            print(f"   BBox Y: {bbox[2]:.1f} a {bbox[3]:.1f} (dim: {bbox[3]-bbox[2]:.1f})")
-            print(f"   BBox Z: {bbox[4]:.1f} a {bbox[5]:.1f} (dim: {bbox[5]-bbox[4]:.1f})")
-
             
             peca = Peca(
                 nome=nome,
@@ -353,20 +341,91 @@ class StepMultiPartParser:
             dim_y = abs(peca.y_max - peca.y_min)
             dim_z = abs(peca.z_max - peca.z_min)
             
-            # NOVO: Detectar qual eixo é qual baseado nas dimensões
             # Espessura é sempre a menor dimensão (15, 18, etc)
-            # Comprimento é a maior dimensão
             dims = [(dim_x, 'x'), (dim_y, 'y'), (dim_z, 'z')]
             dims_sorted = sorted(dims, key=lambda d: d[0])
-            
+
             eixo_espessura = dims_sorted[0][1]  # Menor = espessura
-            eixo_largura = dims_sorted[1][1]    # Médio = largura
-            eixo_comprimento = dims_sorted[2][1] # Maior = comprimento
-            
-            print(f"🔍 Mapeamento de eixos para {nome}:")
-            print(f"   Espessura ({dims_sorted[0][0]:.1f}mm): eixo {eixo_espessura}")
-            print(f"   Largura ({dims_sorted[1][0]:.1f}mm): eixo {eixo_largura}")
-            print(f"   Comprimento ({dims_sorted[2][0]:.1f}mm): eixo {eixo_comprimento}")
+            esp_dim_valor = dims_sorted[0][0]
+
+            # Pegar os dois eixos restantes (candidatos a comprimento/largura)
+            eixos_restantes = [(d, e) for d, e in dims_sorted[1:]]
+
+            # Buscar cilindros para detectar furos horizontais
+            cilindros = self._find_cylinders_for_solid(solid_id)
+
+            # Função para obter coordenada de um cilindro em um eixo específico
+            def get_coord(cil, eixo):
+                if eixo == 'x':
+                    return cil['x'] - peca.x_min
+                elif eixo == 'y':
+                    return cil['y'] - peca.y_min
+                else:
+                    return cil['z'] - peca.z_min
+
+            def get_dim(eixo):
+                if eixo == 'x':
+                    return dim_x
+                elif eixo == 'y':
+                    return dim_y
+                else:
+                    return dim_z
+
+            # Contar furos horizontais em cada eixo candidato
+            # Furos horizontais têm: coordenada na borda E z no meio da espessura
+            z_meio = esp_dim_valor / 2
+            tolerancia_borda = 2.0
+            tolerancia_z = 3.0
+
+            furos_por_eixo = {eixos_restantes[0][1]: 0, eixos_restantes[1][1]: 0}
+
+            for cil in cilindros:
+                # Verificar se Z está no meio (indicando furo horizontal)
+                coord_esp = get_coord(cil, eixo_espessura)
+                if abs(coord_esp - z_meio) > tolerancia_z:
+                    continue  # Não é furo horizontal
+                
+                # Verificar em qual eixo está na borda
+                for dim_valor, eixo in eixos_restantes:
+                    coord = get_coord(cil, eixo)
+                    dim_total = get_dim(eixo)
+                    if coord <= tolerancia_borda or coord >= (dim_total - tolerancia_borda):
+                        furos_por_eixo[eixo] += 1
+
+            # Decidir comprimento/largura
+            # Se há furos horizontais, o eixo COM MAIS furos na borda é provavelmente onde entram
+            # os furos, então o OUTRO eixo é o comprimento (furos entram pela largura no MPR)
+            eixo_a, eixo_b = eixos_restantes[0][1], eixos_restantes[1][1]
+            dim_a, dim_b = eixos_restantes[0][0], eixos_restantes[1][0]
+
+            if furos_por_eixo[eixo_a] > 0 or furos_por_eixo[eixo_b] > 0:
+                # Tem furos horizontais - usar para determinar eixos
+                if furos_por_eixo[eixo_a] > furos_por_eixo[eixo_b]:
+                    # Eixo A tem mais furos na borda = é o COMPRIMENTO (no MPR, furos H entram por X)
+                    eixo_comprimento = eixo_a
+                    eixo_largura = eixo_b
+                    #print(f"   📐 Eixos definidos por FUROS HORIZONTAIS: comp={eixo_comprimento}, larg={eixo_largura}")
+                elif furos_por_eixo[eixo_b] > furos_por_eixo[eixo_a]:
+                    eixo_comprimento = eixo_b
+                    eixo_largura = eixo_a
+                    #print(f"   📐 Eixos definidos por FUROS HORIZONTAIS: comp={eixo_comprimento}, larg={eixo_largura}")
+                else:
+                    # Empate - usar dimensão maior como comprimento
+                    if dim_a >= dim_b:
+                        eixo_comprimento = eixo_a
+                        eixo_largura = eixo_b
+                    else:
+                        eixo_comprimento = eixo_b
+                        eixo_largura = eixo_a
+                    #print(f"   📐 Eixos definidos por DIMENSÃO (empate furos): comp={eixo_comprimento}, larg={eixo_largura}")
+            else:
+                # Sem furos horizontais - usar dimensão maior como comprimento (fallback)
+                if dim_a >= dim_b:
+                    eixo_comprimento = eixo_a
+                    eixo_largura = eixo_b
+                else:
+                    eixo_comprimento = eixo_b
+                    eixo_largura = eixo_a
             
             # Valores min/max para cada dimensão lógica
             def get_dim_bounds(eixo):
@@ -380,9 +439,7 @@ class StepMultiPartParser:
             esp_min, esp_max, esp_dim = get_dim_bounds(eixo_espessura)
             larg_min, larg_max, larg_dim = get_dim_bounds(eixo_largura)
             comp_min, comp_max, comp_dim = get_dim_bounds(eixo_comprimento)
-            
-            cilindros = self._find_cylinders_for_solid(solid_id)
-            
+                        
             # Função para obter coordenadas no sistema MPR
             def get_mpr_coords(cil):
                 """Converte coordenadas STEP para sistema MPR (X=comprimento, Y=largura, Z=espessura)"""
@@ -394,16 +451,73 @@ class StepMultiPartParser:
                 
                 return mpr_comprimento, mpr_largura, mpr_espessura
             
-            # Primeiro passo: identificar furos horizontais (nas bordas do comprimento ou largura)
+            # Primeiro passo: identificar furos horizontais e seus fundos
             furos_horizontais_coords = set()
-            
+            furos_horizontais_info = []  # Lista com info completa para calcular fundos
+
             for cil in cilindros:
                 mpr_x, mpr_y, mpr_z = get_mpr_coords(cil)
+                raio_round = round(cil['raio'], 2)
+                x_round = round(mpr_x, 0)
+                y_round = round(mpr_y, 0)
                 
-                # Se está na borda do comprimento (entrada do furo horizontal)
-                if mpr_x <= 2.0 or mpr_x >= (comp_dim - 2.0):
-                    furos_horizontais_coords.add((round(mpr_y, 0), round(cil['raio'], 2)))
-            
+                # Verificar se Z está no meio (indicando furo horizontal)
+                if abs(mpr_z - (esp_dim / 2)) > 3.0:
+                    continue
+                
+                # Se está na borda Y (YP ou YM)
+                if mpr_y <= 2.0:
+                    furos_horizontais_coords.add((x_round, raio_round, 'YP'))
+                    furos_horizontais_info.append({'eixo': 'Y', 'lado': 'YP', 'coord_fixa': x_round, 'raio': raio_round, 'borda': 0})
+                elif mpr_y >= (larg_dim - 2.0):
+                    furos_horizontais_coords.add((x_round, raio_round, 'YM'))
+                    furos_horizontais_info.append({'eixo': 'Y', 'lado': 'YM', 'coord_fixa': x_round, 'raio': raio_round, 'borda': larg_dim})
+                
+                # Se está na borda X (XP ou XM)
+                if mpr_x <= 2.0:
+                    furos_horizontais_coords.add((y_round, raio_round, 'XP'))
+                    furos_horizontais_info.append({'eixo': 'X', 'lado': 'XP', 'coord_fixa': y_round, 'raio': raio_round, 'borda': 0})
+                elif mpr_x >= (comp_dim - 2.0):
+                    furos_horizontais_coords.add((y_round, raio_round, 'XM'))
+                    furos_horizontais_info.append({'eixo': 'X', 'lado': 'XM', 'coord_fixa': y_round, 'raio': raio_round, 'borda': comp_dim})
+
+            # Função para verificar se um cilindro é fundo de furo horizontal
+            def is_fundo_furo_horizontal(mpr_x, mpr_y, raio):
+                raio_round = round(raio, 2)
+                x_round = round(mpr_x, 0)
+                y_round = round(mpr_y, 0)
+                
+                tolerancia_coord = 2.0  # Tolerância para coordenada fixa
+                max_profundidade = 35.0  # Profundidade máxima de furo horizontal
+                
+                for info in furos_horizontais_info:
+                    if round(info['raio'], 2) != raio_round:
+                        continue
+                    
+                    if info['eixo'] == 'X':
+                        # Furo entra por X, coord_fixa é Y
+                        if abs(y_round - info['coord_fixa']) > tolerancia_coord:
+                            continue
+                        # Verificar se X está dentro da profundidade do furo
+                        if info['lado'] == 'XP' and mpr_x > 0 and mpr_x <= max_profundidade:
+                            return True
+                        if info['lado'] == 'XM' and mpr_x < comp_dim and mpr_x >= (comp_dim - max_profundidade):
+                            return True
+                    
+                    elif info['eixo'] == 'Y':
+                        # Furo entra por Y, coord_fixa é X
+                        if abs(x_round - info['coord_fixa']) > tolerancia_coord:
+                            continue
+                        # Verificar se Y está dentro da profundidade do furo
+                        if info['lado'] == 'YP' and mpr_y > 0 and mpr_y <= max_profundidade:
+                            return True
+                        if info['lado'] == 'YM' and mpr_y < larg_dim and mpr_y >= (larg_dim - max_profundidade):
+                            return True
+                
+                return False
+
+            print(f"   🔍 Furos horizontais encontrados: {len(furos_horizontais_info)}")
+
             # Segundo passo: filtrar e classificar cilindros
             cilindros_unicos = []
             coords_vistas = set()
@@ -426,10 +540,9 @@ class StepMultiPartParser:
                 raio_round = round(cil['raio'], 2)
                 
                 tolerancia_borda = 2.0
-                z_meio = esp_dim / 2  # 7.5 para espessura 15
-                tolerancia_z_meio = 3.0  # Z deve estar próximo do meio
+                z_meio = esp_dim / 2
+                tolerancia_z_meio = 3.0
                 
-                # Verificar se Z está no meio da espessura (indica furo horizontal)
                 z_no_meio = abs(mpr_z - z_meio) <= tolerancia_z_meio
                 
                 # Se está na borda X = é entrada de furo horizontal XP/XM
@@ -456,9 +569,8 @@ class StepMultiPartParser:
                         cilindros_unicos.append({**cil, 'mpr': (mpr_x, mpr_y, mpr_z), 'tipo_detectado': 'H_YM'})
                 else:
                     # Verificar se é fundo de furo horizontal (ignorar)
-                    if (y_round, raio_round) in furos_horizontais_coords:
-                        continue
-                    if (x_round, raio_round) in furos_horizontais_coords:
+                    if is_fundo_furo_horizontal(mpr_x, mpr_y, cil['raio']):
+                        #print(f"      ⏭️ Ignorando fundo de furo H: X={x_round}, Y={y_round}, Ø{round(cil['raio']*2, 2)}")
                         continue
                     
                     # Furo vertical
@@ -472,12 +584,6 @@ class StepMultiPartParser:
                 mpr_x, mpr_y, mpr_z = cil['mpr']
                 diametro = round(cil['raio'] * 2, 2)
                 tipo_detectado = cil['tipo_detectado']
-
-                # DEBUG - ver distâncias das bordas
-                print(f"   🔎 Cilindro Ø{diametro}: mpr_x={mpr_x:.1f}, mpr_y={mpr_y:.1f}, mpr_z={mpr_z:.1f}")
-                print(f"      Dist X: min={mpr_x:.1f}, max={comp_dim-mpr_x:.1f}")
-                print(f"      Dist Y: min={mpr_y:.1f}, max={larg_dim-mpr_y:.1f}")
-                print(f"      Dist Z: min={mpr_z:.1f}, max={esp_dim-mpr_z:.1f}")
                 
                 if tipo_detectado == 'V':
                     tipo = 'vertical'
@@ -532,11 +638,7 @@ class StepMultiPartParser:
                 )
                 peca.furos.append(furo)
                 furo_id += 1
-                
-                # Debug
-                tipo_emoji = "🔴V" if tipo == 'vertical' else "🔵H"
-                print(f"   {tipo_emoji}#{furo_id-1} X:{final_x} Y:{final_y} Z:{final_z} Ø{diametro} ({lado})")
-            
+                            
             self.pecas.append(peca)
         
         for nome, qtd in acessorios_count.items():
@@ -617,16 +719,6 @@ def parse_step_multipart(content: str) -> Dict[str, Any]:
         }
     }
 
-
-def generate_report_txt(content: str, nome_projeto: str = "Projeto") -> str:
-    """Gera relatório TXT com lista de corte"""
-    parser = StepMultiPartParser(content)
-    pecas, acessorios = parser.parse()
-    
-    txt_gen = TXTReportGenerator()
-    return txt_gen.generate(pecas, acessorios, nome_projeto)
-
-
 # Compatibilidade com endpoints antigos
 parse_step = parse_step_multipart        
 
@@ -640,13 +732,5 @@ if __name__ == "__main__":
         
         result = parse_step_multipart(content)
                 
-        print("\n📦 Detalhes das peças:")
-        for p in result['pecas']:
-            print(f"   - {p['nome']}: {p['largura']}x{p['comprimento']}x{p['espessura']}mm ({len(p['furos'])} furos)")
-        
-        if result['acessorios']:
-            print("\n🔩 Acessórios:")
-            for a in result['acessorios']:
-                print(f"   - {a['nome']}: {a['quantidade']} un")
     else:
         print("Uso: python step_parser.py <arquivo.step>")

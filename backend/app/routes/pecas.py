@@ -110,11 +110,7 @@ async def importar_pecas(
                 db.refresh(produto)
         
         # Processar peças
-        pecas_criadas = 0
-
-        print(f"📊 Total de linhas no arquivo: {len(df)}")
-        print(f"📋 Colunas encontradas: {df.columns.tolist()}")
-        
+        pecas_criadas = 0        
         for _, row in df.iterrows():
             # Extrair dados
             codigo_peca = str(int(float(row['Cod. Peça']))).strip()
@@ -180,9 +176,6 @@ async def salvar_peca(
     observacoes: str = Form(""),
     db: Session = Depends(get_db)
 ):
-    print(f"\n\n🔴🔴🔴 ROTA SALVAR CHAMADA! peca_id={peca_id} 🔴🔴🔴\n\n")
-    print(f"⚠️ ALERTA recebido: '{alerta}'")
-    print(f"📝 OBSERVAÇÕES: '{observacoes}'")
     
     peca = db.query(PecaDB).filter(PecaDB.id == peca_id).first()
     
@@ -233,9 +226,5 @@ def listar_pecas_produto(
         raise HTTPException(status_code=404, detail="Produto não encontrado")
     
     pecas = db.query(PecaDB).filter(PecaDB.produto_id == produto.id).order_by(PecaDB.codigo).all()
-    
-    # DEBUG
-    for p in pecas:
-        print(f"🔍 Peça {p.id} - {p.codigo}: alerta={p.alerta}, obs={p.observacoes}")
     
     return pecas

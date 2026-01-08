@@ -31,9 +31,6 @@ function EditorMPR({ pecaInicial, onVoltar }) {
   useEffect(() => {
     if (pecaInicial) {  
           
-      console.log('🔍 DEBUG pecaInicial:', pecaInicial);
-      console.log('🔍 DEBUG alerta:', pecaInicial.alerta);
-      console.log('🔍 DEBUG observacoes:', pecaInicial.observacoes);
       setPeca(prevPeca => ({
         ...prevPeca,
         nome: pecaInicial.nome || '',
@@ -464,11 +461,6 @@ function EditorMPR({ pecaInicial, onVoltar }) {
       alert('⚠️ Peça não identificada para salvar');
       return;
     }
-    console.log('🔍 DEBUG SALVAR:');
-    console.log('   alerta:', alerta);
-    console.log('   observacoes:', observacoes);
-    console.log('   peca_id:', pecaInicial.id);
-
     setLoading(true);
 
     try {

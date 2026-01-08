@@ -22,7 +22,7 @@ import json
 import tempfile
 from app.routes import editor, pecas
 from .generators.mpr_generator import GeradorMPR
-from .parser.step_parser import parse_step_multipart, generate_report_txt
+from .parser.step_parser import parse_step_multipart
 
 
 
@@ -470,9 +470,6 @@ async def convert_multipart(
     # Gerar MPRs usando o GeradorMPR
     gerador = GeradorMPR()
     
-    # Gerar relatório TXT
-    txt = generate_report_txt(content, file.filename.rsplit('.', 1)[0])
-    
     # Retorna ZIP
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -516,8 +513,6 @@ async def convert_step_to_json(
         
         # Parse STEP
         dados = parse_step_multipart(content_str)
-        print(type(dados))
-        print(dados)
         dados['nome'] = nome_peca
         
         # Retornar como arquivo JSON
