@@ -761,74 +761,71 @@ function EditorMPR({ pecaInicial, onVoltar }) {
             </button>
           </div>
 
-          {/* Bordas em formato retângulo */}
+          {/* Bordas + Alerta lado a lado */}
           <div className="section-divider"></div>
-          <div className="bordas-retangulo">
-            <div className="borda-topo">
-              <select
-                value={bordas.topo}
-                onChange={(e) => setBordas({ ...bordas, topo: e.target.value })}
-                className={`borda-select-sm ${bordas.topo}`}
-              >
-                <option value="nenhum">-</option>
-                <option value="cor">Cor</option>
-                <option value="pardo">Pardo</option>
-              </select>
+          <div className="bordas-alerta-row">
+            <div className="bordas-retangulo">
+              <div className="borda-topo">
+                <select
+                  value={bordas.topo}
+                  onChange={(e) => setBordas({ ...bordas, topo: e.target.value })}
+                  className={`borda-select-sm ${bordas.topo}`}
+                >
+                  <option value="nenhum">-</option>
+                  <option value="cor">Cor</option>
+                  <option value="pardo">Pardo</option>
+                </select>
+              </div>
+              <div className="borda-meio">
+                <select
+                  value={bordas.esquerda}
+                  onChange={(e) => setBordas({ ...bordas, esquerda: e.target.value })}
+                  className={`borda-select-sm ${bordas.esquerda}`}
+                >
+                  <option value="nenhum">-</option>
+                  <option value="cor">Cor</option>
+                  <option value="pardo">Pardo</option>
+                </select>
+                <div className="borda-peca-icon">▭</div>
+                <select
+                  value={bordas.direita}
+                  onChange={(e) => setBordas({ ...bordas, direita: e.target.value })}
+                  className={`borda-select-sm ${bordas.direita}`}
+                >
+                  <option value="nenhum">-</option>
+                  <option value="cor">Cor</option>
+                  <option value="pardo">Pardo</option>
+                </select>
+              </div>
+              <div className="borda-baixo">
+                <select
+                  value={bordas.baixo}
+                  onChange={(e) => setBordas({ ...bordas, baixo: e.target.value })}
+                  className={`borda-select-sm ${bordas.baixo}`}
+                >
+                  <option value="nenhum">-</option>
+                  <option value="cor">Cor</option>
+                  <option value="pardo">Pardo</option>
+                </select>
+              </div>
             </div>
-            <div className="borda-meio">
-              <select
-                value={bordas.esquerda}
-                onChange={(e) => setBordas({ ...bordas, esquerda: e.target.value })}
-                className={`borda-select-sm ${bordas.esquerda}`}
-              >
-                <option value="nenhum">-</option>
-                <option value="cor">Cor</option>
-                <option value="pardo">Pardo</option>
-              </select>
-              <div className="borda-peca-icon">▭</div>
-              <select
-                value={bordas.direita}
-                onChange={(e) => setBordas({ ...bordas, direita: e.target.value })}
-                className={`borda-select-sm ${bordas.direita}`}
-              >
-                <option value="nenhum">-</option>
-                <option value="cor">Cor</option>
-                <option value="pardo">Pardo</option>
-              </select>
-            </div>
-            <div className="borda-baixo">
-              <select
-                value={bordas.baixo}
-                onChange={(e) => setBordas({ ...bordas, baixo: e.target.value })}
-                className={`borda-select-sm ${bordas.baixo}`}
-              >
-                <option value="nenhum">-</option>
-                <option value="cor">Cor</option>
-                <option value="pardo">Pardo</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Alerta e Observações */}
-        <div className="panel-card">
-          <h4>⚠️ Alerta</h4>
-          <div className="alert-section">
-            <label className="checkbox-field">
-              <input
-                type="checkbox"
-                checked={alerta}
-                onChange={(e) => setAlerta(e.target.checked)}
+            <div className="divisor-vertical"></div>
+            <div className="alerta-compact">
+              <label className="checkbox-field">
+                <input
+                  type="checkbox"
+                  checked={alerta}
+                  onChange={(e) => setAlerta(e.target.checked)}
+                />
+                <span className="checkbox-label">⚠️ Observações</span>
+              </label>
+              <textarea
+                className="observacoes-input-sm"
+                value={observacoes}
+                onChange={(e) => setObservacoes(e.target.value)}
+                rows={2}
               />
-              <span className="checkbox-label">Triângulo no PDF</span>
-            </label>
-            <textarea
-              className="observacoes-input"
-              placeholder="Observações..."
-              value={observacoes}
-              onChange={(e) => setObservacoes(e.target.value)}
-              rows={2}
-            />
+            </div>
           </div>
         </div>
 
