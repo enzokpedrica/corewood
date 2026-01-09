@@ -118,8 +118,10 @@ export const generatePDFBatch = async (arquivos, onProgress) => {
  */
 export const exportarMPR = async (pecaData) => {
   try {
-    const response = await axios.post(
-      `${API_URL}/editor/export-mpr`,
+    console.log('📤 Enviando para export-mpr:', JSON.stringify(pecaData, null, 2));
+    
+    const response = await api.post(
+      '/editor/export-mpr',
       pecaData,
       {
         responseType: 'blob'
