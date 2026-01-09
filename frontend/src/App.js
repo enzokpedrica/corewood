@@ -143,6 +143,23 @@ function MainApp() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               {/* Toggle entre 3 modos */}
               <div style={{ display: 'flex', gap: '0.5rem' }}>
+
+                <button
+                  onClick={() => setModoLote('editor')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: modoLote === 'editor' ? '#667eea' : 'white',
+                    color: modoLote === 'editor' ? 'white' : '#667eea',
+                    border: '2px solid #667eea',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  ✏️ Editor
+                </button>
+                
                 <button
                   onClick={() => setModoLote('individual')}
                   style={{
@@ -192,22 +209,7 @@ function MainApp() {
                   📤 Importar
                 </button>
 
-                <button
-                  onClick={() => setModoLote('editor')}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    background: modoLote === 'editor' ? '#667eea' : 'white',
-                    color: modoLote === 'editor' ? 'white' : '#667eea',
-                    border: '2px solid #667eea',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  ✏️ Editor
-                </button>
-
+        
                 <button
                   onClick={() => setModoLote('listar')}
                   style={{
