@@ -267,89 +267,91 @@ function MainApp() {
       </header>
 
       <main className="app-main">
-        <div className="container">
-          {modoLote === 'listar' ? (
-            <ListarPecas 
+        {modoLote === 'editor' ? (
+          <EditorMPR 
+            pecaInicial={pecaSelecionada}
+            onVoltar={handleVoltarParaLista} />
+        ) : (
+          <div className="container">
+            {modoLote === 'listar' ? (
+              <ListarPecas 
                 onSelecionarPeca={handleSelecionarPeca}
                 codigoProduto={codigoProdutoBusca}
                 setCodigoProduto={setCodigoProdutoBusca}
                 pecas={pecasLista}
                 setPecas={setPecasLista} />
-          ) : modoLote === 'lote' ? (
-            <LoteUpload />
-          ) : modoLote === 'editor' ? (
-            <EditorMPR 
-            pecaInicial={pecaSelecionada}
-            onVoltar={handleVoltarParaLista} />
-          ) : modoLote === 'importar' ? (
-            <ImportarPecas />
-          ) : modoLote === 'step' ? (
-            <StepConverter />
-          ) : (
-            // MODO INDIVIDUAL
-            <div className="content-grid">
-              <div className="left-column">
-                <FileUpload 
-                  onFileSelect={handleFileSelect} 
-                  selectedFile={file}
-                />
-                
-                {error && (
-                  <div className="message error">
-                    <strong>⚠️ Erro</strong>
-                    <pre>{error}</pre>
-                  </div>
-                )}
-                
-                {warning && !error && (
-                  <div className="message warning">
-                    <strong>⚡ Aviso</strong>
-                    <pre>{warning}</pre>
-                  </div>
-                )}
-                
-                {success && (
-                  <div className="message success">
-                    ✅ PDF gerado com sucesso!
-                  </div>
-                )}
-
-                <button 
-                  className="generate-btn"
-                  onClick={handleGeneratePDF}
-                  disabled={!file || loading}
-                >
-                  {loading ? (
-                    <>
-                      <span className="spinner"></span>
-                      Gerando PDF...
-                    </>
-                  ) : (
-                    <>
-                      📄 Gerar PDF Técnico
-                    </>
+            ) : modoLote === 'lote' ? (
+              <LoteUpload />
+            ) : modoLote === 'importar' ? (
+              <ImportarPecas />
+            ) : modoLote === 'step' ? (
+              <StepConverter />
+            ) : (
+              // MODO INDIVIDUAL
+              <div className="content-grid">
+                <div className="left-column">
+                  <FileUpload 
+                    onFileSelect={handleFileSelect} 
+                    selectedFile={file}
+                  />
+                  
+                  {error && (
+                    <div className="message error">
+                      <strong>⚠️ Erro</strong>
+                      <pre>{error}</pre>
+                    </div>
                   )}
-                </button>
+                  
+                  {warning && !error && (
+                    <div className="message warning">
+                      <strong>⚡ Aviso</strong>
+                      <pre>{warning}</pre>
+                    </div>
+                  )}
+                  
+                  {success && (
+                    <div className="message success">
+                      ✅ PDF gerado com sucesso!
+                    </div>
+                  )}
 
-                {file && !error && (
-                  <div className="info-box">
-                    <h4>ℹ️ Informações</h4>
-                    <p>• Arquivo: <strong>{file.name}</strong></p>
-                    <p>• Tamanho: <strong>{(file.size / 1024).toFixed(2)} KB</strong></p>
-                    <p>• Status: <strong className="status-ok">✓ Válido</strong></p>
-                  </div>
-                )}
-              </div>
+                  <button 
+                    className="generate-btn"
+                    onClick={handleGeneratePDF}
+                    disabled={!file || loading}
+                  >
+                    {loading ? (
+                      <>
+                        <span className="spinner"></span>
+                        Gerando PDF...
+                      </>
+                    ) : (
+                      <>
+                        📄 Gerar PDF Técnico
+                      </>
+                    )}
+                  </button>
 
-              <div className="right-column">
-                <ConfigForm 
-                  config={config}
-                  onChange={setConfig}
-                />
+                  {file && !error && (
+                    <div className="info-box">
+                      <h4>ℹ️ Informações</h4>
+                      <p>• Arquivo: <strong>{file.name}</strong></p>
+                      <p>• Tamanho: <strong>{(file.size / 1024).toFixed(2)} KB</strong></p>
+                      <p>• Status: <strong className="status-ok">✓ Válido</strong></p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="right-column">
+                  <ConfigForm 
+                    config={config}
+                    onChange={setConfig}
+                  />
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </main>
 
       <footer className="app-footer">

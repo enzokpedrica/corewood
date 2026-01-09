@@ -23,10 +23,10 @@ function Canvas3D({
 
   // Cores do tema industrial
   const COLORS = {
-    background: 0x1a1d24,
-    grid: 0x2a2d34,
-    piece: 0xd4a574,        // Cor madeira MDF
-    pieceEdge: 0x8b6914,
+    background: 0xb8c5e2,
+    grid: 0x9aaccd,
+    piece: 0xf0d0d0,        // Cor madeira MDF
+    pieceEdge: 0xc04040 ,
     furoVerticalTop: 0xff4757,
     furoVerticalBottom: 0x2f3542,
     furoHorizontal: 0x3742fa,
@@ -34,7 +34,8 @@ function Canvas3D({
     bordaCor: 0x2ed573,
     bordaPardo: 0xff7f50,
     pinca: 0x4a4a4a,        // Cor metal da pinça
-    pincaDetalhe: 0x2a2a2a  // Detalhe escuro da pinça
+    pincaDetalhe: 0x2a2a2a, // Detalhe escuro da pinça
+    contornoBase: 0xe05050  // Contorno vermelho na base
   };
 
   // Inicializar cena Three.js
@@ -175,12 +176,15 @@ function Canvas3D({
     // Geometria da peça
     const geometry = new THREE.BoxGeometry(width, height, depth);
     
-    // Material com textura de madeira simulada
+    // Material com transparência
     const material = new THREE.MeshStandardMaterial({
       color: COLORS.piece,
       roughness: 0.8,
       metalness: 0.1,
-      flatShading: false
+      flatShading: false,
+      transparent: true,
+      opacity: 0.8,
+      side: THREE.DoubleSide
     });
 
     const mesh = new THREE.Mesh(geometry, material);
@@ -201,6 +205,25 @@ function Canvas3D({
     });
     const wireframe = new THREE.LineSegments(edges, edgeMaterial);
     mesh.add(wireframe);
+
+    // Contorno vermelho na base da peça
+    const baseShape = new THREE.Shape();
+    baseShape.moveTo(-width/2, -depth/2);
+    baseShape.lineTo(width/2, -depth/2);
+    baseShape.lineTo(width/2, depth/2);
+    baseShape.lineTo(-width/2, depth/2);
+    baseShape.lineTo(-width/2, -depth/2);
+    
+    const basePoints = baseShape.getPoints();
+    const baseGeometry = new THREE.BufferGeometry().setFromPoints(basePoints);
+    const baseMaterial = new THREE.LineBasicMaterial({ 
+      color: COLORS.contornoBase, 
+      linewidth: 3 
+    });
+    const baseLine = new THREE.Line(baseGeometry, baseMaterial);
+    baseLine.rotation.x = -Math.PI / 2;
+    baseLine.position.y = 0.5; // Logo acima do chão
+    sceneRef.current.add(baseLine);
 
     sceneRef.current.add(mesh);
     meshRef.current = mesh;
@@ -351,17 +374,6 @@ function Canvas3D({
       );
       pincaGroup.add(indicadorMesh);
     });
-
-    // Barra de conexão entre as pinças (trilho)
-    const trilhoGeo = new THREE.BoxGeometry(width * 0.8, 6, 8);
-    const trilhoMesh = new THREE.Mesh(trilhoGeo, metalMaterial);
-    trilhoMesh.position.set(
-      0,
-      pincaHeight + 4,
-      -depth / 2 - pincaDepth / 2 - 15
-    );
-    pincaGroup.add(trilhoMesh);
-
     sceneRef.current.add(pincaGroup);
   };
 
