@@ -1,0 +1,174 @@
+.canvas3d-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  background: linear-gradient(145deg, #1a1d24 0%, #0d0f12 100%);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.canvas3d-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Tooltip flutuante */
+.furo-tooltip {
+  position: absolute;
+  background: rgba(26, 29, 36, 0.95);
+  border: 1px solid #3742fa;
+  border-radius: 8px;
+  padding: 0;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  min-width: 140px;
+  animation: tooltipFade 0.15s ease-out;
+}
+
+@keyframes tooltipFade {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tooltip-header {
+  background: linear-gradient(135deg, #3742fa 0%, #2ed573 100%);
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 7px 7px 0 0;
+  letter-spacing: 0.5px;
+}
+
+.tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  font-size: 11px;
+  color: #a0a4b0;
+}
+
+.tooltip-body span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Indicador de eixos */
+.axis-indicator {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  gap: 8px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.axis {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  opacity: 0.8;
+}
+
+.axis.x {
+  background: rgba(255, 71, 87, 0.3);
+  color: #ff4757;
+  border: 1px solid #ff4757;
+}
+
+.axis.y {
+  background: rgba(46, 213, 115, 0.3);
+  color: #2ed573;
+  border: 1px solid #2ed573;
+}
+
+.axis.z {
+  background: rgba(55, 66, 250, 0.3);
+  color: #3742fa;
+  border: 1px solid #3742fa;
+}
+
+/* Info da peça */
+.piece-info {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(26, 29, 36, 0.9);
+  border: 1px solid #2a2d34;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  color: #a0a4b0;
+  backdrop-filter: blur(8px);
+}
+
+.piece-info span {
+  color: #f0f0f0;
+  font-weight: 500;
+}
+
+/* Controles de visualização */
+.view-controls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.view-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(26, 29, 36, 0.9);
+  border: 1px solid #2a2d34;
+  border-radius: 8px;
+  color: #a0a4b0;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+
+.view-btn:hover {
+  background: rgba(55, 66, 250, 0.2);
+  border-color: #3742fa;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.view-btn:active {
+  transform: scale(0.95);
+}
+
+/* Placeholder quando não há peça */
+.canvas3d-container:empty::after {
+  content: 'Defina as dimensões da peça';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #4a4d54;
+  font-size: 14px;
+}
