@@ -695,12 +695,12 @@ function EditorMPR({ pecaInicial, onVoltar }) {
 
       {/* ==================== BOTTOM PANEL ==================== */}
       <div className="editor-panel" style={{ height: panelHeight }}>
-        {/* Dimensões */}
+        {/* Dimensões + Transformações + Bordas */}
         <div className="panel-card">
           <h4>📐 Dimensões</h4>
           <div className="form-grid">
             <div className="form-field">
-              <label>Comprimento (X)</label>
+              <label>X (Comp.)</label>
               <div className="input-with-unit">
                 <input
                   type="number"
@@ -712,7 +712,7 @@ function EditorMPR({ pecaInicial, onVoltar }) {
               </div>
             </div>
             <div className="form-field">
-              <label>Largura (Y)</label>
+              <label>Y (Larg.)</label>
               <div className="input-with-unit">
                 <input
                   type="number"
@@ -724,7 +724,7 @@ function EditorMPR({ pecaInicial, onVoltar }) {
               </div>
             </div>
             <div className="form-field">
-              <label>Espessura (Z)</label>
+              <label>Z (Esp.)</label>
               <div className="input-with-unit">
                 <input
                   type="number"
@@ -736,14 +736,13 @@ function EditorMPR({ pecaInicial, onVoltar }) {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Transformações */}
-        <div className="panel-card">
-          <h4>🔄 Transformações</h4>
-          <div className="transform-controls">
+          
+          {/* Transformações inline */}
+          <div className="section-divider"></div>
+          <div className="transform-row">
+            <span className="mini-label">🔄</span>
             <button
-              className={`transform-btn ${transformacao.rotacao !== 0 ? 'active' : ''}`}
+              className={`transform-btn-sm ${transformacao.rotacao !== 0 ? 'active' : ''}`}
               onClick={() => aplicarTransformacao({
                 ...transformacao,
                 rotacao: (transformacao.rotacao + 90) % 360
@@ -752,35 +751,62 @@ function EditorMPR({ pecaInicial, onVoltar }) {
               ↻ {transformacao.rotacao}°
             </button>
             <button
-              className={`transform-btn ${transformacao.espelhado ? 'active' : ''}`}
+              className={`transform-btn-sm ${transformacao.espelhado ? 'active' : ''}`}
               onClick={() => aplicarTransformacao({
                 ...transformacao,
                 espelhado: !transformacao.espelhado
               })}
             >
-              ⇄ {transformacao.espelhado ? 'Sim' : 'Não'}
+              ⇄ Esp.
             </button>
           </div>
-        </div>
 
-        {/* Bordas */}
-        <div className="panel-card">
-          <h4>🎨 Bordas</h4>
-          <div className="bordas-grid">
-            {['topo', 'baixo', 'esquerda', 'direita'].map((lado) => (
-              <div key={lado} className="borda-field">
-                <label>{lado.charAt(0).toUpperCase() + lado.slice(1)}</label>
-                <select
-                  value={bordas[lado]}
-                  onChange={(e) => setBordas({ ...bordas, [lado]: e.target.value })}
-                  className={`borda-select ${bordas[lado]}`}
-                >
-                  <option value="nenhum">Nenhum</option>
-                  <option value="cor">Cor</option>
-                  <option value="pardo">Pardo</option>
-                </select>
-              </div>
-            ))}
+          {/* Bordas em formato retângulo */}
+          <div className="section-divider"></div>
+          <div className="bordas-retangulo">
+            <div className="borda-topo">
+              <select
+                value={bordas.topo}
+                onChange={(e) => setBordas({ ...bordas, topo: e.target.value })}
+                className={`borda-select-sm ${bordas.topo}`}
+              >
+                <option value="nenhum">-</option>
+                <option value="cor">Cor</option>
+                <option value="pardo">Pardo</option>
+              </select>
+            </div>
+            <div className="borda-meio">
+              <select
+                value={bordas.esquerda}
+                onChange={(e) => setBordas({ ...bordas, esquerda: e.target.value })}
+                className={`borda-select-sm ${bordas.esquerda}`}
+              >
+                <option value="nenhum">-</option>
+                <option value="cor">Cor</option>
+                <option value="pardo">Pardo</option>
+              </select>
+              <div className="borda-peca-icon">▭</div>
+              <select
+                value={bordas.direita}
+                onChange={(e) => setBordas({ ...bordas, direita: e.target.value })}
+                className={`borda-select-sm ${bordas.direita}`}
+              >
+                <option value="nenhum">-</option>
+                <option value="cor">Cor</option>
+                <option value="pardo">Pardo</option>
+              </select>
+            </div>
+            <div className="borda-baixo">
+              <select
+                value={bordas.baixo}
+                onChange={(e) => setBordas({ ...bordas, baixo: e.target.value })}
+                className={`borda-select-sm ${bordas.baixo}`}
+              >
+                <option value="nenhum">-</option>
+                <option value="cor">Cor</option>
+                <option value="pardo">Pardo</option>
+              </select>
+            </div>
           </div>
         </div>
 
