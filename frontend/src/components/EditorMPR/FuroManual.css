@@ -4,69 +4,57 @@
 }
 
 .furo-manual h3 {
-  display: none; /* esconde o título duplicado */
+  display: none;
 }
 
 .furo-manual-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .furo-manual-form .form-group {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .furo-manual-form label {
   font-weight: 500;
-  color: var(--cw-text-secondary, #64748b);
-  font-size: 10px;
+  color: #64748b;
+  font-size: 11px !important;
   text-transform: uppercase;
 }
 
 .furo-manual-form select,
 .furo-manual-form input {
-  padding: 8px 10px;
+  padding: 4px 6px;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 4px;
+  font-size: 10px;
   background: #f9fafb;
-}
-
-.furo-manual-form select:focus,
-.furo-manual-form input:focus {
-  outline: none;
-  border-color: #667eea;
-  background: white;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 4px;
 }
 
 .furo-manual-form small {
-  color: #999;
-  font-size: 9px;
+  display: none;
 }
 
 .btn-add-furo {
-  padding: 8px 12px;
+  padding: 5px 8px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 10px;
   cursor: pointer;
-  margin-top: 4px;
-}
-
-.btn-add-furo:hover {
-  opacity: 0.9;
+  margin-top: 2px;
 }
 
 .furo-manual-hint {
@@ -75,5 +63,5 @@
 
 .error-msg {
   color: #ff4444;
-  font-size: 9px;
+  font-size: 7px;
 }

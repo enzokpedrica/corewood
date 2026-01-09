@@ -97,13 +97,12 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
           <select
             value={furoData.tipo}
             onChange={(e) => {
-              handleChange('tipo', e.target.value);
-              // Ajustar profundidade padrão
-              if (e.target.value === 'vertical') {
-                handleChange('profundidade', '0');
-              } else {
-                handleChange('profundidade', '11.5');
-              }
+              const novoTipo = e.target.value;
+              setFuroData({
+                ...furoData,
+                tipo: novoTipo,
+                profundidade: novoTipo === 'vertical' ? '0' : '11.5'
+              });
             }}
           >
             <option value="vertical">🔴 Vertical</option>

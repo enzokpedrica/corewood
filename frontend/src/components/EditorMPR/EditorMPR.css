@@ -236,11 +236,11 @@
 }
 
 .borda-select-sm {
-  padding: 6px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--cw-border);
   border-radius: 4px;
   font-size: 12px;
-  min-width: 75px;
+  min-width: 80px;
   cursor: pointer;
 }
 .borda-select-sm.cor { border-left: 3px solid #2ed573; }
@@ -283,9 +283,70 @@
 }
 
 .borda-peca-icon {
-  font-size: 24px;
+  font-size: 32px;
   color: var(--cw-text-muted);
-  padding: 0 10px;
+  padding: 0 12px;
+}
+
+.bordas-alerta-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.bordas-alerta-row::before {
+  content: '';
+  display: none;
+}
+
+.divisor-vertical {
+  width: 2px;
+  background: #e5e7eb;
+  align-self: stretch;
+  margin: 0 8px;
+}
+
+/* Bordas + Alerta lado a lado */
+.bordas-alerta-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.alerta-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 100px;
+  align-items: center;
+  justify-content: center;
+}
+
+.alerta-compact .checkbox-field {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.alerta-compact .checkbox-label {
+  font-size: 18px;
+}
+
+.observacoes-input-sm {
+  width: 300px;
+  height: 100px;
+  padding: 8px 10px;
+  border: 1px solid var(--cw-border);
+  border-radius: 4px;
+  font-size: 11px;
+  resize: none;
+  text-align: left;
+}
+
+.observacoes-input-sm:focus {
+  outline: none;
+  border-color: var(--cw-accent);
 }
 
 /* RESPONSIVE */
