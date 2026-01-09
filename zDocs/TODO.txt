@@ -4,10 +4,7 @@
 	> Direções de furos
 > Pinça para a peça
 > Comentários no arquivo .mpr
-> Melhora Visual da Página
-> Melhorar a disposição da peça no quadro branco
-	> Deixar mais nítido
-	> Um jeito mais real
+> Deixar camera fixa, ter somente zoom + - para a peça
 > Como identificar furos inferior/superior/horizontais visualmente?
 > Furação Cruzada BHX
 > Quando estou na lista de furos, clico em algum furo, não esta atualizando o editor de furos
@@ -16,9 +13,6 @@
 	> Botão de ir salvando
 	> Salvar a peça no banco de dados?
 > Restrições de Ferramentas
-> Pode ter algo para gravar no banco de dados
-	> Nome produto
-	> Salvar peça banco ou somente temporário
 	
 
 

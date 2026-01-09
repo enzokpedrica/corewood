@@ -68,14 +68,13 @@ function Canvas3D({
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Controls
+    // Controls - só zoom, sem rotação
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
+    controls.enableRotate = false;  // desabilita rotação
+    controls.enablePan = false;     // desabilita arrastar
+    controls.enableZoom = true;     // mantém zoom
     controls.minDistance = 100;
     controls.maxDistance = 2000;
-    controls.maxPolarAngle = Math.PI / 2;
-    controlsRef.current = controls;
 
     // Iluminação
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -95,6 +94,7 @@ function Canvas3D({
     // Grid helper
     const gridHelper = new THREE.GridHelper(1000, 20, COLORS.grid, COLORS.grid);
     gridHelper.position.y = -1;
+    gridHelper.visible = false;  // invisível
     scene.add(gridHelper);
 
     // Grupo para furos

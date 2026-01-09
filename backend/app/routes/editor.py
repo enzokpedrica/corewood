@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Form
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Union
 from fastapi.responses import Response
 from app.core.auth import get_current_active_user
 from app.models.user import User
@@ -28,13 +28,14 @@ class FuroData(BaseModel):
 
 
 class FuroHorizontalData(BaseModel):
-    x: Optional[float] = 0
+    x: Union[float, str] = 0  # aceita "x" ou número
     y: float
     z: float = 7.5
     diametro: float
     profundidade: float = 22.0
     lado: str = "XP"
     tipo: str = "horizontal"
+    id: Optional[float] = None  # adiciona o id também
 
 class PecaData(BaseModel):
     nome: str
