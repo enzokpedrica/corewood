@@ -10,6 +10,7 @@
 	> Salvar a peça no banco de dados?
 > Restrições de Ferramentas
 > Dimensões do furo proporcionais ao diâmetro do furo
+> Aba com mais de uma peça aberta no editor mpr
 	
 
 

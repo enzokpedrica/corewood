@@ -6,6 +6,7 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
     tipo: 'vertical',
     x: '',
     y: '',
+    z: '',
     diametro: '5',
     profundidade: '0',
     lado: 'XP'
@@ -69,6 +70,7 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
     const novoFuro = {
       x: parseFloat(furoData.x),
       y: parseFloat(furoData.y),
+      z: furoData.tipo === 'horizontal' ? (parseFloat(furoData.z) || pecaDimensoes.espessura / 2) : null,
       tipo: furoData.tipo,
       diametro: parseFloat(furoData.diametro),
       profundidade: parseFloat(furoData.profundidade),
@@ -169,20 +171,36 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
           </div>
         </div>
 
-        {/* Lado (se horizontal) */}
+        {/* Z e Lado (se horizontal) */}
         {furoData.tipo === 'horizontal' && (
-          <div className="form-group">
-            <label>Lado:</label>
-            <select
-              value={furoData.lado}
-              onChange={(e) => handleChange('lado', e.target.value)}
-            >
-              <option value="XP">XP (Frente)</option>
-              <option value="XM">XM (Trás)</option>
-              <option value="YP">YP (Direita)</option>
-              <option value="YM">YM (Esquerda)</option>
-            </select>
-          </div>
+          <>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Z (mm):</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={furoData.z}
+                  onChange={(e) => handleChange('z', e.target.value)}
+                  placeholder={String(pecaDimensoes.espessura / 2)}
+                  className={errors.z ? 'input-error' : ''}
+                />
+                {errors.z && <span className="error-msg">{errors.z}</span>}
+              </div>
+              <div className="form-group">
+                <label>Lado:</label>
+                <select
+                  value={furoData.lado}
+                  onChange={(e) => handleChange('lado', e.target.value)}
+                >
+                  <option value="XP">XP (Frente)</option>
+                  <option value="XM">XM (Trás)</option>
+                  <option value="YP">YP (Direita)</option>
+                  <option value="YM">YM (Esquerda)</option>
+                </select>
+              </div>
+            </div>
+          </>
         )}
 
         {/* Botão Submit */}
