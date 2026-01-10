@@ -30,14 +30,18 @@ def parse_furacao(conteudo: str, nome_peca: str = "Peça") -> Peca:
     
     # Extrair dimensões
     dimensoes = None
+    largura = 0
+    comprimento = 0
+    espessura = 0
+
     for linha in linhas:
         if '_BSX=' in linha:
-            x = float(linha.split('=')[1])
+            comprimento = float(linha.split('=')[1])  # X = comprimento
         elif '_BSY=' in linha:
-            y = float(linha.split('=')[1])
+            largura = float(linha.split('=')[1])      # Y = largura
         elif '_BSZ=' in linha:
-            z = float(linha.split('=')[1])
-            dimensoes = Dimensoes(largura=x, comprimento=y, espessura=z)
+            espessura = float(linha.split('=')[1])    # Z = espessura
+            dimensoes = Dimensoes(largura=largura, comprimento=comprimento, espessura=espessura)
             break
     
     # Extrair furos
@@ -106,10 +110,20 @@ def parse_furacao(conteudo: str, nome_peca: str = "Peça") -> Peca:
                 j += 1
             
             if 'XA' in furo_data and 'YA' in furo_data:
+                # Tratar X (pode ser 'x' = comprimento)
                 x_base_val = furo_data.get('XA', '0')
-                x_base = x_base_val if x_base_val == 'x' else float(x_base_val)
+                if x_base_val == 'x':
+                    x_base = 'x'
+                else:
+                    x_base = float(x_base_val)
                 
-                y_base = float(furo_data.get('YA', 0))  # ← SEM inversão
+                # Tratar Y (pode ser 'y' = largura)
+                y_base_val = furo_data.get('YA', '0')
+                print(f"DEBUG YA: '{y_base_val}' | largura: {largura}")
+                if y_base_val == 'y':
+                    y_base = largura  # usa a largura da peça
+                else:
+                    y_base = float(y_base_val)
                 
                 z_base = float(furo_data.get('ZA', 0))
                 diametro = float(furo_data.get('DU', 0))
@@ -118,17 +132,17 @@ def parse_furacao(conteudo: str, nome_peca: str = "Peça") -> Peca:
                 
                 quantidade = int(furo_data.get('AN', 1))
                 distancia = float(furo_data.get('AB', 0))
-                angulo = float(furo_data.get('WI', 90))
+                angulo = float(furo_data.get('WI', 0))  # padrão 0, não 90
                 
                 for n in range(quantidade):
-                    if isinstance(x_base, str) and x_base == 'x':
-                        x_atual = 'x'
-                        y_atual = y_base + (n * distancia) if angulo == 90 else y_base  # ← Somando
-                    elif angulo == 90:
-                        x_atual = x_base if isinstance(x_base, float) else float(x_base)
-                        y_atual = y_base + (n * distancia)  # ← Somando
+                    # Calcular posição baseado no ângulo
+                    # WI=0 ou não definido → replica em X
+                    # WI=90 → replica em Y
+                    if angulo == 90:
+                        x_atual = x_base if isinstance(x_base, str) else x_base
+                        y_atual = y_base + (n * distancia)
                     else:
-                        x_atual = x_base + (n * distancia) if isinstance(x_base, float) else x_base
+                        x_atual = x_base + (n * distancia) if isinstance(x_base, (int, float)) else x_base
                         y_atual = y_base
                     
                     furo = FuroHorizontal(
@@ -142,18 +156,6 @@ def parse_furacao(conteudo: str, nome_peca: str = "Peça") -> Peca:
                     furos_horizontais.append(furo)
                     
             i = j - 1
-        
-        # Comentários
-        elif '<101 \\Kommentar\\' in linha:
-            j = i + 1
-            while j < len(linhas) and 'KM=' in linhas[j]:
-                km = extrair_valor(linhas[j], 'KM')
-                if km and km.strip():
-                    comentarios.append(km.strip())
-                j += 1
-            i = j - 1
-        
-        i += 1
     
     return Peca(
         nome=nome_peca,
