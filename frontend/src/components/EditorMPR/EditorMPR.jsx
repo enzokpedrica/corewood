@@ -39,6 +39,100 @@ function EditorMPR({ pecaInicial, onVoltar }) {
   const [panelHeight, setPanelHeight] = useState(280);
 
   // ========================================
+// AUTO-SAVE LOCAL (backup de emergência)
+// ========================================
+
+// Salvar no localStorage a cada alteração
+useEffect(() => {
+  if (peca.comprimento && peca.largura) {
+    const backup = {
+      peca,
+      bordas,
+      transformacao,
+      alerta,
+      observacoes,
+      codigoPeca,
+      timestamp: Date.now()
+    };
+    localStorage.setItem('corewood_editor_backup', JSON.stringify(backup));
+  }
+}, [peca, bordas, transformacao, alerta, observacoes, codigoPeca]);
+
+// Recuperar backup ao carregar
+useEffect(() => {
+  const backup = localStorage.getItem('corewood_editor_backup');
+  if (backup && !pecaInicial) {
+    try {
+      const dados = JSON.parse(backup);
+      const horasAtras = (Date.now() - dados.timestamp) / (1000 * 60 * 60);
+      
+      if (horasAtras < 24 && dados.peca?.furos?.length > 0) {
+        if (window.confirm(`🔄 Encontramos uma peça não salva (${dados.peca.nome || 'sem nome'}).\n\nDeseja recuperar?`)) {
+          setPeca(dados.peca);
+          setBordas(dados.bordas || { topo: 'nenhum', baixo: 'nenhum', esquerda: 'nenhum', direita: 'nenhum' });
+          setTransformacao(dados.transformacao || { rotacao: 0, espelhado: false });
+          setAlerta(dados.alerta || false);
+          setObservacoes(dados.observacoes || '');
+          setCodigoPeca(dados.codigoPeca || '');
+        } else {
+          localStorage.removeItem('corewood_editor_backup');
+        }
+      }
+    } catch (e) {
+      console.error('Erro ao recuperar backup:', e);
+      localStorage.removeItem('corewood_editor_backup');
+    }
+  }
+}, []);
+
+  // ========================================
+  // AUTO-SAVE LOCAL (backup de emergência)
+  // ========================================
+
+  // Salvar no localStorage a cada alteração
+  useEffect(() => {
+    if (peca.comprimento && peca.largura) {
+      const backup = {
+        peca,
+        bordas,
+        transformacao,
+        alerta,
+        observacoes,
+        codigoPeca,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('corewood_editor_backup', JSON.stringify(backup));
+    }
+  }, [peca, bordas, transformacao, alerta, observacoes, codigoPeca]);
+
+  // Recuperar backup ao carregar
+  useEffect(() => {
+    const backup = localStorage.getItem('corewood_editor_backup');
+    if (backup && !pecaInicial) {
+      try {
+        const dados = JSON.parse(backup);
+        const horasAtras = (Date.now() - dados.timestamp) / (1000 * 60 * 60);
+        
+        if (horasAtras < 24 && dados.peca?.furos?.length > 0) {
+          if (window.confirm(`🔄 Encontramos uma peça não salva (${dados.peca.nome || 'sem nome'}).\n\nDeseja recuperar?`)) {
+            setPeca(dados.peca);
+            setBordas(dados.bordas || { topo: 'nenhum', baixo: 'nenhum', esquerda: 'nenhum', direita: 'nenhum' });
+            setTransformacao(dados.transformacao || { rotacao: 0, espelhado: false });
+            setAlerta(dados.alerta || false);
+            setObservacoes(dados.observacoes || '');
+            setCodigoPeca(dados.codigoPeca || '');
+          } else {
+            localStorage.removeItem('corewood_editor_backup');
+          }
+        }
+      } catch (e) {
+        console.error('Erro ao recuperar backup:', e);
+        localStorage.removeItem('corewood_editor_backup');
+      }
+    }
+  }, []);
+
+  // ========================================
   // CARREGAR PEÇA INICIAL
   // ========================================
   useEffect(() => {
@@ -517,7 +611,10 @@ function EditorMPR({ pecaInicial, onVoltar }) {
       );
 
       if (response.status === 200) {
-        alert('✅ Peça salva com sucesso!');
+        if (response.status === 200) {
+          alert('✅ Peça salva com sucesso!');
+          localStorage.removeItem('corewood_editor_backup');
+        }
       } else {
         alert('❌ Erro ao salvar peça');
       }
