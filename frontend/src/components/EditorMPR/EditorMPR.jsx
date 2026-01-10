@@ -324,7 +324,7 @@ function EditorMPR({ pecaInicial, onVoltar }) {
         // FURO HORIZONTAL (103)
         if (bloco.includes('<103') && bloco.includes('BohrHoriz')) {
           const xa = bloco.match(/XA="([^"]+)"/);
-          const ya = bloco.match(/YA="([\d.]+)"/);
+          const ya = bloco.match(/YA="([^"]+)"/);  // ← mudou pra pegar qualquer valor
           const za = bloco.match(/ZA="([\d.]+)"/);
           const du = bloco.match(/DU="([\d.]+)"/);
           const ti = bloco.match(/TI="([\d.]+)"/);
@@ -336,21 +336,29 @@ function EditorMPR({ pecaInicial, onVoltar }) {
           if (ya && za && du) {
             const xVal = xa ? xa[1] : '0';
             const x = xVal === 'x' ? 'x' : parseFloat(xVal);
-            const y = parseFloat(ya[1]);
+            
+            // Tratar Y (pode ser 'y' = largura)
+            const yVal = ya[1];
+            const y = yVal === 'y' ? largura : parseFloat(yVal);
+            
             const z = parseFloat(za[1]);
             const diametro = parseFloat(du[1]);
             const profundidade = ti ? parseFloat(ti[1]) : 0;
             const quantidade = an ? parseInt(an[1]) : 1;
             const distancia = ab ? parseFloat(ab[1]) : 0;
-            const angulo = wi ? parseInt(wi[1]) : 90;
+            const angulo = wi ? parseInt(wi[1]) : 0;  // ← mudou pra 0 padrão
             const lado = bm ? bm[1] : 'XP';
 
             for (let i = 0; i < quantidade; i++) {
+              // Se o furo entra pela face X (XP ou XM), replica em Y
+              // Se o furo entra pela face Y (YP ou YM), replica em X
+              const replicaEmY = lado === 'XP' || lado === 'XM';
+              
               furosHorizontais.push({
                 id: Date.now() + Math.random(),
                 tipo: 'horizontal',
-                x: xVal === 'x' ? 'x' : (angulo === 0 ? x + (distancia * i) : x),
-                y: angulo === 90 ? y + (distancia * i) : y,
+                x: xVal === 'x' ? 'x' : (replicaEmY ? x : x + (distancia * i)),
+                y: replicaEmY ? y + (distancia * i) : y,
                 z,
                 diametro,
                 profundidade,
