@@ -1,11 +1,7 @@
 -- BHX FURAÇÃO - COMPLETA
 
-> Adicionar furos de topo no formulário de criação de furos
-	> Direções de furos
-> Pinça para a peça
+> Melhorar entendimento de direções de furos
 > Comentários no arquivo .mpr
-> Deixar camera fixa, ter somente zoom + - para a peça
-> Como identificar furos inferior/superior/horizontais visualmente?
 > Furação Cruzada BHX
 > Quando estou na lista de furos, clico em algum furo, não esta atualizando o editor de furos
 > Estou criando os furos e o login expira
@@ -13,6 +9,7 @@
 	> Botão de ir salvando
 	> Salvar a peça no banco de dados?
 > Restrições de Ferramentas
+> Dimensões do furo proporcionais ao diâmetro do furo
 	
 
 
