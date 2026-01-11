@@ -1,18 +1,13 @@
 -- BHX FURAÇÃO - COMPLETA
 
-> Melhorar entendimento de direções de furos
 > Comentários no arquivo .mpr
 > Furação Cruzada BHX
-> Quando estou na lista de furos, clico em algum furo, não esta atualizando o editor de furos
-> Estou criando os furos e o login expira
-	> Salvamento automático?
-	> Botão de ir salvando
-	> Salvar a peça no banco de dados?
 > Restrições de Ferramentas
 > Dimensões do furo proporcionais ao diâmetro do furo
 > Aba com mais de uma peça aberta no editor mpr
 	
-
+> Documentação
+	> Vista de peças com furo em topo
 
 
 > Relatório Lei do Bem	

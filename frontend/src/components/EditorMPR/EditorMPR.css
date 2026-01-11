@@ -258,7 +258,7 @@
 .replicacao-row { display: flex; gap: 6px; align-items: center; padding-top: 8px; border-top: 1px solid #d1fae5; }
 .input-sm { width: 60px; padding: 6px 8px; border: 1px solid var(--cw-border); border-radius: var(--cw-radius-sm); font-size: 11px; font-family: monospace; }
 .select-sm { padding: 6px 8px; border: 1px solid var(--cw-border); border-radius: var(--cw-radius-sm); font-size: 11px; }
-.btn-sm { padding: 6px 10px; border: none; border-radius: var(--cw-radius-sm); font-size: 12px; font-weight: 500; cursor: pointer; }
+.btn-sm { padding: 8px 130px; border: none; border-radius: var(--cw-radius-sm); font-size: 12px; font-weight: 500; cursor: pointer; }
 .btn-sm.btn-success { background: var(--cw-success); color: white; }
 .btn-sm.btn-danger { background: var(--cw-danger); color: white; }
 .btn-sm.full-width { width: 100%; margin-top: 4px; }

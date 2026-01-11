@@ -1064,7 +1064,7 @@ useEffect(() => {
                     handleReplicarFuro(qtd, dist, dir);
                   }}
                 >
-                  🔁
+                  🔁 Replicar
                 </button>
               </div>
 

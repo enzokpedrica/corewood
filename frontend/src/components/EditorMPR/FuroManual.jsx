@@ -93,121 +93,100 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
       <h3>➕ Adicionar por Coordenadas</h3>
       
       <form onSubmit={handleSubmit} className="furo-manual-form">
-        {/* Tipo de Furo */}
+      {/* Tipo */}
+      <div className="form-group">
+        <select
+          value={furoData.tipo}
+          onChange={(e) => {
+            const novoTipo = e.target.value;
+            setFuroData({
+              ...furoData,
+              tipo: novoTipo,
+              profundidade: novoTipo === 'vertical' ? '0' : '11.5'
+            });
+          }}
+        >
+          <option value="vertical">🔴 Vertical</option>
+          <option value="horizontal">🔵 Horizontal</option>
+        </select>
+      </div>
+
+      {/* X / Y / Z */}
+      <div className="form-row-3">
         <div className="form-group">
-          <label>Tipo:</label>
-          <select
-            value={furoData.tipo}
-            onChange={(e) => {
-              const novoTipo = e.target.value;
-              setFuroData({
-                ...furoData,
-                tipo: novoTipo,
-                profundidade: novoTipo === 'vertical' ? '0' : '11.5'
-              });
-            }}
-          >
-            <option value="vertical">🔴 Vertical</option>
-            <option value="horizontal">🔵 Horizontal</option>
-          </select>
+          <label>X</label>
+          <input
+            type="number"
+            step="0.1"
+            value={furoData.x}
+            onChange={(e) => handleChange('x', e.target.value)}
+            placeholder="0"
+          />
         </div>
-
-        {/* Coordenadas */}
-        <div className="form-row">
-          <div className="form-group">
-            <label>X (mm):</label>
-            <input
-              type="number"
-              step="0.1"
-              value={furoData.x}
-              onChange={(e) => handleChange('x', e.target.value)}
-              placeholder="0"
-              className={errors.x ? 'input-error' : ''}
-            />
-            {errors.x && <span className="error-msg">{errors.x}</span>}
-          </div>
-
-          <div className="form-group">
-            <label>Y (mm):</label>
-            <input
-              type="number"
-              step="0.1"
-              value={furoData.y}
-              onChange={(e) => handleChange('y', e.target.value)}
-              placeholder="0"
-              className={errors.y ? 'input-error' : ''}
-            />
-            {errors.y && <span className="error-msg">{errors.y}</span>}
-          </div>
+        <div className="form-group">
+          <label>Y</label>
+          <input
+            type="number"
+            step="0.1"
+            value={furoData.y}
+            onChange={(e) => handleChange('y', e.target.value)}
+            placeholder="0"
+          />
         </div>
-
-        {/* Diâmetro e Profundidade */}
-        <div className="form-row">
-          <div className="form-group">
-            <label>Ø (mm):</label>
-            <input
-              type="number"
-              step="0.1"
-              value={furoData.diametro}
-              onChange={(e) => handleChange('diametro', e.target.value)}
-              placeholder="5"
-              className={errors.diametro ? 'input-error' : ''}
-            />
-            {errors.diametro && <span className="error-msg">{errors.diametro}</span>}
-          </div>
-
-          <div className="form-group">
-            <label>Prof. (mm):</label>
-            <input
-              type="number"
-              step="0.1"
-              value={furoData.profundidade}
-              onChange={(e) => handleChange('profundidade', e.target.value)}
-              placeholder="0"
-              className={errors.profundidade ? 'input-error' : ''}
-            />
-            {errors.profundidade && <span className="error-msg">{errors.profundidade}</span>}
-            <small>0 = passante</small>
-          </div>
-        </div>
-
-        {/* Z e Lado (se horizontal) */}
         {furoData.tipo === 'horizontal' && (
-          <>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Z (mm):</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={furoData.z}
-                  onChange={(e) => handleChange('z', e.target.value)}
-                  placeholder={String(pecaDimensoes.espessura / 2)}
-                  className={errors.z ? 'input-error' : ''}
-                />
-                {errors.z && <span className="error-msg">{errors.z}</span>}
-              </div>
-              <div className="form-group">
-                <label>Lado:</label>
-                <select
-                  value={furoData.lado}
-                  onChange={(e) => handleChange('lado', e.target.value)}
-                >
-                  <option value="XP">XP (Frente)</option>
-                  <option value="XM">XM (Trás)</option>
-                  <option value="YP">YP (Direita)</option>
-                  <option value="YM">YM (Esquerda)</option>
-                </select>
-              </div>
-            </div>
-          </>
+          <div className="form-group">
+            <label>Z</label>
+            <input
+              type="number"
+              step="0.1"
+              value={furoData.z}
+              onChange={(e) => handleChange('z', e.target.value)}
+              placeholder={String(pecaDimensoes.espessura / 2)}
+            />
+          </div>
         )}
+      </div>
 
-        {/* Botão Submit */}
-        <button type="submit" className="btn-add-furo">
-          ➕ Adicionar Furo
-        </button>
-      </form>
+      {/* Diâmetro / Profundidade */}
+      <div className="form-row">
+        <div className="form-group">
+          <label>Ø</label>
+          <input
+            type="number"
+            step="0.1"
+            value={furoData.diametro}
+            onChange={(e) => handleChange('diametro', e.target.value)}
+            placeholder="5"
+          />
+        </div>
+        <div className="form-group">
+          <label>Prof.</label>
+          <input
+            type="number"
+            step="0.1"
+            value={furoData.profundidade}
+            onChange={(e) => handleChange('profundidade', e.target.value)}
+            placeholder="0"
+          />
+        </div>
+      </div>
+
+      {/* Lado (se horizontal) */}
+      {furoData.tipo === 'horizontal' && (
+        <div className="lado-selector">
+          <button type="button" className={`lado-btn ${furoData.lado === 'XM' ? 'active' : ''}`} onClick={() => handleChange('lado', 'XM')}>→</button>
+          <div className="lado-meio">
+            <button type="button" className={`lado-btn ${furoData.lado === 'YM' ? 'active' : ''}`} onClick={() => handleChange('lado', 'YM')}>↓</button>
+            <div className="lado-peca">▭</div>
+            <button type="button" className={`lado-btn ${furoData.lado === 'YP' ? 'active' : ''}`} onClick={() => handleChange('lado', 'YP')}>↑</button>
+          </div>
+          <button type="button" className={`lado-btn ${furoData.lado === 'XP' ? 'active' : ''}`} onClick={() => handleChange('lado', 'XP')}>←</button>
+        </div>
+      )}
+
+      {/* Botão */}
+      <button type="submit" className="btn-add-furo">➕ Adicionar</button>
+    </form>
     </div>
   );
 }
