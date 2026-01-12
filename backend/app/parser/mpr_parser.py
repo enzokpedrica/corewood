@@ -117,17 +117,7 @@ def parse_furacao(conteudo: str, nome_peca: str = "Peça") -> Peca:
                 else:
                     x_base = float(x_base_val)
                 
-<<<<<<< HEAD
                 y_base = float(furo_data.get('YA', 0))  # ← SEM inversão
-=======
-                # Tratar Y (pode ser 'y' = largura)
-                y_base_val = furo_data.get('YA', '0')
-                print(f"DEBUG YA: '{y_base_val}' | largura: {largura}")
-                if y_base_val == 'y':
-                    y_base = largura  # usa a largura da peça
-                else:
-                    y_base = float(y_base_val)
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
                 
                 z_base = float(furo_data.get('ZA', 0))
                 diametro = float(furo_data.get('DU', 0))
@@ -139,21 +129,12 @@ def parse_furacao(conteudo: str, nome_peca: str = "Peça") -> Peca:
                 angulo = float(furo_data.get('WI', 0))  # padrão 0, não 90
                 
                 for n in range(quantidade):
-<<<<<<< HEAD
                     if isinstance(x_base, str) and x_base == 'x':
                         x_atual = 'x'
                         y_atual = y_base + (n * distancia) if angulo == 90 else y_base  # ← Somando
                     elif angulo == 90:
                         x_atual = x_base if isinstance(x_base, float) else float(x_base)
                         y_atual = y_base + (n * distancia)  # ← Somando
-=======
-                    # Calcular posição baseado no ângulo
-                    # WI=0 ou não definido → replica em X
-                    # WI=90 → replica em Y
-                    if angulo == 90:
-                        x_atual = x_base if isinstance(x_base, str) else x_base
-                        y_atual = y_base + (n * distancia)
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
                     else:
                         x_atual = x_base + (n * distancia) if isinstance(x_base, (int, float)) else x_base
                         y_atual = y_base
