@@ -9,7 +9,8 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
     z: '',
     diametro: '5',
     profundidade: '0',
-    lado: 'XP'
+    lado: 'XP',
+    ladoVertical: 'LS'
   });
 
   const [errors, setErrors] = useState({});
@@ -66,6 +67,8 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
     if (!validarFuro()) {
       return;
     }
+    console.log('furoData:', furoData);
+    console.log('ladoVertical:', furoData.ladoVertical);
 
     const novoFuro = {
       x: parseFloat(furoData.x),
@@ -74,7 +77,7 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
       tipo: furoData.tipo,
       diametro: parseFloat(furoData.diametro),
       profundidade: parseFloat(furoData.profundidade),
-      lado: furoData.tipo === 'horizontal' ? furoData.lado : null
+      lado: furoData.tipo === 'horizontal' ? furoData.lado : furoData.ladoVertical
     };
 
     onAddFuro(novoFuro);
@@ -147,7 +150,7 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
         )}
       </div>
 
-      {/* Diâmetro / Profundidade */}
+      {/* Diâmetro / Profundidade / Lado (vertical) */}
       <div className="form-row">
         <div className="form-group">
           <label>Ø</label>
@@ -169,6 +172,18 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
             placeholder="0"
           />
         </div>
+        {furoData.tipo === 'vertical' && (
+          <div className="form-group">
+            <label>Lado</label>
+            <select
+              value={furoData.ladoVertical}
+              onChange={(e) => handleChange('ladoVertical', e.target.value)}
+            >
+              <option value="LS">↓ De cima</option>
+              <option value="LSU">↑ De baixo</option>
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Lado (se horizontal) */}

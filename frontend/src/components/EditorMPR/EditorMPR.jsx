@@ -409,7 +409,7 @@ useEffect(() => {
                 y: angulo === 90 ? y + (distancia * i) : y,
                 diametro,
                 profundidade,
-                lado
+                lado: bm ? bm[1] : 'LS'
               });
             }
           }

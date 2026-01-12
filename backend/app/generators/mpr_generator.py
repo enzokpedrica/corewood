@@ -262,6 +262,7 @@ class GeradorMPR:
         y = float(furo['y'])
         diametro = float(furo['diametro'])
         profundidade = float(furo.get('profundidade', 0))
+        lado = furo.get('lado', 'LS')  # ← pega o lado do furo
         
         # Suporte a replicação
         quantidade = int(furo.get('quantidade', 1))
@@ -277,36 +278,24 @@ class GeradorMPR:
             else:
                 return f"{valor:.1f}"
         
-        if profundidade == 0:
-            linhas = [
-                '<102 \\BohrVert\\',
-                f'XA="{formatar(x)}"',
-                f'YA="{formatar(y)}"',
-                'BM="LSL"',
-                f'DU="{formatar(diametro)}"',
-                f'AN="{quantidade}"',
-                'MI="0"',
-                'S_="1"',
-                f'AB="{formatar(distancia)}"',
-                f'WI="{wi}"',
-            ]
-        else:
-            linhas = [
-                '<102 \\BohrVert\\',
-                f'XA="{formatar(x)}"',
-                f'YA="{formatar(y)}"',
-                'BM="LSU"',
-                f'TI="{formatar(profundidade)}"',
-                f'DU="{formatar(diametro)}"',
-                f'AN="{quantidade}"',
-                'MI="0"',
-                'S_="1"',
-                f'AB="{formatar(distancia)}"',
-                f'WI="{wi}"',
-            ]
+        linhas = [
+            '<102 \\BohrVert\\',
+            f'XA="{formatar(x)}"',
+            f'YA="{formatar(y)}"',
+            f'BM="{lado}"',  # ← usa o lado passado
+            f'DU="{formatar(diametro)}"',
+        ]
         
-        # Parâmetros padrão
+        # Adiciona profundidade se não for passante
+        if profundidade > 0:
+            linhas.append(f'TI="{formatar(profundidade)}"')
+        
         linhas.extend([
+            f'AN="{quantidade}"',
+            'MI="0"',
+            'S_="1"',
+            f'AB="{formatar(distancia)}"',
+            f'WI="{wi}"',
             'ZT="0"',
             'RM="0"',
             'VW="0"',

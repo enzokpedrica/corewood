@@ -5,7 +5,9 @@
 > Restrições de Ferramentas
 > Dimensões do furo proporcionais ao diâmetro do furo
 > Aba com mais de uma peça aberta no editor mpr
-	
+> Copiar furos horizontais, de um lado pro outro
+
+
 > Documentação
 	> Vista de peças com furo em topo
 

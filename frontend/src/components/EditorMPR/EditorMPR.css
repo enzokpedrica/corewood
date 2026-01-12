@@ -169,13 +169,32 @@
 .form-field { display: flex; flex-direction: column; gap: 4px; }
 .form-field label { font-size: 11px; font-weight: 500; color: var(--cw-text-secondary); text-transform: uppercase; }
 
-.input-with-unit { display: flex; border: 1px solid var(--cw-border); border-radius: var(--cw-radius-sm); overflow: hidden; }
-.input-with-unit:focus-within { border-color: var(--cw-accent); box-shadow: 0 0 0 3px var(--cw-accent-light); }
-.input-with-unit input { 
-  padding: 10px;  /* era 8px */
-  font-size: 14px;  /* era 13px */
+.input-with-unit {
+  display: flex;
+  border: 1px solid #1934ac;
+  border-radius: 4px;
+  overflow: hidden;
 }
-.input-with-unit input:focus { outline: none; }
+
+.input-with-unit:focus-within {
+  border-color: #764ba2;
+  box-shadow: 0 0 0 3px rgba(25, 52, 172, 0.2);
+}
+
+.input-with-unit input {
+  flex: 1;
+  border: none;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: monospace;
+  min-width: 0;
+  background: #fafafa;
+}
+
+.input-with-unit input:focus {
+  outline: none;
+  background: white;
+}
 .input-with-unit span { padding: 0 8px; background: #f8fafc; color: var(--cw-text-muted); font-size: 11px; border-left: 1px solid var(--cw-border); display: flex; align-items: center; }
 
 /* TRANSFORM */
@@ -195,8 +214,14 @@
 /* ALERT */
 .alert-section { display: flex; flex-direction: column; gap: 10px; }
 .checkbox-field { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.checkbox-field input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--cw-accent); }
-.checkbox-label { font-size: 13px; }
+.checkbox-field input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #1934ac;
+  border: 1px solid #1934ac;
+  border-radius: 4px;
+  cursor: pointer;
+}.checkbox-label { font-size: 13px; }
 .observacoes-input { width: 100%; padding: 10px; border: 1px solid var(--cw-border); border-radius: var(--cw-radius-sm); font-size: 13px; resize: none; }
 .observacoes-input:focus { outline: none; border-color: var(--cw-accent); }
 
@@ -218,16 +243,23 @@
 
 .transform-btn-sm {
   padding: 8px 14px;
-  font-size: 13px; 
   background: #f1f5f9;
-  border: 1px solid var(--cw-border);
+  border: 1px solid #1934ac;
   border-radius: 4px;
+  font-size: 12px;
   cursor: pointer;
   transition: var(--cw-transition);
 }
-.transform-btn-sm:hover { background: #e2e8f0; }
-.transform-btn-sm.active { background: var(--cw-accent); border-color: var(--cw-accent); color: white; }
 
+.transform-btn-sm:hover {
+  background: #e2e8f0;
+}
+
+.transform-btn-sm.active {
+  background: #1934ac;
+  border-color: #1934ac;
+  color: white;
+}
 .bordas-row {
   display: flex;
   align-items: center;
@@ -236,28 +268,84 @@
 }
 
 .borda-select-sm {
-  padding: 10px 12px;
-  border: 1px solid var(--cw-border);
+  padding: 8px 12px;
+  border: 1px solid #1934ac;
   border-radius: 4px;
   font-size: 12px;
-  min-width: 80px;
+  min-width: 65px;
   cursor: pointer;
+  background: #fafafa;
 }
-.borda-select-sm.cor { border-left: 3px solid #2ed573; }
-.borda-select-sm.pardo { border-left: 3px solid #ff7f50; }
+
+.borda-select-sm:focus {
+  outline: none;
+  border-color: #764ba2;
+  box-shadow: 0 0 0 3px rgba(25, 52, 172, 0.2);
+}
+
+.borda-select-sm.cor {
+  border-left: 4px solid #2ed573;
+}
+
+.borda-select-sm.pardo {
+  border-left: 4px solid #ff7f50;
+}
 
 /* FURO CONFIG */
 .furo-config { display: flex; flex-direction: column; gap: 10px; }
 .form-row-inline { display: flex; gap: 8px; }
 .form-field-sm { flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .form-field-sm label { font-size: 10px; font-weight: 600; color: var(--cw-text-secondary); text-transform: uppercase; }
-.form-field-sm input, .form-field-sm select { padding: 6px 8px; border: 1px solid var(--cw-border); border-radius: var(--cw-radius-sm); font-size: 12px; font-family: monospace; }
-.form-field-sm input:focus, .form-field-sm select:focus { outline: none; border-color: var(--cw-accent); }
+.form-field-sm input,
+.form-field-sm select {
+  padding: 6px 8px;
+  border: 1px solid #1934ac;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
+  background: #fafafa;
+}
 
+.form-field-sm input:focus,
+.form-field-sm select:focus {
+  outline: none;
+  border-color: #764ba2;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(25, 52, 172, 0.2);
+}
 /* REPLICAÇÃO */
 .replicacao-row { display: flex; gap: 6px; align-items: center; padding-top: 8px; border-top: 1px solid #d1fae5; }
-.input-sm { width: 60px; padding: 6px 8px; border: 1px solid var(--cw-border); border-radius: var(--cw-radius-sm); font-size: 11px; font-family: monospace; }
-.select-sm { padding: 6px 8px; border: 1px solid var(--cw-border); border-radius: var(--cw-radius-sm); font-size: 11px; }
+.input-sm {
+  width: 60px;
+  padding: 6px 8px;
+  border: 1px solid #1934ac;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: monospace;
+  background: #fafafa;
+}
+
+.input-sm:focus {
+  outline: none;
+  border-color: #764ba2;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(25, 52, 172, 0.2);
+}
+
+.select-sm {
+  padding: 6px 8px;
+  border: 1px solid #1934ac;
+  border-radius: 4px;
+  font-size: 11px;
+  background: #fafafa;
+}
+
+.select-sm:focus {
+  outline: none;
+  border-color: #764ba2;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(25, 52, 172, 0.2);
+}
 .btn-sm { padding: 8px 130px; border: none; border-radius: var(--cw-radius-sm); font-size: 12px; font-weight: 500; cursor: pointer; }
 .btn-sm.btn-success { background: var(--cw-success); color: white; }
 .btn-sm.btn-danger { background: var(--cw-danger); color: white; }
@@ -309,44 +397,47 @@
 /* Bordas + Alerta lado a lado */
 .bordas-alerta-row {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
 }
 
 .alerta-compact {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
   min-width: 100px;
-  align-items: center;
+  align-items: left;
   justify-content: center;
 }
 
 .alerta-compact .checkbox-field {
   font-size: 20px;
   display: flex;
-  align-items: center;
+  align-items: left;
   gap: 6px;
 }
 
 .alerta-compact .checkbox-label {
-  font-size: 18px;
+  font-size: 15px;
 }
 
 .observacoes-input-sm {
   width: 300px;
-  height: 100px;
+  height: 50px;
   padding: 8px 10px;
-  border: 1px solid var(--cw-border);
+  border: 1px solid #1934ac;
   border-radius: 4px;
   font-size: 11px;
   resize: none;
   text-align: left;
+  background: #fafafa;
 }
 
 .observacoes-input-sm:focus {
   outline: none;
-  border-color: var(--cw-accent);
+  border-color: #764ba2;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(25, 52, 172, 0.2);
 }
 
 /* RESPONSIVE */

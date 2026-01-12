@@ -27,16 +27,17 @@
 .furo-manual-form select,
 .furo-manual-form input {
   padding: 4px 6px;
-  border: 1px solid #e5e7eb;
-  border-radius: 3px;
+  border: 1px solid #1934ac;
+  border-radius: 4px;
   font-size: 11px;
   width: 100%;
   box-sizing: border-box;
+  background: #fafafa;
 }
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 4px;
 }
 
