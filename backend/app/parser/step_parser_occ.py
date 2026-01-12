@@ -166,8 +166,8 @@ class StepParserOCC:
         diametro = cyl['radius'] * 2
         
         # Tolerâncias
-        tol = 0.1
-        tol_borda = 2.0
+        tol_dir = 0.7  # Tolerância para direção (aumentada)
+        tol_borda = 5.0  # Tolerância para considerar na borda
         
         # Coordenadas relativas ao bounding box
         rel_x = cyl['x'] - xmin
@@ -181,9 +181,9 @@ class StepParserOCC:
         # Determinar qual eixo é qual dimensão
         # Mapear eixos para comprimento/largura/espessura
         dims_map = [
-            (dim_x, 'x', rel_x),
-            (dim_y, 'y', rel_y),
-            (dim_z, 'z', rel_z)
+            (dim_x, 'x', rel_x, dir_x),
+            (dim_y, 'y', rel_y, dir_y),
+            (dim_z, 'z', rel_z, dir_z)
         ]
         dims_sorted = sorted(dims_map, key=lambda d: d[0], reverse=True)
         
@@ -220,10 +220,15 @@ class StepParserOCC:
         dir_larg = get_dir(eixo_larg)
         dir_esp = get_dir(eixo_esp)
         
+        # Encontrar a direção dominante
+        max_dir = max(dir_comp, dir_larg, dir_esp)
+        
         # FURO VERTICAL: direção paralela ao eixo da espessura
-        if dir_esp > 0.9:
+        if dir_esp == max_dir and dir_esp > tol_dir:
             # É um furo vertical
-            lado = 'LS' if mpr_z < esp_total / 2 else 'LSU'
+            # LS = furo de cima pra baixo (Z perto do topo)
+            # LSU = furo de baixo pra cima (Z perto da base)
+            lado = 'LS' if mpr_z > esp_total / 2 else 'LSU'
             
             return Furo(
                 id=0,
@@ -236,8 +241,13 @@ class StepParserOCC:
                 lado=lado
             )
         
-        # FURO HORIZONTAL: direção paralela ao comprimento ou largura
-        elif dir_comp > 0.9:
+        # FURO HORIZONTAL na direção do comprimento (XP ou XM)
+        elif dir_comp == max_dir and dir_comp > tol_dir:
+            # Verificar se Z está no meio da espessura (furo horizontal típico)
+            z_meio = esp_total / 2
+            if abs(mpr_z - z_meio) > esp_total * 0.4:
+                return None  # Z muito longe do meio, provavelmente não é furo H
+            
             # Furo entra pela face do comprimento (XP ou XM)
             if mpr_x <= tol_borda:
                 lado = 'XP'
@@ -259,7 +269,13 @@ class StepParserOCC:
                 lado=lado
             )
         
-        elif dir_larg > 0.9:
+        # FURO HORIZONTAL na direção da largura (YP ou YM)
+        elif dir_larg == max_dir and dir_larg > tol_dir:
+            # Verificar se Z está no meio da espessura
+            z_meio = esp_total / 2
+            if abs(mpr_z - z_meio) > esp_total * 0.4:
+                return None
+            
             # Furo entra pela face da largura (YP ou YM)
             if mpr_y <= tol_borda:
                 lado = 'YP'
@@ -322,6 +338,12 @@ class StepParserOCC:
             # Calcular dimensões
             bbox = self._get_bounding_box(solid)
             dims = self._get_dimensions(solid)
+            
+            # Filtrar bordas e peças muito finas (espessura < 1mm)
+            if dims[2] < 1.0:
+                print(f"\n⏭️ Peca_{solid_count}: Ignorada (borda/fita - espessura {dims[2]:.2f}mm)")
+                explorer.Next()
+                continue
             
             # Nome da peça
             nome = f"Peca_{solid_count}"
