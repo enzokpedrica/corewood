@@ -169,15 +169,6 @@
 .form-field { display: flex; flex-direction: column; gap: 4px; }
 .form-field label { font-size: 11px; font-weight: 500; color: var(--cw-text-secondary); text-transform: uppercase; }
 
-<<<<<<< HEAD
-.input-with-unit { display: flex; border: 1px solid var(--cw-border); border-radius: var(--cw-radius-sm); overflow: hidden; }
-.input-with-unit:focus-within { border-color: var(--cw-accent); box-shadow: 0 0 0 3px var(--cw-accent-light); }
-.input-with-unit input { 
-  padding: 10px;  /* era 8px */
-  font-size: 14px;  /* era 13px */
-}
-.input-with-unit input:focus { outline: none; }
-=======
 .input-with-unit {
   display: flex;
   border: 1px solid #1934ac;
@@ -204,7 +195,6 @@
   outline: none;
   background: white;
 }
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
 .input-with-unit span { padding: 0 8px; background: #f8fafc; color: var(--cw-text-muted); font-size: 11px; border-left: 1px solid var(--cw-border); display: flex; align-items: center; }
 
 /* TRANSFORM */
@@ -224,10 +214,6 @@
 /* ALERT */
 .alert-section { display: flex; flex-direction: column; gap: 10px; }
 .checkbox-field { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-<<<<<<< HEAD
-.checkbox-field input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--cw-accent); }
-.checkbox-label { font-size: 13px; }
-=======
 .checkbox-field input[type="checkbox"] {
   width: 20px;
   height: 20px;
@@ -236,7 +222,6 @@
   border-radius: 4px;
   cursor: pointer;
 }.checkbox-label { font-size: 13px; }
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
 .observacoes-input { width: 100%; padding: 10px; border: 1px solid var(--cw-border); border-radius: var(--cw-radius-sm); font-size: 13px; resize: none; }
 .observacoes-input:focus { outline: none; border-color: var(--cw-accent); }
 
@@ -258,18 +243,6 @@
 
 .transform-btn-sm {
   padding: 8px 14px;
-<<<<<<< HEAD
-  font-size: 13px; 
-  background: #f1f5f9;
-  border: 1px solid var(--cw-border);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: var(--cw-transition);
-}
-.transform-btn-sm:hover { background: #e2e8f0; }
-.transform-btn-sm.active { background: var(--cw-accent); border-color: var(--cw-accent); color: white; }
-
-=======
   background: #f1f5f9;
   border: 1px solid #1934ac;
   border-radius: 4px;
@@ -287,7 +260,6 @@
   border-color: #1934ac;
   color: white;
 }
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
 .bordas-row {
   display: flex;
   align-items: center;
@@ -296,17 +268,6 @@
 }
 
 .borda-select-sm {
-<<<<<<< HEAD
-  padding: 10px 12px;
-  border: 1px solid var(--cw-border);
-  border-radius: 4px;
-  font-size: 12px;
-  min-width: 80px;
-  cursor: pointer;
-}
-.borda-select-sm.cor { border-left: 3px solid #2ed573; }
-.borda-select-sm.pardo { border-left: 3px solid #ff7f50; }
-=======
   padding: 8px 12px;
   border: 1px solid #1934ac;
   border-radius: 4px;
@@ -329,23 +290,12 @@
 .borda-select-sm.pardo {
   border-left: 4px solid #ff7f50;
 }
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
 
 /* FURO CONFIG */
 .furo-config { display: flex; flex-direction: column; gap: 10px; }
 .form-row-inline { display: flex; gap: 8px; }
 .form-field-sm { flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .form-field-sm label { font-size: 10px; font-weight: 600; color: var(--cw-text-secondary); text-transform: uppercase; }
-<<<<<<< HEAD
-.form-field-sm input, .form-field-sm select { padding: 6px 8px; border: 1px solid var(--cw-border); border-radius: var(--cw-radius-sm); font-size: 12px; font-family: monospace; }
-.form-field-sm input:focus, .form-field-sm select:focus { outline: none; border-color: var(--cw-accent); }
-
-/* REPLICAÇÃO */
-.replicacao-row { display: flex; gap: 6px; align-items: center; padding-top: 8px; border-top: 1px solid #d1fae5; }
-.input-sm { width: 60px; padding: 6px 8px; border: 1px solid var(--cw-border); border-radius: var(--cw-radius-sm); font-size: 11px; font-family: monospace; }
-.select-sm { padding: 6px 8px; border: 1px solid var(--cw-border); border-radius: var(--cw-radius-sm); font-size: 11px; }
-.btn-sm { padding: 6px 10px; border: none; border-radius: var(--cw-radius-sm); font-size: 12px; font-weight: 500; cursor: pointer; }
-=======
 .form-field-sm input,
 .form-field-sm select {
   padding: 6px 8px;
@@ -397,7 +347,6 @@
   box-shadow: 0 0 0 3px rgba(25, 52, 172, 0.2);
 }
 .btn-sm { padding: 8px 130px; border: none; border-radius: var(--cw-radius-sm); font-size: 12px; font-weight: 500; cursor: pointer; }
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
 .btn-sm.btn-success { background: var(--cw-success); color: white; }
 .btn-sm.btn-danger { background: var(--cw-danger); color: white; }
 .btn-sm.full-width { width: 100%; margin-top: 4px; }
@@ -448,78 +397,47 @@
 /* Bordas + Alerta lado a lado */
 .bordas-alerta-row {
   display: flex;
-<<<<<<< HEAD
-  gap: 12px;
-=======
   gap: 10px;
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
   align-items: flex-start;
 }
 
 .alerta-compact {
   display: flex;
   flex-direction: column;
-<<<<<<< HEAD
-  gap: 6px;
-  min-width: 100px;
-  align-items: center;
-=======
   gap: 3px;
   min-width: 100px;
   align-items: left;
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
   justify-content: center;
 }
 
 .alerta-compact .checkbox-field {
   font-size: 20px;
   display: flex;
-<<<<<<< HEAD
-  align-items: center;
-=======
   align-items: left;
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
   gap: 6px;
 }
 
 .alerta-compact .checkbox-label {
-<<<<<<< HEAD
-  font-size: 18px;
-=======
   font-size: 15px;
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
 }
 
 .observacoes-input-sm {
   width: 300px;
-<<<<<<< HEAD
-  height: 100px;
-  padding: 8px 10px;
-  border: 1px solid var(--cw-border);
-=======
   height: 50px;
   padding: 8px 10px;
   border: 1px solid #1934ac;
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
   border-radius: 4px;
   font-size: 11px;
   resize: none;
   text-align: left;
-<<<<<<< HEAD
-=======
   background: #fafafa;
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
 }
 
 .observacoes-input-sm:focus {
   outline: none;
-<<<<<<< HEAD
-  border-color: var(--cw-accent);
-=======
   border-color: #764ba2;
   background: white;
   box-shadow: 0 0 0 3px rgba(25, 52, 172, 0.2);
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
 }
 
 /* RESPONSIVE */

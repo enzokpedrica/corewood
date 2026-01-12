@@ -39,8 +39,6 @@ function EditorMPR({ pecaInicial, onVoltar }) {
   const [panelHeight, setPanelHeight] = useState(280);
 
   // ========================================
-<<<<<<< HEAD
-=======
 // AUTO-SAVE LOCAL (backup de emergência)
 // ========================================
 
@@ -135,7 +133,6 @@ useEffect(() => {
   }, []);
 
   // ========================================
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
   // CARREGAR PEÇA INICIAL
   // ========================================
   useEffect(() => {
@@ -412,11 +409,7 @@ useEffect(() => {
                 y: angulo === 90 ? y + (distancia * i) : y,
                 diametro,
                 profundidade,
-<<<<<<< HEAD
-                lado
-=======
                 lado: bm ? bm[1] : 'LS'
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
               });
             }
           }
@@ -425,11 +418,7 @@ useEffect(() => {
         // FURO HORIZONTAL (103)
         if (bloco.includes('<103') && bloco.includes('BohrHoriz')) {
           const xa = bloco.match(/XA="([^"]+)"/);
-<<<<<<< HEAD
-          const ya = bloco.match(/YA="([\d.]+)"/);
-=======
           const ya = bloco.match(/YA="([^"]+)"/);  // ← mudou pra pegar qualquer valor
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
           const za = bloco.match(/ZA="([\d.]+)"/);
           const du = bloco.match(/DU="([\d.]+)"/);
           const ti = bloco.match(/TI="([\d.]+)"/);
@@ -441,31 +430,16 @@ useEffect(() => {
           if (ya && za && du) {
             const xVal = xa ? xa[1] : '0';
             const x = xVal === 'x' ? 'x' : parseFloat(xVal);
-<<<<<<< HEAD
-            const y = parseFloat(ya[1]);
-=======
             
             // Tratar Y (pode ser 'y' = largura)
             const yVal = ya[1];
             const y = yVal === 'y' ? largura : parseFloat(yVal);
             
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
             const z = parseFloat(za[1]);
             const diametro = parseFloat(du[1]);
             const profundidade = ti ? parseFloat(ti[1]) : 0;
             const quantidade = an ? parseInt(an[1]) : 1;
             const distancia = ab ? parseFloat(ab[1]) : 0;
-<<<<<<< HEAD
-            const angulo = wi ? parseInt(wi[1]) : 90;
-            const lado = bm ? bm[1] : 'XP';
-
-            for (let i = 0; i < quantidade; i++) {
-              furosHorizontais.push({
-                id: Date.now() + Math.random(),
-                tipo: 'horizontal',
-                x: xVal === 'x' ? 'x' : (angulo === 0 ? x + (distancia * i) : x),
-                y: angulo === 90 ? y + (distancia * i) : y,
-=======
             const angulo = wi ? parseInt(wi[1]) : 0;  // ← mudou pra 0 padrão
             const lado = bm ? bm[1] : 'XP';
 
@@ -479,7 +453,6 @@ useEffect(() => {
                 tipo: 'horizontal',
                 x: xVal === 'x' ? 'x' : (replicaEmY ? x : x + (distancia * i)),
                 y: replicaEmY ? y + (distancia * i) : y,
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
                 z,
                 diametro,
                 profundidade,
@@ -638,14 +611,10 @@ useEffect(() => {
       );
 
       if (response.status === 200) {
-<<<<<<< HEAD
-        alert('✅ Peça salva com sucesso!');
-=======
         if (response.status === 200) {
           alert('✅ Peça salva com sucesso!');
           localStorage.removeItem('corewood_editor_backup');
         }
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
       } else {
         alert('❌ Erro ao salvar peça');
       }
@@ -1095,11 +1064,7 @@ useEffect(() => {
                     handleReplicarFuro(qtd, dist, dir);
                   }}
                 >
-<<<<<<< HEAD
-                  🔁
-=======
                   🔁 Replicar
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
                 </button>
               </div>
 

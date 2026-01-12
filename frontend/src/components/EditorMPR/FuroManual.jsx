@@ -6,17 +6,11 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
     tipo: 'vertical',
     x: '',
     y: '',
-<<<<<<< HEAD
-    diametro: '5',
-    profundidade: '0',
-    lado: 'XP'
-=======
     z: '',
     diametro: '5',
     profundidade: '0',
     lado: 'XP',
     ladoVertical: 'LS'
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
   });
 
   const [errors, setErrors] = useState({});
@@ -73,27 +67,17 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
     if (!validarFuro()) {
       return;
     }
-<<<<<<< HEAD
-=======
     console.log('furoData:', furoData);
     console.log('ladoVertical:', furoData.ladoVertical);
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
 
     const novoFuro = {
       x: parseFloat(furoData.x),
       y: parseFloat(furoData.y),
-<<<<<<< HEAD
-      tipo: furoData.tipo,
-      diametro: parseFloat(furoData.diametro),
-      profundidade: parseFloat(furoData.profundidade),
-      lado: furoData.tipo === 'horizontal' ? furoData.lado : null
-=======
       z: furoData.tipo === 'horizontal' ? (parseFloat(furoData.z) || pecaDimensoes.espessura / 2) : null,
       tipo: furoData.tipo,
       diametro: parseFloat(furoData.diametro),
       profundidade: parseFloat(furoData.profundidade),
       lado: furoData.tipo === 'horizontal' ? furoData.lado : furoData.ladoVertical
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
     };
 
     onAddFuro(novoFuro);
@@ -112,107 +96,6 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
       <h3>➕ Adicionar por Coordenadas</h3>
       
       <form onSubmit={handleSubmit} className="furo-manual-form">
-<<<<<<< HEAD
-        {/* Tipo de Furo */}
-        <div className="form-group">
-          <label>Tipo:</label>
-          <select
-            value={furoData.tipo}
-            onChange={(e) => {
-              const novoTipo = e.target.value;
-              setFuroData({
-                ...furoData,
-                tipo: novoTipo,
-                profundidade: novoTipo === 'vertical' ? '0' : '11.5'
-              });
-            }}
-          >
-            <option value="vertical">🔴 Vertical</option>
-            <option value="horizontal">🔵 Horizontal</option>
-          </select>
-        </div>
-
-        {/* Coordenadas */}
-        <div className="form-row">
-          <div className="form-group">
-            <label>X (mm):</label>
-            <input
-              type="number"
-              step="0.1"
-              value={furoData.x}
-              onChange={(e) => handleChange('x', e.target.value)}
-              placeholder="0"
-              className={errors.x ? 'input-error' : ''}
-            />
-            {errors.x && <span className="error-msg">{errors.x}</span>}
-          </div>
-
-          <div className="form-group">
-            <label>Y (mm):</label>
-            <input
-              type="number"
-              step="0.1"
-              value={furoData.y}
-              onChange={(e) => handleChange('y', e.target.value)}
-              placeholder="0"
-              className={errors.y ? 'input-error' : ''}
-            />
-            {errors.y && <span className="error-msg">{errors.y}</span>}
-          </div>
-        </div>
-
-        {/* Diâmetro e Profundidade */}
-        <div className="form-row">
-          <div className="form-group">
-            <label>Ø (mm):</label>
-            <input
-              type="number"
-              step="0.1"
-              value={furoData.diametro}
-              onChange={(e) => handleChange('diametro', e.target.value)}
-              placeholder="5"
-              className={errors.diametro ? 'input-error' : ''}
-            />
-            {errors.diametro && <span className="error-msg">{errors.diametro}</span>}
-          </div>
-
-          <div className="form-group">
-            <label>Prof. (mm):</label>
-            <input
-              type="number"
-              step="0.1"
-              value={furoData.profundidade}
-              onChange={(e) => handleChange('profundidade', e.target.value)}
-              placeholder="0"
-              className={errors.profundidade ? 'input-error' : ''}
-            />
-            {errors.profundidade && <span className="error-msg">{errors.profundidade}</span>}
-            <small>0 = passante</small>
-          </div>
-        </div>
-
-        {/* Lado (se horizontal) */}
-        {furoData.tipo === 'horizontal' && (
-          <div className="form-group">
-            <label>Lado:</label>
-            <select
-              value={furoData.lado}
-              onChange={(e) => handleChange('lado', e.target.value)}
-            >
-              <option value="XP">XP (Frente)</option>
-              <option value="XM">XM (Trás)</option>
-              <option value="YP">YP (Direita)</option>
-              <option value="YM">YM (Esquerda)</option>
-            </select>
-          </div>
-        )}
-
-        {/* Botão Submit */}
-        <button type="submit" className="btn-add-furo">
-          ➕ Adicionar Furo
-        </button>
-      </form>
-=======
       {/* Tipo */}
       <div className="form-group">
         <select
@@ -319,7 +202,6 @@ function FuroManual({ onAddFuro, pecaDimensoes }) {
       {/* Botão */}
       <button type="submit" className="btn-add-furo">➕ Adicionar</button>
     </form>
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
     </div>
   );
 }
