@@ -123,11 +123,23 @@ function Canvas3D({
     resizeObserver.observe(container);
 
     return () => {
+<<<<<<< HEAD
       resizeObserver.disconnect();
       cancelAnimationFrame(animationIdRef.current);
       controls.dispose();
       renderer.dispose();
       container.removeChild(renderer.domElement);
+=======
+      if (resizeObserver) resizeObserver.disconnect();
+      if (animationIdRef.current) cancelAnimationFrame(animationIdRef.current);
+      if (controls) controls.dispose();
+      if (renderer) {
+        renderer.dispose();
+        if (container && renderer.domElement && container.contains(renderer.domElement)) {
+          container.removeChild(renderer.domElement);
+        }
+      }
+>>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
     };
   }, []);
 
@@ -231,8 +243,15 @@ function Canvas3D({
     // Centralizar câmera
     const maxDim = Math.max(width, depth, height);
     cameraRef.current.position.set(maxDim * 1.2, maxDim * 0.8, maxDim * 1.2);
+<<<<<<< HEAD
     controlsRef.current.target.set(0, height / 2, 0);
     controlsRef.current.update();
+=======
+    if (controlsRef.current && controlsRef.current.target) {
+      controlsRef.current.target.set(0, height / 2, 0);
+      controlsRef.current.update();
+    }
+>>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
 
     // Criar bordas coloridas
     createBordas(width, height, depth);

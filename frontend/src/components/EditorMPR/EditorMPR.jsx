@@ -39,6 +39,103 @@ function EditorMPR({ pecaInicial, onVoltar }) {
   const [panelHeight, setPanelHeight] = useState(280);
 
   // ========================================
+<<<<<<< HEAD
+=======
+// AUTO-SAVE LOCAL (backup de emergência)
+// ========================================
+
+// Salvar no localStorage a cada alteração
+useEffect(() => {
+  if (peca.comprimento && peca.largura) {
+    const backup = {
+      peca,
+      bordas,
+      transformacao,
+      alerta,
+      observacoes,
+      codigoPeca,
+      timestamp: Date.now()
+    };
+    localStorage.setItem('corewood_editor_backup', JSON.stringify(backup));
+  }
+}, [peca, bordas, transformacao, alerta, observacoes, codigoPeca]);
+
+// Recuperar backup ao carregar
+useEffect(() => {
+  const backup = localStorage.getItem('corewood_editor_backup');
+  if (backup && !pecaInicial) {
+    try {
+      const dados = JSON.parse(backup);
+      const horasAtras = (Date.now() - dados.timestamp) / (1000 * 60 * 60);
+      
+      if (horasAtras < 24 && dados.peca?.furos?.length > 0) {
+        if (window.confirm(`🔄 Encontramos uma peça não salva (${dados.peca.nome || 'sem nome'}).\n\nDeseja recuperar?`)) {
+          setPeca(dados.peca);
+          setBordas(dados.bordas || { topo: 'nenhum', baixo: 'nenhum', esquerda: 'nenhum', direita: 'nenhum' });
+          setTransformacao(dados.transformacao || { rotacao: 0, espelhado: false });
+          setAlerta(dados.alerta || false);
+          setObservacoes(dados.observacoes || '');
+          setCodigoPeca(dados.codigoPeca || '');
+        } else {
+          localStorage.removeItem('corewood_editor_backup');
+        }
+      }
+    } catch (e) {
+      console.error('Erro ao recuperar backup:', e);
+      localStorage.removeItem('corewood_editor_backup');
+    }
+  }
+}, []);
+
+  // ========================================
+  // AUTO-SAVE LOCAL (backup de emergência)
+  // ========================================
+
+  // Salvar no localStorage a cada alteração
+  useEffect(() => {
+    if (peca.comprimento && peca.largura) {
+      const backup = {
+        peca,
+        bordas,
+        transformacao,
+        alerta,
+        observacoes,
+        codigoPeca,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('corewood_editor_backup', JSON.stringify(backup));
+    }
+  }, [peca, bordas, transformacao, alerta, observacoes, codigoPeca]);
+
+  // Recuperar backup ao carregar
+  useEffect(() => {
+    const backup = localStorage.getItem('corewood_editor_backup');
+    if (backup && !pecaInicial) {
+      try {
+        const dados = JSON.parse(backup);
+        const horasAtras = (Date.now() - dados.timestamp) / (1000 * 60 * 60);
+        
+        if (horasAtras < 24 && dados.peca?.furos?.length > 0) {
+          if (window.confirm(`🔄 Encontramos uma peça não salva (${dados.peca.nome || 'sem nome'}).\n\nDeseja recuperar?`)) {
+            setPeca(dados.peca);
+            setBordas(dados.bordas || { topo: 'nenhum', baixo: 'nenhum', esquerda: 'nenhum', direita: 'nenhum' });
+            setTransformacao(dados.transformacao || { rotacao: 0, espelhado: false });
+            setAlerta(dados.alerta || false);
+            setObservacoes(dados.observacoes || '');
+            setCodigoPeca(dados.codigoPeca || '');
+          } else {
+            localStorage.removeItem('corewood_editor_backup');
+          }
+        }
+      } catch (e) {
+        console.error('Erro ao recuperar backup:', e);
+        localStorage.removeItem('corewood_editor_backup');
+      }
+    }
+  }, []);
+
+  // ========================================
+>>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
   // CARREGAR PEÇA INICIAL
   // ========================================
   useEffect(() => {
@@ -315,7 +412,11 @@ function EditorMPR({ pecaInicial, onVoltar }) {
                 y: angulo === 90 ? y + (distancia * i) : y,
                 diametro,
                 profundidade,
+<<<<<<< HEAD
                 lado
+=======
+                lado: bm ? bm[1] : 'LS'
+>>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
               });
             }
           }
@@ -324,7 +425,11 @@ function EditorMPR({ pecaInicial, onVoltar }) {
         // FURO HORIZONTAL (103)
         if (bloco.includes('<103') && bloco.includes('BohrHoriz')) {
           const xa = bloco.match(/XA="([^"]+)"/);
+<<<<<<< HEAD
           const ya = bloco.match(/YA="([\d.]+)"/);
+=======
+          const ya = bloco.match(/YA="([^"]+)"/);  // ← mudou pra pegar qualquer valor
+>>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
           const za = bloco.match(/ZA="([\d.]+)"/);
           const du = bloco.match(/DU="([\d.]+)"/);
           const ti = bloco.match(/TI="([\d.]+)"/);
@@ -336,12 +441,21 @@ function EditorMPR({ pecaInicial, onVoltar }) {
           if (ya && za && du) {
             const xVal = xa ? xa[1] : '0';
             const x = xVal === 'x' ? 'x' : parseFloat(xVal);
+<<<<<<< HEAD
             const y = parseFloat(ya[1]);
+=======
+            
+            // Tratar Y (pode ser 'y' = largura)
+            const yVal = ya[1];
+            const y = yVal === 'y' ? largura : parseFloat(yVal);
+            
+>>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
             const z = parseFloat(za[1]);
             const diametro = parseFloat(du[1]);
             const profundidade = ti ? parseFloat(ti[1]) : 0;
             const quantidade = an ? parseInt(an[1]) : 1;
             const distancia = ab ? parseFloat(ab[1]) : 0;
+<<<<<<< HEAD
             const angulo = wi ? parseInt(wi[1]) : 90;
             const lado = bm ? bm[1] : 'XP';
 
@@ -351,6 +465,21 @@ function EditorMPR({ pecaInicial, onVoltar }) {
                 tipo: 'horizontal',
                 x: xVal === 'x' ? 'x' : (angulo === 0 ? x + (distancia * i) : x),
                 y: angulo === 90 ? y + (distancia * i) : y,
+=======
+            const angulo = wi ? parseInt(wi[1]) : 0;  // ← mudou pra 0 padrão
+            const lado = bm ? bm[1] : 'XP';
+
+            for (let i = 0; i < quantidade; i++) {
+              // Se o furo entra pela face X (XP ou XM), replica em Y
+              // Se o furo entra pela face Y (YP ou YM), replica em X
+              const replicaEmY = lado === 'XP' || lado === 'XM';
+              
+              furosHorizontais.push({
+                id: Date.now() + Math.random(),
+                tipo: 'horizontal',
+                x: xVal === 'x' ? 'x' : (replicaEmY ? x : x + (distancia * i)),
+                y: replicaEmY ? y + (distancia * i) : y,
+>>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
                 z,
                 diametro,
                 profundidade,
@@ -509,7 +638,14 @@ function EditorMPR({ pecaInicial, onVoltar }) {
       );
 
       if (response.status === 200) {
+<<<<<<< HEAD
         alert('✅ Peça salva com sucesso!');
+=======
+        if (response.status === 200) {
+          alert('✅ Peça salva com sucesso!');
+          localStorage.removeItem('corewood_editor_backup');
+        }
+>>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
       } else {
         alert('❌ Erro ao salvar peça');
       }
@@ -959,7 +1095,11 @@ function EditorMPR({ pecaInicial, onVoltar }) {
                     handleReplicarFuro(qtd, dist, dir);
                   }}
                 >
+<<<<<<< HEAD
                   🔁
+=======
+                  🔁 Replicar
+>>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
                 </button>
               </div>
 

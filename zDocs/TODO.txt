@@ -1,5 +1,6 @@
 -- BHX FURAÇÃO - COMPLETA
 
+<<<<<<< HEAD
 > Adicionar furos de topo no formulário de criação de furos
 	> Direções de furos
 > Pinça para a peça
@@ -15,6 +16,19 @@
 > Restrições de Ferramentas
 	
 
+=======
+> Comentários no arquivo .mpr
+> Furação Cruzada BHX
+> Restrições de Ferramentas
+> Dimensões do furo proporcionais ao diâmetro do furo
+> Aba com mais de uma peça aberta no editor mpr
+> Copiar furos horizontais, de um lado pro outro
+
+Salvar o relatório Excel dos produtos que ainda nao tem 51
+
+> Documentação
+	> Vista de peças com furo em topo
+>>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
 
 
 > Relatório Lei do Bem	
