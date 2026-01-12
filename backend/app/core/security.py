@@ -9,11 +9,7 @@ from passlib.context import CryptContext
 # Configurações
 SECRET_KEY = "sua-chave-secreta-super-segura-mude-isso-em-producao"
 ALGORITHM = "HS256"
-<<<<<<< HEAD
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-=======
 ACCESS_TOKEN_EXPIRE_MINUTES = 480
->>>>>>> 5c57908bb0de3b85f96bb7c0af19183395031faf
 
 # Usar Argon2 ao invés de bcrypt
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
