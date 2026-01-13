@@ -20,7 +20,7 @@ from .core.auth import get_current_active_user
 from .models.user import User
 import json
 import tempfile
-from app.routes import editor, pecas
+from app.routes import editor, pecas, step_occ
 from .generators.mpr_generator import GeradorMPR
 from .parser.step_parser import parse_step_multipart
 
@@ -52,6 +52,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(editor.router)
 app.include_router(pecas.router)
+app.include_router(step_occ.router)
 
 @app.get("/")
 def root():
