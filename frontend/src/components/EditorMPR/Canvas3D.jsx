@@ -75,6 +75,7 @@ function Canvas3D({
     controls.enableZoom = true;     // mantém zoom
     controls.minDistance = 100;
     controls.maxDistance = 2000;
+    controlsRef.current = controls;  // ← FALTOU ISSO!
 
     // Iluminação
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -629,25 +630,41 @@ function Canvas3D({
             if (cameraRef.current && controlsRef.current) {
               const maxDim = Math.max(peca.comprimento || 100, peca.largura || 100);
               cameraRef.current.position.set(0, maxDim * 1.5, 0);
+              controlsRef.current.target.set(0, (peca.espessura || 15) / 2, 0);
               controlsRef.current.update();
             }
           }}
-          title="Vista Superior"
+          title="Vista Superior (Topo)"
         >
-          ⬆️
+          Topo
         </button>
         <button 
           className="view-btn"
           onClick={() => {
             if (cameraRef.current && controlsRef.current) {
               const maxDim = Math.max(peca.comprimento || 100, peca.largura || 100);
-              cameraRef.current.position.set(maxDim * 1.5, maxDim * 0.5, 0);
+              cameraRef.current.position.set(0, maxDim * 0.3, maxDim * 1.5);
+              controlsRef.current.target.set(0, (peca.espessura || 15) / 2, 0);
               controlsRef.current.update();
             }
           }}
           title="Vista Frontal"
         >
-          ⏹️
+          Frente
+        </button>
+        <button 
+          className="view-btn"
+          onClick={() => {
+            if (cameraRef.current && controlsRef.current) {
+              const maxDim = Math.max(peca.comprimento || 100, peca.largura || 100);
+              cameraRef.current.position.set(maxDim * 1.5, maxDim * 0.3, 0);
+              controlsRef.current.target.set(0, (peca.espessura || 15) / 2, 0);
+              controlsRef.current.update();
+            }
+          }}
+          title="Vista Lateral"
+        >
+          Lateral
         </button>
         <button 
           className="view-btn"
@@ -655,12 +672,13 @@ function Canvas3D({
             if (cameraRef.current && controlsRef.current) {
               const maxDim = Math.max(peca.comprimento || 100, peca.largura || 100);
               cameraRef.current.position.set(maxDim * 1.2, maxDim * 0.8, maxDim * 1.2);
+              controlsRef.current.target.set(0, (peca.espessura || 15) / 2, 0);
               controlsRef.current.update();
             }
           }}
-          title="Vista Isométrica"
+          title="Vista 3D"
         >
-          🔷
+          3D
         </button>
       </div>
     </div>

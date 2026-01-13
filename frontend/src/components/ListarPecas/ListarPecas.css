@@ -503,3 +503,14 @@
   background: #6c757d;
   cursor: not-allowed;
 }
+
+/* ===== FIX SCROLL LISTA ===== */
+.listar-pecas {
+  overflow: auto;
+  height: calc(100vh - 100px);
+}
+
+.pecas-lista {
+  max-height: none;
+  overflow: visible;
+}

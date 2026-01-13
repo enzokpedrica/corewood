@@ -134,134 +134,55 @@ function MainApp() {
   return (
     <div className="app">
       <header className="app-header">
-        <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h1>🪵 CoreWood</h1>
-              <p>Gerador de Documentação Técnica para Indústria Moveleira</p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              {/* Toggle entre 3 modos */}
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className="header-container">
+          <div className="header-brand">
+            <h1>🪵 CoreWood</h1>
+          </div>
 
-                <button
-                  onClick={() => setModoLote('editor')}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    background: modoLote === 'editor' ? '#667eea' : 'white',
-                    color: modoLote === 'editor' ? 'white' : '#667eea',
-                    border: '2px solid #667eea',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  ✏️ Editor
-                </button>
-                
-                <button
-                  onClick={() => setModoLote('individual')}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    background: modoLote === 'individual' ? '#667eea' : 'white',
-                    color: modoLote === 'individual' ? 'white' : '#667eea',
-                    border: '2px solid #667eea',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  📄 Individual
-                </button>
+          <nav className="header-nav">
+            <button 
+              className={`nav-btn ${modoLote === 'editor' ? 'active' : ''}`}
+              onClick={() => setModoLote('editor')}
+            >
+              Editor
+            </button>
+            <button 
+              className={`nav-btn ${modoLote === 'individual' ? 'active' : ''}`}
+              onClick={() => setModoLote('individual')}
+            >
+              Individual
+            </button>
+            <button 
+              className={`nav-btn ${modoLote === 'lote' ? 'active' : ''}`}
+              onClick={() => setModoLote('lote')}
+            >
+              Lote
+            </button>
+            <button 
+              className={`nav-btn ${modoLote === 'importar' ? 'active' : ''}`}
+              onClick={() => setModoLote('importar')}
+            >
+              Importar
+            </button>
+            <button 
+              className={`nav-btn ${modoLote === 'listar' ? 'active' : ''}`}
+              onClick={() => setModoLote('listar')}
+            >
+              Listar
+            </button>
+            <button 
+              className={`nav-btn ${modoLote === 'step' ? 'active' : ''}`}
+              onClick={() => setModoLote('step')}
+            >
+              STEP→MPR
+            </button>
+          </nav>
 
-                <button
-                  onClick={() => setModoLote('lote')}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    background: modoLote === 'lote' ? '#667eea' : 'white',
-                    color: modoLote === 'lote' ? 'white' : '#667eea',
-                    border: '2px solid #667eea',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  📦 Lote
-                </button>
-
-                <button
-                  onClick={() => setModoLote('importar')}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: modoLote === 'importar' ? '#8b5cf6' : '#2d2d2d',
-                    color: 'white',
-                    border: modoLote === 'importar' ? 'none' : '2px solid #8b5cf6',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    fontSize: '0.85rem',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  📤 Importar
-                </button>
-
-        
-                <button
-                  onClick={() => setModoLote('listar')}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: modoLote === 'listar' ? '#8b5cf6' : '#2d2d2d',
-                    color: 'white',
-                    border: modoLote === 'listar' ? 'none' : '2px solid #8b5cf6',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    fontSize: '0.85rem'
-                  }}
-                >
-                  🗂️ Listar
-                </button>
-                <button
-                  onClick={() => setModoLote('step')}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    background: modoLote === 'step' ? '#667eea' : 'white',
-                    color: modoLote === 'step' ? 'white' : '#667eea',
-                    border: '2px solid #667eea',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  🔄 STEP→MPR
-                </button>
-              </div>
-              
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ marginBottom: '0.5rem', color: '#666' }}>
-                  👤 <strong>{user?.username}</strong>
-                </p>
-                <button 
-                  onClick={logout}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: '#dc3545',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: '600'
-                  }}
-                >
-                  Sair
-                </button>
-              </div>
-            </div>
+          <div className="header-user">
+            <span className="user-name">{user?.username}</span>
+            <button className="btn-logout" onClick={logout}>
+              Sair
+            </button>
           </div>
         </div>
       </header>

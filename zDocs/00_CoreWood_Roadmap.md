@@ -9,9 +9,9 @@
 ## Mês 1 — Base Sólida (Janeiro)
 
 ### Leitor STEP
-- [ ] Aumentar taxa de detecção para ~99%
-- [ ] Detecção correta de furos
-- [ ] Detecção de geometrias complexas
+- [x] Aumentar taxa de detecção para ~99%
+- [x] Detecção correta de furos
+- [x] Detecção de geometrias complexas
 - [ ] Posicionamento correto das peças
 
 ### Editor MPR

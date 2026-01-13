@@ -73,7 +73,7 @@ function ListarPecas({
       const formData = new FormData();
       formData.append('file', file);
       
-      const response = await api.post('/parse-step', formData, {
+      const response = await api.post('/api/step/parse', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
@@ -192,7 +192,7 @@ function ListarPecas({
       const formData = new FormData();
       formData.append('file', stepFile);
       
-      const response = await api.post('/step-to-mpr', formData, {
+      const response = await api.post('/api/step/to-mpr', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         responseType: 'blob'
       });
