@@ -16,9 +16,9 @@
 
 ### Editor MPR
 - [ ] Disposição da peça no Editor → WoodWop
-- [ ] Melhorar comportamento do zoom
+- [x] Melhorar comportamento do zoom
 - [ ] Restrições de ferramentas
-- [ ] Comentários no arquivo MPR
+- [x] Comentários no arquivo MPR
 
 ---
 

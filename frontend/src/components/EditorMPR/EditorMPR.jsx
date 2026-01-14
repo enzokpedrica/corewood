@@ -512,7 +512,8 @@ useEffect(() => {
 
       const pecaExportar = {
         ...peca,
-        furos: todosFuros
+        furos: todosFuros,
+        comentarios: observacoes ? observacoes.split('\n').filter(c => c.trim()) : []
       };
 
       const mprBlob = await exportarMPR(pecaExportar);

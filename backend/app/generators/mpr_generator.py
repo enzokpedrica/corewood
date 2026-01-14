@@ -147,13 +147,15 @@ class GeradorMPR:
             mpr.extend(self._gerar_furo_horizontal(furo))
         
         # ===== COMENTÁRIOS (depois dos furos) =====
-        mpr.append('')  # Linha em branco
-        mpr.append('<101 \\Kommentar\\')
-        mpr.append('KM="PINCA : COMPRIMENTO BORDA COR"')
-        mpr.append('KM="BATENTE : LARGURA CRU"')
-        mpr.append('KAT="Kommentar"')
-        mpr.append('MNM="Comentário"')
-        mpr.append('ORI=""')
+        comentarios = peca_data.get('comentarios', [])
+        if comentarios:
+            mpr.append('')  # Linha em branco
+            mpr.append('<101 \\Kommentar\\')
+            for comentario in comentarios:
+                mpr.append(f'KM="{comentario}"')
+            mpr.append('KAT="Kommentar"')
+            mpr.append('MNM="Comentário"')
+            mpr.append('ORI=""')
         
         # ===== COMPONENTE MACRO =====
         mpr.append('')  # Linha em branco

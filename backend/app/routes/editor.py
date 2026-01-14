@@ -45,6 +45,7 @@ class PecaData(BaseModel):
     furos: List[FuroData] = []
     furosHorizontais: List[FuroHorizontalData] = []
     peca_id: Optional[int] = None
+    comentarios: List[str] = []
 
 
 @router.post("/export-mpr")
@@ -95,7 +96,8 @@ async def export_mpr(
             'largura': peca.largura,
             'comprimento': peca.comprimento,
             'espessura': peca.espessura,
-            'furos': todos_furos
+            'furos': todos_furos,
+            'comentarios': peca.comentarios
         }
         
         # Gerar MPR
