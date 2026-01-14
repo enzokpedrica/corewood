@@ -18,6 +18,7 @@ function Canvas3D({
   const meshRef = useRef(null);
   const furosGroupRef = useRef(null);
   const animationIdRef = useRef(null);
+  const initialLoadRef = useRef(true);
   
   const [tooltip, setTooltip] = useState(null);
 
@@ -27,8 +28,8 @@ function Canvas3D({
     grid: 0x9aaccd,
     piece: 0xf0d0d0,        // Cor madeira MDF
     pieceEdge: 0xc04040 ,
-    furoVerticalTop: 0xff4757,
-    furoVerticalBottom: 0x2f3542,
+    furoVerticalTop: 0xff6b35,
+    furoVerticalBottom: 0x000000,
     furoHorizontal: 0x3742fa,
     selected: 0x00ff88,
     bordaCor: 0x2ed573,
@@ -184,7 +185,7 @@ function Canvas3D({
     // Material com transparência
     const material = new THREE.MeshStandardMaterial({
       color: COLORS.piece,
-      roughness: 0.8,
+      roughness: 0.5,
       metalness: 0.1,
       flatShading: false,
       transparent: true,
@@ -233,12 +234,15 @@ function Canvas3D({
     sceneRef.current.add(mesh);
     meshRef.current = mesh;
 
-    // Centralizar câmera
-    const maxDim = Math.max(width, depth, height);
-    cameraRef.current.position.set(maxDim * 1.2, maxDim * 0.8, maxDim * 1.2);
-    if (controlsRef.current && controlsRef.current.target) {
-      controlsRef.current.target.set(0, height / 2, 0);
-      controlsRef.current.update();
+    // Centralizar câmera apenas na primeira vez
+    if (initialLoadRef.current) {
+      const maxDim = Math.max(width, depth, height);
+      cameraRef.current.position.set(maxDim * 1.2, maxDim * 0.8, maxDim * 1.2);
+      if (controlsRef.current && controlsRef.current.target) {
+        controlsRef.current.target.set(0, height / 2, 0);
+        controlsRef.current.update();
+      }
+      initialLoadRef.current = false;
     }
 
     // Criar bordas coloridas
@@ -432,7 +436,7 @@ function Canvas3D({
     peca.furos?.forEach((furo, index) => {
       const coords = transformCoord(furo.x, furo.y);
       const isSelected = selectedFuro?.tipo === 'vertical' && selectedFuro?.index === index;
-      const isBottom = furo.lado === 'LI';
+      const isBottom = furo.lado === 'LI' || furo.lado === 'LSU';
 
       const radius = furo.diametro / 2;
       const depth = Math.min(furo.profundidade || 11, espessura);
