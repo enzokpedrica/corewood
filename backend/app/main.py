@@ -20,11 +20,25 @@ from .core.auth import get_current_active_user
 from .models.user import User
 import json
 import tempfile
-from app.routes import editor, pecas, step_occ
+from app.routes import editor, pecas
 from .generators.mpr_generator import GeradorMPR
 from .parser.step_parser import parse_step_multipart
 
+# Imports de rotas
+from app.routes import editor, pecas
 
+# Incluir rotas
+app.include_router(auth.router)
+app.include_router(editor.router)
+app.include_router(pecas.router)
+
+# pythonOCC - só carrega se disponível
+try:
+    from app.routes import step_occ
+    app.include_router(step_occ.router)
+    print("✅ pythonOCC disponível - rotas /api/step habilitadas")
+except ImportError:
+    print("⚠️ pythonOCC não disponível - rotas /api/step desabilitadas")
 
 # Criar tabelas no banco
 Base.metadata.create_all(bind=engine)
@@ -52,7 +66,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(editor.router)
 app.include_router(pecas.router)
-app.include_router(step_occ.router)
+
 
 @app.get("/")
 def root():
