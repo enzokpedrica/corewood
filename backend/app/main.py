@@ -24,22 +24,6 @@ from app.routes import editor, pecas
 from .generators.mpr_generator import GeradorMPR
 from .parser.step_parser import parse_step_multipart
 
-# Imports de rotas
-from app.routes import editor, pecas
-
-# Incluir rotas
-app.include_router(auth.router)
-app.include_router(editor.router)
-app.include_router(pecas.router)
-
-# pythonOCC - só carrega se disponível
-try:
-    from app.routes import step_occ
-    app.include_router(step_occ.router)
-    print("✅ pythonOCC disponível - rotas /api/step habilitadas")
-except ImportError:
-    print("⚠️ pythonOCC não disponível - rotas /api/step desabilitadas")
-
 # Criar tabelas no banco
 Base.metadata.create_all(bind=engine)
 
@@ -61,6 +45,24 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Imports de rotas
+from app.routes import editor, pecas
+
+# Incluir rotas
+app.include_router(auth.router)
+app.include_router(editor.router)
+app.include_router(pecas.router)
+
+# pythonOCC - só carrega se disponível
+try:
+    from app.routes import step_occ
+    app.include_router(step_occ.router)
+    print("✅ pythonOCC disponível - rotas /api/step habilitadas")
+except ImportError:
+    print("⚠️ pythonOCC não disponível - rotas /api/step desabilitadas")
+
+
 
 # Incluir rotas de autenticação
 app.include_router(auth.router)
