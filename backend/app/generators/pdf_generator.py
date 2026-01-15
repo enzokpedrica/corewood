@@ -537,6 +537,8 @@ class GeradorDesenhoTecnico:
         x_furo = x_origem + (furo.x * mm * escala)
         y_furo = y_origem + altura_peca - (furo.y * mm * escala)
         raio = (furo.diametro / 2) * mm * escala
+        # Com limites para não ficar muito pequeno ou grande
+        raio = max(1.5, min(6, raio))
         
         # Desenhar círculo do furo
         c.setStrokeColor(colors.black)
@@ -751,8 +753,10 @@ class GeradorDesenhoTecnico:
             y_furo_desenho = y_origem_centralizado + altura_vista - (y_furo_real * mm * escala)
             x_furo_desenho = x_origem_centralizado + (z_furo_real * mm * escala)
             
-            # Raio proporcional à escala (mínimo 1.3, máximo 3)
-            raio_furo = max(1.3, min(3, 1.3 * escala))
+            # Raio proporcional ao diâmetro real do furo
+            raio_furo = (furo.diametro / 2) * mm * escala
+            # Com limites para não ficar muito pequeno ou grande
+            raio_furo = max(1.5, min(6, raio_furo))
             
             c.setStrokeColor(colors.black)
             c.setFillColor(colors.black)
