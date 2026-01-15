@@ -504,6 +504,27 @@
   cursor: not-allowed;
 }
 
+.btn-gerar-mprs {
+  padding: 0.5rem 1rem;
+  background: #6f42c1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-gerar-mprs:hover {
+  background: #5a32a3;
+}
+
+.btn-gerar-mprs:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
 /* ===== FIX SCROLL LISTA ===== */
 .listar-pecas {
   overflow: auto;

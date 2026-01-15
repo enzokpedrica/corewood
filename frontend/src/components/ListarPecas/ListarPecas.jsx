@@ -20,6 +20,7 @@ function ListarPecas({
   const [loadingStep, setLoadingStep] = useState(false);
   const [erroStep, setErroStep] = useState(null);
   const [gerandoPDFs, setGerandoPDFs] = useState(false);
+  const [gerandoMPRs, setGerandoMPRs] = useState(false);
 
   const buscarPecas = async () => {
     if (!codigoProduto) {
@@ -279,6 +280,54 @@ function ListarPecas({
     }
   };
 
+  const handleGerarTodosMPRs = async () => {
+    // Filtrar peças que têm furos
+    const pecasComFuros = pecas.filter(peca => {
+      const furosVerticais = peca.furos?.verticais?.length || 0;
+      const furosHorizontais = peca.furos?.horizontais?.length || 0;
+      return (furosVerticais + furosHorizontais) > 0;
+    });
+
+    if (pecasComFuros.length === 0) {
+      alert('⚠️ Nenhuma peça com furos para gerar MPR!');
+      return;
+    }
+
+    const confirmacao = window.confirm(
+      `Gerar MPR de ${pecasComFuros.length} peça(s) com furação?\n\n` +
+      `Peças: ${pecasComFuros.map(p => p.nome).join(', ')}`
+    );
+
+    if (!confirmacao) return;
+
+    setGerandoMPRs(true);
+
+    try {
+      const response = await api.post(
+        '/editor/generate-mprs-batch',
+        { peca_ids: pecasComFuros.map(p => p.id) },
+        { responseType: 'blob' }
+      );
+
+      // Download do ZIP
+      const url = window.URL.createObjectURL(response.data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `MPRs_${codigoProduto}_${new Date().toISOString().slice(0,10)}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      alert(`✅ ${pecasComFuros.length} MPR(s) gerado(s) com sucesso!`);
+    } catch (error) {
+      console.error('Erro ao gerar MPRs:', error);
+      alert('❌ Erro ao gerar MPRs: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setGerandoMPRs(false);
+    }
+  };
+
   return (
     <div className="listar-pecas">
       <div className="listar-container">
@@ -326,6 +375,13 @@ function ListarPecas({
                   disabled={gerandoPDFs}
                 >
                   {gerandoPDFs ? '⏳ Gerando...' : '📄 Gerar PDFs'}
+                </button>
+                <button
+                  className="btn-gerar-mprs"
+                  onClick={handleGerarTodosMPRs}
+                  disabled={gerandoMPRs}
+                >
+                  {gerandoMPRs ? '⏳ Gerando...' : '📐 Gerar MPRs'}
                 </button>
               </div>
             </div>

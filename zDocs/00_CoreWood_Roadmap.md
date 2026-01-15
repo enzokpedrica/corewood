@@ -19,6 +19,7 @@
 - [x] Melhorar comportamento do zoom
 - [ ] Restrições de ferramentas
 - [x] Comentários no arquivo MPR
+- [ ] Importar .step em Lote
 
 ---
 
@@ -27,9 +28,9 @@
 ### Documentação Técnica
 - [ ] Lógica para calcular deslocamento de motor
 - [ ] Identificação de furo de topo
-- [ ] Dimensionamento proporcional dos furos na vista lateral
+- [x] Dimensionamento proporcional dos furos na vista lateral
 - [ ] Verificar se vistas laterais correspondem com a mesma direção
-- [ ] Visualizador e Editor manual para ajustes antes de gerar
+- [x] Visualizador e Editor manual para ajustes antes de gerar
 
 ---
 

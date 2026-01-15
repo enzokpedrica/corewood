@@ -462,3 +462,98 @@ async def generate_pdfs_batch(
         media_type='application/zip',
         headers={'Content-Disposition': 'attachment; filename=pecas_pdfs.zip'}
     )    
+
+@router.post("/generate-mprs-batch")
+async def generate_mprs_batch(
+    request: dict,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Gera MPRs de múltiplas peças e retorna um ZIP
+    """
+    import zipfile
+    import io
+    from fastapi.responses import StreamingResponse
+
+    peca_ids = request.get('peca_ids', [])
+
+    if not peca_ids:
+        raise HTTPException(status_code=400, detail="Nenhuma peça selecionada")
+
+    print(f"\n📐 ===== GERANDO MPRs EM LOTE =====")
+    print(f"👤 Usuário: {current_user.username}")
+    print(f"📦 Peças: {peca_ids}")
+
+    # Criar ZIP em memória
+    zip_buffer = io.BytesIO()
+    gerador = GeradorMPR()
+
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for peca_id in peca_ids:
+            try:
+                # Buscar peça
+                peca_db = db.query(PecaDB).filter(PecaDB.id == peca_id).first()
+                if not peca_db:
+                    print(f"⚠️ Peça {peca_id} não encontrada")
+                    continue
+
+                print(f"📐 Gerando MPR: {peca_db.codigo} - {peca_db.nome}")
+
+                # Processar furos
+                furos_list = []
+                furos_data = peca_db.furos or {}
+
+                for furo in furos_data.get('verticais', []):
+                    furos_list.append({
+                        'tipo': 'vertical',
+                        'x': furo['x'],
+                        'y': furo['y'],
+                        'diametro': furo['diametro'],
+                        'profundidade': furo.get('profundidade', 0),
+                        'lado': furo.get('lado', 'LS')
+                    })
+
+                for furo in furos_data.get('horizontais', []):
+                    furos_list.append({
+                        'tipo': 'horizontal',
+                        'x': furo.get('x', 0),
+                        'y': furo['y'],
+                        'z': furo.get('z', 7.5),
+                        'diametro': furo['diametro'],
+                        'profundidade': furo.get('profundidade', 22),
+                        'lado': furo.get('lado', 'XP')
+                    })
+
+                # Montar dict da peça para o gerador
+                peca_dict = {
+                    'nome': peca_db.nome,
+                    'largura': float(peca_db.largura or 0),
+                    'comprimento': float(peca_db.comprimento or 0),
+                    'espessura': float(peca_db.espessura or 15),
+                    'furos': furos_list
+                }
+
+                # Gerar MPR
+                mpr_content = gerador.gerar_mpr(peca_dict)
+
+                # Adicionar ao ZIP
+                nome_arquivo = f"{peca_db.codigo}_{peca_db.nome}.mpr".replace(' ', '_')
+                zip_file.writestr(nome_arquivo, mpr_content.encode('cp1252', errors='replace'))
+
+                print(f"✅ MPR gerado: {nome_arquivo}")
+
+            except Exception as e:
+                print(f"❌ Erro ao gerar MPR da peça {peca_id}: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                continue
+
+    zip_buffer.seek(0)
+    print(f"✅ ZIP de MPRs gerado com sucesso!")
+
+    return StreamingResponse(
+        zip_buffer,
+        media_type='application/zip',
+        headers={'Content-Disposition': 'attachment; filename=pecas_mprs.zip'}
+    )
