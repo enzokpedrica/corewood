@@ -4,7 +4,7 @@ CoreWood API - Rotas para Parser STEP com pythonOCC
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from fastapi.responses import Response, StreamingResponse
-from typing import Optional
+from typing import Optional, List
 import tempfile
 import os
 import re
@@ -87,6 +87,59 @@ async def parse_step_occ_endpoint(
             status_code=500,
             detail=f"Erro ao processar STEP: {str(e)}"
         )
+
+@router.post("/parse-batch")
+async def parse_step_batch(
+    files: List[UploadFile] = File(...),
+    debug: bool = False,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Parse múltiplos arquivos STEP de uma vez
+    
+    Returns:
+        JSON com todas as peças de todos os arquivos
+    """
+    todas_pecas = []
+    erros = []
+    
+    for file in files:
+        filename = file.filename.lower()
+        if not filename.endswith(('.step', '.stp')):
+            erros.append(f"{file.filename}: não é arquivo STEP")
+            continue
+        
+        try:
+            content = await file.read()
+            
+            with tempfile.NamedTemporaryFile(suffix='.step', delete=False) as tmp_file:
+                tmp_file.write(content)
+                tmp_path = tmp_file.name
+            
+            try:
+                resultado = parse_step_occ(filepath=tmp_path, debug=debug)
+                
+                # Adicionar nome do arquivo em cada peça
+                for peca in resultado.get('pecas', []):
+                    peca['arquivo_origem'] = file.filename
+                    todas_pecas.append(peca)
+                    
+            finally:
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+                    
+        except Exception as e:
+            erros.append(f"{file.filename}: {str(e)}")
+            continue
+    
+    return {
+        "status": "success",
+        "parser": "pythonOCC",
+        "total_arquivos": len(files),
+        "total_pecas": len(todas_pecas),
+        "pecas": todas_pecas,
+        "erros": erros if erros else None
+    }        
 
 
 @router.post("/to-mpr")

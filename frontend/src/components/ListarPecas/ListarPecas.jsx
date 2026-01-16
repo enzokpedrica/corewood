@@ -61,35 +61,42 @@ function ListarPecas({
   // ===== FUNÇÕES DO MODAL STEP =====
   
   const handleStepFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    setStepFile(file);
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    setStepFile(files);
     setLoadingStep(true);
     setErroStep(null);
     setStepPecas([]);
     setAtribuicoes({});
-    
+
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      
-      const response = await api.post('/api/step/parse', formData, {
+      files.forEach(file => {
+        formData.append('files', file);
+      });
+
+      const response = await api.post('/api/step/parse-batch', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      
-      const { pecas: pecasStep } = response.data;
+
+      const { pecas: pecasStep, erros } = response.data;
       setStepPecas(pecasStep);
-      
+
+      // Mostrar erros se houver
+      if (erros && erros.length > 0) {
+        console.warn('Erros no parse:', erros);
+      }
+
       // Inicializar atribuições vazias
       const atribInit = {};
       pecasStep.forEach((p, idx) => {
         atribInit[idx] = '';
       });
       setAtribuicoes(atribInit);
-      
+
     } catch (error) {
-      setErroStep(error.response?.data?.detail || 'Erro ao processar arquivo STEP');
+      setErroStep(error.response?.data?.detail || 'Erro ao processar arquivos STEP');
       console.error(error);
     } finally {
       setLoadingStep(false);
@@ -449,17 +456,20 @@ function ListarPecas({
                     accept=".step,.stp,.STEP,.STP"
                     onChange={handleStepFileChange}
                     disabled={loadingStep}
+                    multiple
                   />
-                  {stepFile ? (
+                  {stepFile && stepFile.length > 0 ? (
                     <div className="file-info">
                       <span className="file-icon">📐</span>
-                      <span className="file-name">{stepFile.name}</span>
-                      <span className="file-size">({(stepFile.size / 1024).toFixed(1)} KB)</span>
+                      <span className="file-name">{stepFile.length} arquivo(s) selecionado(s)</span>
+                      <span className="file-size">
+                        ({stepFile.map(f => f.name).join(', ')})
+                      </span>
                     </div>
                   ) : (
                     <div className="upload-placeholder">
                       <span className="upload-icon">📁</span>
-                      <span>Clique ou arraste um arquivo .STEP</span>
+                      <span>Clique ou arraste arquivos .STEP (múltiplos)</span>
                     </div>
                   )}
                 </label>
@@ -494,7 +504,9 @@ function ListarPecas({
                     <tbody>
                       {stepPecas.map((stepPeca, idx) => (
                         <tr key={idx}>
-                          <td className="step-peca-nome">{stepPeca.nome}</td>
+                          <td className="step-peca-nome">
+                            {stepPeca.arquivo_origem?.replace(/\.(step|stp)$/i, '') || stepPeca.nome}
+                          </td>
                           <td className="step-peca-dims">
                             {stepPeca.comprimento} × {stepPeca.largura} × {stepPeca.espessura}mm
                           </td>
