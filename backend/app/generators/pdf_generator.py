@@ -725,9 +725,9 @@ class GeradorDesenhoTecnico:
             c.restoreState()
         
         # ===== FILTRAR E DESENHAR FUROS =====
-        furos_lado = [f for f in peca.furos_horizontais 
-                    if (lado == 'esquerda' and f.lado in ['XP', 'YP']) or
-                        (lado == 'direita' and f.lado in ['XM', 'YM'])]
+        furos_lado = [f for f in peca.furos_horizontais
+                    if (lado == 'esquerda' and f.lado in ['XM', 'YM']) or
+                        (lado == 'direita' and f.lado in ['XP', 'YP'])]
                 
         # Ordenar por Y decrescente
         furos_lado = sorted(furos_lado, key=lambda f: float(f.y), reverse=True)
