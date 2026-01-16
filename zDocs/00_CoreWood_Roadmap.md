@@ -3,7 +3,7 @@
 
 ## Mês 1 — MVP Básico (Janeiro)
 
-- [ ] Disposição da peça no Editor → WoodWop
+- [x] Disposição da peça no Editor → WoodWop
 - [x] Aumentar taxa de detecção para ~99%
 - [x] Detecção correta de furos
 - [x] Detecção de geometrias complexas
@@ -13,6 +13,8 @@
 - [x] Melhorar comportamento do zoom
 - [x] Comentários no arquivo MPR
 - [x] Importar .step em Lote
+- [ ] Furo horizontal deixar padrão X=0 e Z =7.5
+- [ ] Quais tipos de peças está funcionando?
 
 ### Preparação para Diretoria
 - [ ] Documentar horas economizadas

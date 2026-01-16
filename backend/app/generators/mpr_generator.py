@@ -139,12 +139,12 @@ class GeradorMPR:
         # ===== FUROS VERTICAIS =====
         for furo in furos_agrupados:
             mpr.append('')  # Linha em branco
-            mpr.extend(self._gerar_furo_vertical(furo))
+            mpr.extend(self._gerar_furo_vertical(furo, largura))
         
         # ===== FUROS HORIZONTAIS =====
         for furo in furos_horizontais:
             mpr.append('')  # Linha em branco
-            mpr.extend(self._gerar_furo_horizontal(furo))
+            mpr.extend(self._gerar_furo_horizontal(furo, largura))
         
         # ===== COMENTÁRIOS (depois dos furos) =====
         comentarios = peca_data.get('comentarios', [])
@@ -259,9 +259,9 @@ class GeradorMPR:
         
         return "XP"
     
-    def _gerar_furo_vertical(self, furo: Dict) -> List[str]:
+    def _gerar_furo_vertical(self, furo: Dict, largura: float) -> List[str]:
         x = float(furo['x'])
-        y = float(furo['y'])
+        y = largura - float(furo['y'])  # Inverter Y para WoodWop
         diametro = float(furo['diametro'])
         profundidade = float(furo.get('profundidade', 0))
         lado = furo.get('lado', 'LS')  # ← pega o lado do furo
@@ -322,11 +322,10 @@ class GeradorMPR:
         
         return linhas
     
-    def _gerar_furo_horizontal(self, furo: Dict) -> List[str]:
+    def _gerar_furo_horizontal(self, furo: Dict, largura: float) -> List[str]:
         """Gera linhas para um furo horizontal (operação 103)"""
-        
         x = furo.get('x', 0)
-        y = float(furo['y'])
+        y = largura - float(furo['y'])  # Inverter Y para WoodWop
         z = float(furo.get('z', 7.5))
         diametro = float(furo['diametro'])
         profundidade = float(furo.get('profundidade', 22))
