@@ -1,45 +1,18 @@
 # CoreWood Roadmap — Q1 2026
-
-**Objetivo:** Apresentar para diretoria com módulo de documentação e leitor STEP funcionando.
-
-**Prazo:** 3 meses (Janeiro–Março 2026)
-
 ---
 
-## Mês 1 — Base Sólida (Janeiro)
+## Mês 1 — MVP Básico (Janeiro)
 
-### Leitor STEP
+- [ ] Disposição da peça no Editor → WoodWop
 - [x] Aumentar taxa de detecção para ~99%
 - [x] Detecção correta de furos
 - [x] Detecção de geometrias complexas
-- [ ] Posicionamento correto das peças
-
-### Editor MPR
-- [ ] Disposição da peça no Editor → WoodWop
-- [x] Melhorar comportamento do zoom
-- [ ] Restrições de ferramentas
-- [x] Comentários no arquivo MPR
-- [ ] Importar .step em Lote
-
----
-
-## Mês 2 — Módulo de Documentação (Fevereiro)
-
-### Documentação Técnica
-- [ ] Lógica para calcular deslocamento de motor
-- [ ] Identificação de furo de topo
 - [x] Dimensionamento proporcional dos furos na vista lateral
-- [ ] Verificar se vistas laterais correspondem com a mesma direção
+- [x] Verificar se vistas laterais correspondem com a mesma direção
 - [x] Visualizador e Editor manual para ajustes antes de gerar
-
----
-
-## Mês 3 — Polimento e Apresentação (Março)
-
-### Features adicionais
-- [ ] Replicador de furos
-- [ ] Declaração de variáveis no editor para medidas
-- [ ] Múltiplas peças abertas no editor
+- [x] Melhorar comportamento do zoom
+- [x] Comentários no arquivo MPR
+- [x] Importar .step em Lote
 
 ### Preparação para Diretoria
 - [ ] Documentar horas economizadas
@@ -47,16 +20,6 @@
 - [ ] Montar one-pager executivo
 - [ ] Preparar demo ao vivo
 - [ ] Alinhar apresentação com gestor
-
----
-
-## Backlog (Pós-apresentação)
-
-- [ ] Roteiro de Peça (integração ERP)
-- [ ] Adição de operação de usinagem no Editor + arquivos MPR
-- [ ] Documentação automática de usinagens
-
----
 
 ## Métricas para Business Case
 
@@ -69,4 +32,32 @@
 
 ---
 
-*Última atualização: Janeiro 2026*
+## Backlog (Pós-apresentação)
+
+- [ ] Restrições de ferramentas
+- [ ] Lógica para calcular deslocamento de motor
+- [ ] Identificação de furo de topo
+- [ ] Roteiro de Peça (integração ERP)
+- [ ] Adição de operação de usinagem no Editor + arquivos MPR
+- [ ] Documentação automática de usinagens
+
+### Features adicionais
+- [ ] Replicador de furos
+- [ ] Declaração de variáveis no editor para medidas
+- [ ] Múltiplas peças abertas no editor
+
+
+
+Para as métricas, sugiro medir:
+
+Quantas peças por dia você consegue processar com CoreWood vs manualmente
+Tempo médio por peça (antes/depois)
+Taxa de acerto do parser (peças que não precisaram ajuste manual)
+
+
+Demo ao vivo - Seleciona 3-4 peças variadas que funcionam bem pra mostrar o fluxo completo:
+
+Upload STEP em lote
+Atribuição às peças
+Edição rápida no EditorMPR
+Geração PDF/MPR em lote
